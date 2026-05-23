@@ -39,22 +39,15 @@ $white: #ffffff;
 }
 
 .cd-back {
-  position: absolute;
-  left: 14px;
-  top: 12px; /* bring back closer to the badge */
-  z-index: 6;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(255,255,255,0.9);
+  gap: 6px;
+  color: rgba(255,255,255,0.65);
   font-size: 13px;
   text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: transparent; /* remove visible bg to be less intrusive */
-  transition: color 0.12s, transform 0.12s;
-  box-shadow: none;
-  &:hover { color: white; transform: translateY(-1px); }
+  margin-bottom: 10px;
+  transition: color 0.2s;
+  &:hover { color: white; }
 }
 
 .cd-hero-badge {
@@ -68,7 +61,6 @@ $white: #ffffff;
   padding: 5px 14px;
   border-radius: 50px;
   margin-bottom: 12px;
-  margin-top: 4px; /* tighten spacing between badge and back link */
   text-transform: uppercase;
 }
 
