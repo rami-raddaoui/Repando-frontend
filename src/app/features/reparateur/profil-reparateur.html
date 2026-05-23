@@ -1,0 +1,86 @@
+@if (loading) {
+  <div class="loading-state" style="padding:80px;text-align:center">Chargement du profil...</div>
+}
+
+@if (reparateur) {
+  <div class="profil-layout">
+    <div class="profil-header-card">
+      <div class="profil-identity">
+        <div class="avatar avatar-xl">{{ reparateur.nomAffiche.substring(0,2).toUpperCase() }}</div>
+        <div class="profil-meta">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:900;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            {{ reparateur.nomAffiche }}
+            <span class="badge badge-green">✓ QualiRépar</span>
+            @if (reparateur.isFounder) { <span class="founder-badge">⭐ Fondateur #{{ reparateur.founderNumber }}</span> }
+          </h1>
+          <div style="font-size:14px;color:var(--gray);margin-top:4px">
+            {{ reparateur.ville }} {{ reparateur.codePostal }} · {{ reparateur.anneesExperience }} ans d'expérience
+          </div>
+          @if (reparateur.noteMoyenne > 0) {
+            <div style="display:flex;gap:12px;margin-top:8px;align-items:center">
+              <span style="color:var(--amber);font-weight:700">★ {{ reparateur.noteMoyenne | number:'1.1-1' }}</span>
+              <span style="color:var(--gray)">{{ reparateur.nbAvis }} avis vérifiés</span>
+              <span style="color:var(--gray)">·</span>
+              <span style="color:var(--gray)">{{ reparateur.nbReparations }} réparations</span>
+            </div>
+          }
+          @if (reparateur.estDisponible) {
+            <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--green);font-weight:600">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>Disponible
+            </div>
+          }
+        </div>
+      </div>
+      <div class="profil-actions">
+        <a routerLink="/creer-demande" class="btn-primary">Demander un devis</a>
+        <a routerLink="/messagerie" class="btn-secondary">💬 Message</a>
+      </div>
+    </div>
+
+    @if (reparateur.bio) {
+      <div class="profil-section">
+        <h3>Présentation</h3>
+        <p style="font-size:15px;color:var(--gray);line-height:1.7">{{ reparateur.bio }}</p>
+      </div>
+    }
+
+    @if (reparateur.specialites?.length) {
+      <div class="profil-section">
+        <h3>Spécialités</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          @for (s of reparateur.specialites; track s) {
+            <span class="rcv3-app">{{ getAppareilLabel(s).icon }} {{ getAppareilLabel(s).label }}</span>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="profil-section">
+      <h3>Bonus État QualiRépar</h3>
+      <div style="background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(52,211,153,.04));border:1px solid rgba(5,150,105,.25);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:13px;color:#059669;font-weight:700">🎁 Bonus QualiRépar automatique</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:4px">Déduit directement sur votre facture · Aucune démarche</div>
+        </div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:900;color:#059669">jusqu'à −65€</div>
+      </div>
+    </div>
+
+    @if (reparateur.derniersAvis?.length) {
+      <div class="profil-section">
+        <h3>Derniers avis</h3>
+        @for (a of reparateur.derniersAvis; track a.createdAt) {
+          <div style="border-bottom:1px solid var(--border);padding:16px 0;display:flex;gap:12px">
+            <div class="avatar avatar-sm">{{ a.clientNom.substring(0,2).toUpperCase() }}</div>
+            <div>
+              <div style="font-weight:600;font-size:14px">{{ a.clientNom }}</div>
+              <div style="color:var(--amber);font-size:13px;margin:2px 0">{{ '★'.repeat(a.note) }}</div>
+              @if (a.commentaire) { <div style="font-size:14px;color:var(--gray)">{{ a.commentaire }}</div> }
+              <div style="font-size:12px;color:var(--gray);margin-top:4px">{{ a.appareilRepare }} · {{ a.createdAt | date:'dd MMM yyyy' }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

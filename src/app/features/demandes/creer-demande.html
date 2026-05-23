@@ -1,0 +1,76 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Décrire ma panne</h1>
+    <p class="page-sub">Décrivez votre problème pour recevoir des devis de réparateurs certifiés.</p>
+  </div>
+
+  @if (error) { <div class="alert-error">{{ error }}</div> }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="demande-form">
+    <div class="form-card">
+      <h3 class="form-section-title">1. Quel appareil est en panne ?</h3>
+      <div class="appareil-grid">
+        @for (a of appareils; track a.key) {
+          <div class="app-btn" [class.selected]="form.value.typeAppareil === a.key" (click)="form.patchValue({typeAppareil: a.key})">
+            <div class="app-btn-icon">{{ a.icon }}</div>
+            <div class="app-btn-label">{{ a.label }}</div>
+            <div class="app-btn-bonus">−{{ a.bonus }}€ bonus</div>
+          </div>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="fg"><label>Marque</label><input type="text" formControlName="marqueAppareil" placeholder="Ex: Samsung, Bosch..."/></div>
+        <div class="fg"><label>Modèle</label><input type="text" formControlName="modeleAppareil" placeholder="Ex: WW90T..."/></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3 class="form-section-title">2. Quel est le problème ?</h3>
+      <div class="panne-grid">
+        @for (p of pannes; track p.key) {
+          <div class="panne-btn" [class.selected]="form.value.typePanne === p.key" (click)="form.patchValue({typePanne: p.key})">
+            {{ p.label }}
+          </div>
+        }
+      </div>
+      <div class="fg" style="margin-top:16px">
+        <label>Description détaillée (optionnel)</label>
+        <textarea formControlName="descriptionPanne" rows="3" placeholder="Décrivez la panne, le code erreur..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3 class="form-section-title">3. Photo de la panne (optionnel)</h3>
+      @if (!photoPreview) {
+        <label class="upload-zone-v2">
+          <input type="file" accept="image/*" style="display:none" (change)="onFileChange($event)"/>
+          <div class="upload-icon-v2">📷</div>
+          <div class="upload-text-v2">Photographier la panne ou le code erreur</div>
+          <div class="upload-chip">Choisir une photo</div>
+        </label>
+      } @else {
+        <img [src]="photoPreview" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px"/>
+      }
+    </div>
+
+    <div class="form-card">
+      <h3 class="form-section-title">4. Adresse d'intervention</h3>
+      <div class="fg"><label>Adresse complète</label><input type="text" formControlName="adresseIntervention" placeholder="123 rue de la Paix, Paris 15e"/></div>
+      <div class="type-intervention">
+        @for (t of [['DOMICILE','🏠 À domicile'],['ATELIER','🔧 En atelier'],['INDIFFERENT','🔄 Indifférent']]; track t[0]) {
+          <div class="ti-btn" [class.selected]="form.value.typeIntervention === t[0]" (click)="form.patchValue({typeIntervention: t[0]})">
+            {{ t[1] }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/recherche" class="btn-secondary">Annuler</a>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid || loading">
+        {{ loading ? 'Envoi...' : '🔍 Trouver des réparateurs →' }}
+      </button>
+    </div>
+  </form>
+</div>

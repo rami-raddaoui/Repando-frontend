@@ -1,0 +1,48 @@
+﻿<div class="messagerie-layout">
+  <aside class="conv-list">
+    <div class="conv-list-header"><h2>Messages</h2></div>
+    @for (m of matchings; track m.id) {
+      <div class="conv-item" [class.active]="activeMatchingId === m.id" (click)="openConversation(m.id)">
+        <div class="avatar avatar-md">{{ m.reparateurNom.substring(0,2).toUpperCase() }}</div>
+        <div class="conv-item-body">
+          <div class="conv-item-name">{{ m.reparateurNom }}</div>
+          <div class="conv-item-last">{{ m.demandeAppareil }} -- {{ m.statut }}</div>
+        </div>
+        @if (m.hasUnreadMessages) { <div class="unread-badge">!</div> }
+      </div>
+    }
+    @if (matchings.length === 0) {
+      <p class="conv-empty">Aucune conversation.<br/><a routerLink="/recherche" style="color:var(--blue)">Trouver un reparateur</a></p>
+    }
+  </aside>
+  <main class="chat-window">
+    @if (!activeMatchingId) {
+      <div class="chat-placeholder">
+        <div style="font-size:48px;margin-bottom:16px">💬</div>
+        <div style="font-size:18px;font-weight:700">Selectionnez une conversation</div>
+        <a routerLink="/creer-demande" class="btn-primary" style="margin-top:20px">Decrire ma panne</a>
+      </div>
+    } @else {
+      <div class="messages-area">
+        @if (loading) { <div class="loading-state">Chargement...</div> }
+        @for (msg of messages; track msg.id) {
+          <div class="message" [class.own]="isOwn(msg)" [class.other]="!isOwn(msg)">
+            <div class="message-bubble">
+              @if (msg.type === TypeMessage.DEVIS) {
+                <div class="devis-bubble"><div style="font-weight:700;margin-bottom:4px">📋 Devis officiel</div><div>{{ msg.contenu }}</div></div>
+              } @else if (msg.type === TypeMessage.SYSTEME) {
+                <div style="font-style:italic;opacity:0.8">{{ msg.contenu }}</div>
+              } @else { {{ msg.contenu }} }
+            </div>
+            <div class="message-time">{{ msg.createdAt | date:'HH:mm' }}</div>
+          </div>
+        }
+        <div #messagesEnd></div>
+      </div>
+      <div class="chat-input-bar">
+        <input type="text" [(ngModel)]="newMessage" placeholder="Votre message..." (keydown.enter)="sendMessage()"/>
+        <button class="btn-primary" (click)="sendMessage()" [disabled]="!newMessage.trim()">Envoyer</button>
+      </div>
+    }
+  </main>
+</div>

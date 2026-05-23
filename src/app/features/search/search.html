@@ -1,0 +1,124 @@
+<div class="bonus-banner">
+  🎁 <strong>Bonus État automatique :</strong> jusqu'à −65€ sur votre facture · 100% des réparateurs certifiés QualiRépar
+  <div class="bonus-banner-pill">Économies garanties</div>
+</div>
+
+<div class="search-header">
+  <div class="search-header-inner">
+    <div class="search-chip">
+      <span>🔧</span>
+      <select [(ngModel)]="typeAppareil" (change)="search()">
+        @for (a of appareilOptions; track a.key) {
+          <option [value]="a.key">{{ a.icon }} {{ a.label }}</option>
+        }
+      </select>
+    </div>
+    <button class="btn-primary btn-search-sm" (click)="search()">Rechercher</button>
+  </div>
+</div>
+
+<div class="results-layout">
+  <!-- FILTERS -->
+  <aside class="filters-panel">
+    <div class="map-block">
+      <span style="font-size:32px">🗺</span>
+      <span>Voir sur la carte</span>
+    </div>
+    <div class="filters-title">Filtres <button class="filters-reset" (click)="resetFilters()">Réinitialiser</button></div>
+
+    <div class="filter-group">
+      <div class="filter-group-title">Distance max</div>
+      <input type="range" min="1" max="20" [(ngModel)]="rayonKm" (change)="search()"/>
+      <div class="range-val">Dans un rayon de <strong>{{ rayonKm }}km</strong></div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-group-title">Disponibilité</div>
+      <div class="filter-option">
+        <input type="checkbox" [(ngModel)]="dispoSeulement" (change)="search()"/>
+        <label>Disponibles uniquement</label>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="width:100%;margin-top:4px" (click)="search()">Appliquer</button>
+  </aside>
+
+  <!-- RESULTS -->
+  <main class="results-panel">
+    <div class="results-header">
+      <div class="results-count"><span>{{ total }} réparateurs</span> certifiés · Paris</div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state">Chargement des réparateurs...</div>
+    }
+
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+
+    @for (r of reparateurs; track r.id) {
+      <div class="rep-card-h" [routerLink]="['/reparateur', r.id]">
+        <div class="rep-card-h-inner">
+          <div class="rch-body">
+            <div class="rch-top">
+              <div class="avatar avatar-lg">{{ r.nomAffiche.substring(0,2).toUpperCase() }}</div>
+              <div class="rch-identity">
+                <div class="rch-name">
+                  {{ r.nomAffiche }}
+                  <span class="badge badge-green" style="font-size:11px">✓ QualiRépar</span>
+                  @if (r.isFounder) { <span class="founder-badge">⭐ Fondateur</span> }
+                </div>
+                <div class="rch-spec">Électroménager · {{ r.ville }}{{ r.codePostal ? ' ' + r.codePostal : '' }}
+                  @if (r.distanceKm) { · {{ r.distanceKm | number:'1.1-1' }}km }
+                </div>
+                <div class="rch-stats">
+                  @if (r.noteMoyenne > 0) {
+                    <div class="rch-stat"><span style="color:var(--amber)">★</span> <strong>{{ r.noteMoyenne | number:'1.1-1' }}</strong></div>
+                    <div class="rch-stat">{{ r.nbAvis }} avis</div>
+                  }
+                  @if (r.estDisponible) {
+                    <div class="rch-stat">🟢 Disponible</div>
+                  }
+                  <div class="rch-stat">{{ r.nbReparations }}+ réparations</div>
+                </div>
+              </div>
+            </div>
+            @if (r.bio) { <p class="rch-bio">{{ r.bio }}</p> }
+            @if (r.specialites?.length) {
+              <div class="rch-specialites">
+                @for (s of r.specialites; track s) {
+                  <span class="rch-spec-chip">{{ getLabel(s) }}</span>
+                }
+              </div>
+            }
+          </div>
+          <div class="rch-price-col">
+            <div>
+              <div style="font-size:12px;color:var(--blue);font-weight:700;margin-bottom:4px">Prix après diagnostic · Bonus État déduit</div>
+              <div class="rch-saving">🎁 Bonus État jusqu'à −65€</div>
+              @if (r.estDisponible) {
+                <div class="rch-dispo" style="margin-top:8px">
+                  <div class="rch-dot" style="background:var(--green)"></div>
+                  <span style="color:var(--green)">Disponible</span>
+                </div>
+              }
+            </div>
+            <div class="rch-actions">
+              <a class="btn-devis-h" routerLink="/creer-demande" (click)="$event.stopPropagation()">💬 Demander un devis</a>
+              <a class="btn-reserver-h" [routerLink]="['/reparateur', r.id]" (click)="$event.stopPropagation()">Voir le profil →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (!loading && reparateurs.length === 0 && !error) {
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">Aucun réparateur trouvé</div>
+        <div class="empty-sub">Modifiez vos filtres ou choisissez un autre appareil.</div>
+      </div>
+    }
+  </main>
+</div>

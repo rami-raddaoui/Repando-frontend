@@ -1,0 +1,43 @@
+﻿<div class="client-layout">
+  <div class="page-header">
+    <div><div class="page-title">Mes demandes</div></div>
+    <a routerLink="/creer-demande" class="btn-primary">+ Nouvelle demande</a>
+  </div>
+  @if (loading) { <div class="loading-state">Chargement...</div> }
+  @if (!loading && demandes.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">Aucune demande</div>
+      <a routerLink="/creer-demande" class="btn-primary" style="margin-top:16px">Creer une demande</a>
+    </div>
+  }
+  @for (d of demandes; track d.id) {
+    <div class="res-card">
+      <div class="rc-status">
+        @if (d.statut === StatutDemande.OUVERTE) {
+          <div class="rc-status-icon confirmed">📅</div>
+          <div class="rc-status-label confirmed">Ouverte</div>
+        } @else if (d.statut === StatutDemande.TRAITEE) {
+          <div class="rc-status-icon done">✅</div>
+          <div class="rc-status-label done">Traitee</div>
+        } @else {
+          <div class="rc-status-icon pending">❌</div>
+          <div class="rc-status-label" style="color:var(--red)">Annulee</div>
+        }
+      </div>
+      <div class="rc-info">
+        <div class="rc-title">{{ getAppareilLabel(d.typeAppareil).icon }} {{ getAppareilLabel(d.typeAppareil).label }}</div>
+        <div class="rc-details">
+          @if (d.adresse) { <div class="rc-detail">📍 <strong>{{ d.adresse }}</strong></div> }
+          <div class="rc-detail">📅 <strong>{{ d.createdAt | date:'dd MMM yyyy' }}</strong></div>
+        </div>
+        @if (d.statut === StatutDemande.OUVERTE) {
+          <div class="rc-actions">
+            <a routerLink="/messagerie" class="btn-secondary btn-sm">💬 Messagerie</a>
+            <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="cancel(d.id)">Annuler</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

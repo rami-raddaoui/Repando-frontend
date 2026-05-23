@@ -1,0 +1,198 @@
+<!-- HERO -->
+<section class="hero-wrap">
+  <div class="hero-grid"></div>
+  <div class="hero-orb-1"></div><div class="hero-orb-2"></div><div class="hero-orb-3"></div>
+
+  <div class="hero-content">
+    <div class="anim-fade-up">
+      <!-- TOGGLE -->
+      <div class="audience-toggle">
+        <button class="toggle-btn" [class.active]="audience==='client'" (click)="audience='client'">🏠 Je cherche un réparateur</button>
+        <button class="toggle-btn" [class.active]="audience==='reparateur'" (click)="audience='reparateur'">🔧 Je suis réparateur</button>
+      </div>
+
+      @if (audience === 'client') {
+        <div class="hero-eyebrow">Électroménager Paris · Certifié QualiRépar</div>
+        <h1 class="hero-h1">Votre électroménager<br/>réparé. <span class="green">Jusqu'à 65€</span><br/>remboursés par l'État.</h1>
+        <p class="hero-sub">Repando met en relation les Parisiens avec des réparateurs <strong>certifiés QualiRépar</strong>. Le bonus de l'État est déduit automatiquement. <strong>Zéro paperasse.</strong></p>
+        <div class="savings-pills">
+          @for (a of appareils.slice(0,4); track a.key) {
+            <div class="s-pill">
+              <div class="s-pill-icon">{{ a.icon }}</div>
+              <div><div class="s-pill-saving">−{{ a.bonus }}€</div><div class="s-pill-name">{{ a.label }}</div></div>
+            </div>
+          }
+        </div>
+        <div class="hero-ctas">
+          <a routerLink="/recherche" class="btn-hero-primary">🔍 Trouver un réparateur</a>
+          <a routerLink="/creer-demande" class="btn-hero-secondary">Décrire ma panne</a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item-sm">🏅 <span>230+</span> réparateurs certifiés</div>
+          <div class="trust-item-sm">⭐ <span>4.9/5</span> satisfaction</div>
+          <div class="trust-item-sm">🔒 <span>0€</span> de paperasse</div>
+        </div>
+      }
+
+      @if (audience === 'reparateur') {
+        <div class="hero-eyebrow">Offre Fondateurs · 30 places</div>
+        <h1 class="hero-h1">Recevez de nouveaux<br/>clients. <span class="blue">3 mois</span><br/><span class="green">100% gratuits.</span></h1>
+        <p class="hero-sub">Repando vous apporte des clients qualifiés à Paris. <strong>Zéro commission pendant 3 mois.</strong> Ensuite 10% uniquement sur ce que vous gagnez.</p>
+        <div class="hero-ctas">
+          <a routerLink="/inscription-reparateur" class="btn-hero-primary">🔧 Rejoindre en tant que fondateur</a>
+        </div>
+      }
+    </div>
+
+    <!-- CARD -->
+    <div class="hero-right anim-fade-up-2">
+      <div class="float-card float-card-1">
+        <div class="fc-saving">−50€</div>
+        <div class="fc-label">Bonus État appliqué ✓</div>
+      </div>
+      <div class="float-card float-card-2">
+        <div class="fc-dispo"><div class="fc-dot"></div> Mohammed K. disponible</div>
+        <div class="fc-label" style="margin-top:3px">Paris 15e · ★ 4.9 · 1.2km</div>
+      </div>
+
+      @if (audience === 'client') {
+        <div class="main-card">
+          <div class="mc-header">
+            <div class="mc-title">📸 Décrivez votre panne</div>
+            <div class="badge badge-green" style="font-size:11px">✓ Gratuit</div>
+          </div>
+          <div class="mc-body">
+            <div class="bonus-highlight-box">
+              <div>
+                <div class="bhb-label">🎁 BONUS ÉTAT AUTOMATIQUE</div>
+                <div class="bhb-sub">Déduit sur facture · Aucune démarche</div>
+              </div>
+              <div>
+                <div class="bhb-amount">−{{ selectedAppareil.bonus }}€</div>
+                <div class="bhb-max">maximum garanti</div>
+              </div>
+            </div>
+
+            @if (!photoPreview) {
+              <label class="upload-zone-v2">
+                <input type="file" accept="image/*" style="display:none" (change)="onFileChange($event)"/>
+                <div class="upload-icon-v2">📷</div>
+                <div class="upload-text-v2">Photographiez la panne ou le code erreur</div>
+                <div class="upload-sub-v2">Le réparateur analyse votre demande sous 2h</div>
+                <div class="upload-chip">Choisir une photo</div>
+              </label>
+            } @else {
+              <div style="margin-bottom:14px;position:relative">
+                <img [src]="photoPreview" style="width:100%;height:100px;object-fit:cover;border-radius:12px"/>
+                <div style="position:absolute;top:8px;right:8px;background:#4ADE80;color:#052e16;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">✓ Photo ajoutée</div>
+              </div>
+            }
+
+            <div class="appareil-grid">
+              @for (a of appareils; track a.key) {
+                <div class="app-btn" [class.selected]="selectedAppareil.key === a.key" (click)="selectAppareil(a)">
+                  <div class="app-btn-icon">{{ a.icon }}</div>
+                  <div class="app-btn-label">{{ a.label }}</div>
+                  <div class="app-btn-bonus">−{{ a.bonus }}€</div>
+                </div>
+              }
+            </div>
+
+            <div class="address-row">
+              <input class="address-input" type="text" placeholder="📍 Votre adresse à Paris..." [(ngModel)]="adresse"/>
+              <a routerLink="/recherche" class="btn-search-hero">Chercher →</a>
+            </div>
+            <div class="mc-footer">🔒 Gratuit · Sans inscription · Paiement sécurisé</div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stats-inner-v2">
+    @for (s of stats; track s.num) {
+      <div class="stat-v2">
+        <div class="stat-v2-num">{{ s.num }}</div>
+        <div class="stat-v2-label">{{ s.label }}</div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="comment" class="how-v2">
+  <div class="how-inner">
+    <div style="text-align:center">
+      <p class="section-label">Comment ça marche</p>
+      <h2 class="section-title">De la panne à la réparation<br/>en 4 étapes.</h2>
+    </div>
+    <div class="steps-v2">
+      <div class="step-v2">
+        <div class="step-v2-circle">📸</div>
+        <h3>Photographiez</h3>
+        <p>Prenez une photo de la panne ou du code erreur.</p>
+        <span class="step-tag">IA intégrée</span>
+      </div>
+      <div class="step-v2">
+        <div class="step-v2-circle">🔍</div>
+        <h3>Trouvez</h3>
+        <p>Comparez les réparateurs QualiRépar proches de vous.</p>
+        <span class="step-tag">Prix réel affiché</span>
+      </div>
+      <div class="step-v2">
+        <div class="step-v2-circle">💬</div>
+        <h3>Échangez</h3>
+        <p>Demandez un devis via la messagerie sécurisée.</p>
+        <span class="step-tag green">Devis en ligne</span>
+      </div>
+      <div class="step-v2">
+        <div class="step-v2-circle">✅</div>
+        <h3>Réparez</h3>
+        <p>Le bonus État déduit automatiquement. Garantie 3 mois.</p>
+        <span class="step-tag green">Bonus automatique</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews-section">
+  <div class="reviews-inner">
+    <div style="text-align:center;margin-bottom:48px">
+      <p class="section-label">Avis clients vérifiés</p>
+      <h2 class="section-title">Ils ont réparé.<br/>Ils ont économisé.</h2>
+    </div>
+    <div class="reviews-grid">
+      @for (r of reviews; track r.name) {
+        <div class="review-card-v2">
+          <div class="rcv2-stars">★★★★★</div>
+          <p class="rcv2-text">{{ r.text }}</p>
+          <div class="rcv2-author">
+            <div class="avatar avatar-sm">{{ r.name.substring(0,2) }}</div>
+            <div>
+              <div class="rcv2-name">{{ r.name }}</div>
+              <div class="rcv2-device">{{ r.device }}</div>
+            </div>
+            <div class="rcv2-saving">{{ r.saving }} économisés</div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-inner">
+    <p class="section-label" style="justify-content:center;display:flex">Paris · Lancement 2025</p>
+    <h2>Votre électroménager<br/>mérite mieux.</h2>
+    <p>Trouvez un réparateur certifié près de chez vous et économisez jusqu'à 65€.</p>
+    <div class="final-cta-btns">
+      <a routerLink="/recherche" class="btn-primary" style="font-size:16px;padding:16px 36px">🔍 Trouver un réparateur →</a>
+      <a routerLink="/inscription-reparateur" class="btn-secondary" style="font-size:16px;padding:16px 36px">🔧 Je suis réparateur</a>
+    </div>
+  </div>
+</section>

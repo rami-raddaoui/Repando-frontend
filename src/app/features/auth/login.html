@@ -1,0 +1,48 @@
+<div class="login-wrap">
+  <div class="login-left">
+    <div class="ll-logo">
+      <a routerLink="/" class="logo" style="color:white;font-size:22px">
+        <div class="logo-dot"></div>Repair<span style="color:#475569">ando</span>
+      </a>
+    </div>
+    <div style="position:relative;z-index:1">
+      <h2 class="ll-title">Réparez vos appareils.<br/><span class="green">Économisez jusqu'à 65€.</span></h2>
+      <p class="ll-sub">Plateforme de réparation électroménager certifiée QualiRépar. Bonus État automatique.</p>
+      <div class="ll-features">
+        <div class="ll-feat"><div class="ll-feat-icon">🏅</div>Réparateurs certifiés QualiRépar uniquement</div>
+        <div class="ll-feat"><div class="ll-feat-icon">🎁</div>Bonus État déduit automatiquement</div>
+        <div class="ll-feat"><div class="ll-feat-icon">💬</div>Messagerie sécurisée et devis en ligne</div>
+        <div class="ll-feat"><div class="ll-feat-icon">🔒</div>Paiement sécurisé · Garantie 3 mois</div>
+      </div>
+    </div>
+    <div class="ll-bottom">© 2025 Repando · Paris · Tous droits réservés</div>
+  </div>
+
+  <div class="login-right">
+    <div class="lr-tabs">
+      <div class="lr-tab" [class.active]="tab==='client'" (click)="tab='client'">🏠 Client</div>
+      <div class="lr-tab" [class.active]="tab==='rep'" (click)="tab='rep'">🔧 Réparateur</div>
+    </div>
+
+    <h2 class="lr-title">Bon retour !</h2>
+    <p class="lr-sub">{{ tab === 'client' ? 'Connectez-vous pour trouver un réparateur.' : 'Accédez à votre dashboard réparateur.' }}</p>
+
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="fg"><label>Email</label><input type="email" formControlName="email" placeholder="votre@email.com"/></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" formControlName="password" placeholder="••••••••"/></div>
+      <div class="forgot">Mot de passe oublié ?</div>
+      <button type="submit" class="btn-primary" style="width:100%;font-size:15px;padding:14px" [disabled]="loading">
+        {{ loading ? 'Connexion...' : 'Se connecter →' }}
+      </button>
+    </form>
+
+    <div class="signup-link">
+      Pas encore de compte ?
+      <a routerLink="/inscription-reparateur">S'inscrire en tant que réparateur</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+<nav class="nav">
+  <a routerLink="/" class="logo">
+    <div class="logo-dot"></div>
+    Repair<span>ando</span>
+  </a>
+  <div class="nav-links">
+    @if (!auth.isReparateur()) {
+      <a routerLink="/recherche" class="nav-link">Trouver un réparateur</a>
+    }
+
+    @if (!auth.isLoggedIn()) {
+      <a routerLink="/connexion" class="btn-ghost">Connexion</a>
+      <a routerLink="/inscription-reparateur" class="btn-nav">🔧 Je suis réparateur</a>
+    }
+
+    @if (auth.isLoggedIn() && auth.isClient()) {
+      <a routerLink="/mes-demandes" class="nav-link">Mes demandes</a>
+      <a routerLink="/messagerie" class="nav-link">Messages</a>
+      <a routerLink="/dashboard" class="btn-ghost">Mon espace</a>
+      <button class="btn-ghost" (click)="logout()">Déconnexion</button>
+    }
+
+    @if (auth.isLoggedIn() && auth.isReparateur()) {
+      <a routerLink="/messagerie" class="nav-link">Messages</a>
+      <a routerLink="/dashboard-reparateur" class="btn-ghost">Dashboard</a>
+      <button class="btn-ghost" (click)="logout()">Déconnexion</button>
+    }
+
+    @if (auth.isLoggedIn() && auth.isAdmin()) {
+      <a routerLink="/admin" class="btn-ghost">Admin</a>
+      <button class="btn-ghost" (click)="logout()">Déconnexion</button>
+    }
+  </div>
+</nav>

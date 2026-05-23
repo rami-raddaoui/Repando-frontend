@@ -1,0 +1,62 @@
+﻿<div class="client-layout">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Dashboard Reparateur</div>
+      <div class="page-sub">Gerez vos demandes clients</div>
+    </div>
+  </div>
+  @if (dashboard) {
+    <div class="grid-3" style="margin-bottom:24px">
+      <div class="card card-pad">
+        <div style="font-size:28px;font-weight:900;color:var(--blue)">{{ dashboard.stats?.nouvellesDemandesAujourdhui ?? 0 }}</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Nouvelles demandes</div>
+      </div>
+      <div class="card card-pad">
+        <div style="font-size:28px;font-weight:900;color:var(--amber)">{{ dashboard.stats?.devisEnAttente ?? 0 }}</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Devis en attente</div>
+      </div>
+      <div class="card card-pad">
+        <div style="font-size:28px;font-weight:900;color:var(--green)">{{ dashboard.stats?.revenusMois ?? 0 }}€</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Revenus ce mois</div>
+      </div>
+    </div>
+  }
+  <div class="tabs">
+    <div class="tab" [class.active]="tab==='demandes'" (click)="tab='demandes'">Demandes ({{ matchings.length }})</div>
+    <div class="tab" [class.active]="tab==='messages'" (click)="tab='messages'">Messages</div>
+  </div>
+  @if (tab === 'demandes') {
+    @if (matchings.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">Aucune demande pour linstant</div>
+      </div>
+    }
+    @for (m of matchings; track m.id) {
+      <div class="res-card">
+        <div class="rc-status">
+          <div class="rc-status-icon confirmed">📩</div>
+          <div class="rc-status-label confirmed">{{ m.statut }}</div>
+        </div>
+        <div class="rc-info">
+          <div class="rc-title">{{ m.demandeAppareil }}</div>
+          <div class="rc-details">
+            <div class="rc-detail">Reparateur : <strong>{{ m.reparateurNom }}</strong></div>
+            <div class="rc-detail">{{ m.createdAt | date:'dd MMM yyyy' }}</div>
+          </div>
+          <div class="rc-actions">
+            <a [routerLink]="['/messagerie', m.id]" class="btn-secondary btn-sm">Chat</a>
+            @if (m.statut === 'NOUVEAU') {
+              <button class="btn-secondary btn-sm" (click)="marquerVu(m.id)">Marquer vu</button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+  @if (tab === 'messages') {
+    <div style="text-align:center;padding:40px">
+      <a routerLink="/messagerie" class="btn-primary">Ouvrir la messagerie</a>
+    </div>
+  }
+</div>

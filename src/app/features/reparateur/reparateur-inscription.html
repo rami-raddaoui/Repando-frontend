@@ -1,0 +1,95 @@
+@if (step === 1) {
+  <div class="inscription-layout">
+    <div class="inscription-left">
+      <a routerLink="/" class="logo" style="color:white"><div class="logo-dot"></div>Repair<span style="color:#475569">ando</span></a>
+      <div style="margin-top:48px">
+        <div class="rep-cta-label">Offre Fondateurs · Limité à 100 places</div>
+        <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:36px;font-weight:900;color:white;line-height:1.1;margin-bottom:16px">
+          Rejoignez Repando.<br/>Développez votre activité.
+        </h2>
+        <div class="offer-features" style="margin-top:24px">
+          <div class="offer-feat"><div class="offer-feat-check">✓</div>3 mois 100% gratuits</div>
+          <div class="offer-feat"><div class="offer-feat-check">✓</div>Badge "Fondateur" à vie</div>
+          <div class="offer-feat"><div class="offer-feat-check">✓</div>Commission 10% ensuite, la + basse</div>
+          <div class="offer-feat"><div class="offer-feat-check">✓</div>Dashboard + messagerie intégrée</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="inscription-right">
+      <h2 class="lr-title">Créer votre compte</h2>
+      <p class="lr-sub">Étape 1/2 — Informations personnelles</p>
+
+      @if (error) { <div class="alert-error">{{ error }}</div> }
+
+      <form [formGroup]="accountForm" (ngSubmit)="submitAccount()">
+        <div class="form-row">
+          <div class="fg"><label>Prénom *</label><input formControlName="prenom" placeholder="Mohammed"/></div>
+          <div class="fg"><label>Nom *</label><input formControlName="nom" placeholder="Khalid"/></div>
+        </div>
+        <div class="fg"><label>Email *</label><input type="email" formControlName="email" placeholder="votre@email.com"/></div>
+        <div class="fg"><label>Téléphone</label><input formControlName="telephone" placeholder="+33 6 ..."/></div>
+        <div class="fg"><label>Mot de passe * (8 min.)</label><input type="password" formControlName="password" placeholder="••••••••"/></div>
+        <button type="submit" class="btn-join" [disabled]="accountForm.invalid || loading">
+          {{ loading ? 'Création...' : 'Continuer →' }}
+        </button>
+        <p class="offer-note">Déjà un compte ? <a routerLink="/connexion" style="color:var(--blue)">Se connecter</a></p>
+      </form>
+    </div>
+  </div>
+}
+
+@if (step === 2) {
+  <div class="inscription-layout">
+    <div class="inscription-left">
+      <a routerLink="/" class="logo" style="color:white"><div class="logo-dot"></div>Repair<span style="color:#475569">ando</span></a>
+      <div style="margin-top:48px">
+        <div class="rep-cta-label">Étape 2/2</div>
+        <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:900;color:white;line-height:1.1">
+          Informations<br/>professionnelles
+        </h2>
+      </div>
+    </div>
+
+    <div class="inscription-right">
+      <h2 class="lr-title">Votre profil réparateur</h2>
+      <p class="lr-sub">Label QualiRépar requis · Validation admin sous 24h</p>
+
+      @if (error) { <div class="alert-error">{{ error }}</div> }
+
+      <form [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+        <div class="form-row">
+          <div class="fg"><label>SIRET * (14 chiffres)</label><input formControlName="siret" placeholder="12345678901234"/></div>
+          <div class="fg"><label>N° QualiRépar *</label><input formControlName="numeroQualirepar" placeholder="QR-XXXXX"/></div>
+        </div>
+        <div class="fg"><label>Années d'expérience *</label><input type="number" formControlName="anneesExperience" min="0"/></div>
+        <div class="fg"><label>Présentation</label><textarea formControlName="bio" rows="3" placeholder="Décrivez votre expertise, vos marques de prédilection..."></textarea></div>
+        <div class="fg"><label>Adresse atelier *</label><input formControlName="adresseAtelier" placeholder="123 rue de la République"/></div>
+        <div class="form-row">
+          <div class="fg"><label>Ville *</label><input formControlName="ville"/></div>
+          <div class="fg"><label>Code postal *</label><input formControlName="codePostal" placeholder="75015"/></div>
+        </div>
+        <div class="fg"><label>Rayon d'intervention (km) *</label><input type="number" formControlName="rayonInterventionKm" min="1"/></div>
+
+        <div class="fg">
+          <label>Spécialités * (choisissez au moins une)</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+            @for (a of appareilsList; track a) {
+              <div style="padding:10px;text-align:center;border:1.5px solid;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s"
+                [style.border-color]="isSelected(a) ? 'var(--blue)' : 'var(--border)'"
+                [style.background]="isSelected(a) ? 'var(--blue-pale)' : 'white'"
+                [style.color]="isSelected(a) ? 'var(--blue)' : 'var(--dark)'"
+                (click)="toggleSpecialite(a)">
+                {{ a }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <button type="submit" class="btn-join" [disabled]="profileForm.invalid || selectedSpecialites.length === 0 || loading">
+          {{ loading ? 'Création...' : 'Créer mon profil réparateur →' }}
+        </button>
+      </form>
+    </div>
+  </div>
+}

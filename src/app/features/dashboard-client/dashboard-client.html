@@ -1,0 +1,104 @@
+﻿<div class="client-layout">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Bonjour {{ auth.currentUser()?.prenom }} 👋</div>
+      <div class="page-sub">Gérez vos réparations et suivez vos économies</div>
+    </div>
+    <a routerLink="/creer-demande" class="btn-primary">🔍 Nouvelle réparation</a>
+  </div>
+  <div class="savings-hero">
+    <div>
+      <div class="sh-title">🎁 Vos économies grâce au bonus État</div>
+      <div class="sh-sub">Montant total déduit via Repando (bonus QualiRépar)</div>
+      <div class="sh-stats">
+        <div class="sh-stat"><div class="sh-stat-num">{{ totalEconomises }}€</div><div class="sh-stat-label">Économisés (bonus État)</div></div>
+        <div class="sh-stat"><div class="sh-stat-num">{{ demandes.length }}</div><div class="sh-stat-label">Demandes</div></div>
+        <div class="sh-stat"><div class="sh-stat-num">{{ matchings.length }}</div><div class="sh-stat-label">Devis reçus</div></div>
+      </div>
+    </div>
+    <a routerLink="/recherche" class="btn-secondary" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white">Nouvelle réparation →</a>
+  </div>
+  <div class="tabs">
+    <div class="tab" [class.active]="tab==='en-cours'" (click)="tab='en-cours'">En cours ({{ demandesEnCours.length }})</div>
+    <div class="tab" [class.active]="tab==='historique'" (click)="tab='historique'">Historique ({{ demandesTerminees.length }})</div>
+    <div class="tab" [class.active]="tab==='messages'" (click)="tab='messages'">Messages ({{ matchings.length }})</div>
+  </div>
+  @if (loading) { <div class="loading-state">Chargement...</div> }
+  @if (tab === 'en-cours') {
+    @if (demandesEnCours.length === 0 && !loading) {
+      <div class="empty-state">
+        <div class="empty-icon">🔧</div>
+        <div class="empty-title">Aucune réparation en cours</div>
+        <div class="empty-sub">Trouvez un réparateur certifié et économisez jusqu'à 65€.</div>
+        <a routerLink="/recherche" class="btn-primary">🔍 Trouver un réparateur</a>
+      </div>
+    }
+    @for (d of demandesEnCours; track d.id) {
+      <div class="res-card">
+        <div class="rc-status">
+          <div class="rc-status-icon confirmed">📅</div>
+          <div class="rc-status-label confirmed">En cours</div>
+        </div>
+        <div class="rc-info">
+          <div class="rc-title">{{ APPAREIL_LABELS[d.typeAppareil]?.icon ?? '' }} {{ APPAREIL_LABELS[d.typeAppareil]?.label ?? d.typeAppareil }}</div>
+          <div class="rc-details">
+            <div class="rc-detail">📍 <strong>{{ d.adresse ?? d.ville }}</strong></div>
+            <div class="rc-detail">📅 <strong>{{ d.createdAt | date:'dd MMM yyyy' }}</strong></div>
+            @if (d.nbDevisRecus > 0) {
+              <div class="rc-detail">📋 <strong>{{ d.nbDevisRecus }} devis reçus</strong></div>
+            }
+          </div>
+          <div class="rc-actions">
+            <a routerLink="/messagerie" class="btn-secondary btn-sm">💬 Messagerie</a>
+            <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="cancel(d.id)">Annuler</button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+  @if (tab === 'historique') {
+    @for (d of demandesTerminees; track d.id) {
+      <div class="res-card">
+        <div class="rc-status">
+          @if (d.statut === StatutDemande.TRAITEE) {
+            <div class="rc-status-icon done">✅</div>
+            <div class="rc-status-label done">Terminée</div>
+          } @else {
+            <div class="rc-status-icon pending">❌</div>
+            <div class="rc-status-label" style="color:var(--red)">Annulée</div>
+          }
+        </div>
+        <div class="rc-info">
+          <div class="rc-title">{{ APPAREIL_LABELS[d.typeAppareil]?.icon ?? '' }} {{ APPAREIL_LABELS[d.typeAppareil]?.label ?? d.typeAppareil }}</div>
+          <div class="rc-details">
+            <div class="rc-detail">📅 <strong>{{ d.createdAt | date:'dd MMM yyyy' }}</strong></div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+  @if (tab === 'messages') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;margin-bottom:20px">Vos conversations</div>
+      @for (m of matchings; track m.id) {
+        <div class="conversation-item" [routerLink]="['/messagerie', m.id]">
+          <div class="avatar avatar-md">{{ m.reparateurNom.substring(0,2).toUpperCase() }}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">{{ m.reparateurNom }}</div>
+            <div style="font-size:12px;color:var(--blue);font-weight:600">{{ m.demandeAppareil }} · {{ m.statut }}</div>
+          </div>
+          @if (m.hasUnreadMessages) { <div class="unread-badge">!</div> }
+          @if (m.statut === 'DEVIS_ENVOYE') {
+            <div style="display:flex;gap:8px">
+              <button class="btn-primary btn-sm" (click)="$event.stopPropagation(); accepterDevis(m.id)">✅ Accepter</button>
+              <button class="btn-secondary btn-sm" (click)="$event.stopPropagation(); refuserDevis(m.id)">Refuser</button>
+            </div>
+          }
+        </div>
+      }
+      @if (matchings.length === 0) {
+        <p style="color:var(--gray);text-align:center;padding:20px">Aucune conversation</p>
+      }
+    </div>
+  }
+</div>
