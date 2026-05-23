@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './login.scss'
 })
 export class LoginComponent {
-  mode = signal<'login' | 'register'>('login');
+  mode = signal<'login' | 'register' | 'choose-role'>('login');
   loading = false;
   error = '';
   success = '';
@@ -44,8 +44,9 @@ export class LoginComponent {
 
   get isLogin() { return this.mode() === 'login'; }
   get isRegister() { return this.mode() === 'register'; }
+  get isChooseRole() { return this.mode() === 'choose-role'; }
 
-  switchMode(m: 'login' | 'register') {
+  switchMode(m: 'login' | 'register' | 'choose-role') {
     this.mode.set(m);
     this.error = '';
     this.success = '';
