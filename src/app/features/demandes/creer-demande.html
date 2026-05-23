@@ -1,76 +1,209 @@
-<div class="page-container">
-  <div class="page-header">
-    <h1 class="page-title">Décrire ma panne</h1>
-    <p class="page-sub">Décrivez votre problème pour recevoir des devis de réparateurs certifiés.</p>
+<div class="cd-page">
+
+  <!-- HERO HEADER -->
+  <div class="cd-hero">
+    <div class="cd-hero-inner">
+      <a routerLink="/dashboard" class="cd-back">← Retour</a>
+      <div class="cd-hero-badge">🔧 Nouvelle demande</div>
+      <h1>Décrivez votre panne</h1>
+      <p>Recevez des devis gratuits de réparateurs certifiés QualiRépar.<br/><strong>Bonus État jusqu'à 65€ déduit automatiquement.</strong></p>
+    </div>
+    <div class="cd-hero-circle c1"></div>
+    <div class="cd-hero-circle c2"></div>
   </div>
 
-  @if (error) { <div class="alert-error">{{ error }}</div> }
+  @if (error) {
+    <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
+  }
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="demande-form">
-    <div class="form-card">
-      <h3 class="form-section-title">1. Quel appareil est en panne ?</h3>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
+
+    <!-- SECTION 1 : Appareil -->
+    <div class="cd-card">
+      <div class="cd-card-header">
+        <div class="cd-card-num">1</div>
+        <div>
+          <h2>Quel appareil est en panne ?</h2>
+          <p>Sélectionnez votre appareil pour voir le bonus disponible</p>
+        </div>
+      </div>
+
       <div class="appareil-grid">
         @for (a of appareils; track a.key) {
-          <div class="app-btn" [class.selected]="form.value.typeAppareil === a.key" (click)="form.patchValue({typeAppareil: a.key})">
-            <div class="app-btn-icon">{{ a.icon }}</div>
-            <div class="app-btn-label">{{ a.label }}</div>
-            <div class="app-btn-bonus">−{{ a.bonus }}€ bonus</div>
-          </div>
+          <button type="button" class="app-card" [class.selected]="form.value.typeAppareil === a.key"
+                  (click)="form.patchValue({typeAppareil: a.key})">
+            <div class="app-card-icon">{{ a.icon }}</div>
+            <div class="app-card-label">{{ a.label }}</div>
+            <div class="app-card-bonus">−{{ a.bonus }}€</div>
+          </button>
         }
       </div>
 
-      <div class="form-row">
-        <div class="fg"><label>Marque</label><input type="text" formControlName="marqueAppareil" placeholder="Ex: Samsung, Bosch..."/></div>
-        <div class="fg"><label>Modèle</label><input type="text" formControlName="modeleAppareil" placeholder="Ex: WW90T..."/></div>
+      <div class="cd-row mt-20">
+        <div class="cd-field">
+          <label>Marque</label>
+          <input type="text" formControlName="marque" placeholder="Ex: Samsung, Bosch, LG..."/>
+        </div>
+        <div class="cd-field">
+          <label>Modèle</label>
+          <input type="text" formControlName="modele" placeholder="Ex: WW90T534DAW..."/>
+        </div>
       </div>
     </div>
 
-    <div class="form-card">
-      <h3 class="form-section-title">2. Quel est le problème ?</h3>
+    <!-- SECTION 2 : Panne -->
+    <div class="cd-card">
+      <div class="cd-card-header">
+        <div class="cd-card-num">2</div>
+        <div>
+          <h2>Quel est le problème ?</h2>
+          <p>Choisissez le symptôme le plus proche</p>
+        </div>
+      </div>
+
       <div class="panne-grid">
         @for (p of pannes; track p.key) {
-          <div class="panne-btn" [class.selected]="form.value.typePanne === p.key" (click)="form.patchValue({typePanne: p.key})">
-            {{ p.label }}
-          </div>
+          <button type="button" class="panne-card" [class.selected]="form.value.typePanne === p.key"
+                  (click)="form.patchValue({typePanne: p.key})">
+            <span class="panne-icon">{{ p.icon }}</span>
+            <span class="panne-label">{{ p.label }}</span>
+          </button>
         }
       </div>
-      <div class="fg" style="margin-top:16px">
-        <label>Description détaillée (optionnel)</label>
-        <textarea formControlName="descriptionPanne" rows="3" placeholder="Décrivez la panne, le code erreur..."></textarea>
+
+      <div class="cd-field mt-20">
+        <label>Description détaillée <span class="optional">(optionnel)</span></label>
+        <textarea formControlName="description" rows="4"
+          placeholder="Décrivez la panne : code erreur, depuis quand, à quelle fréquence…"></textarea>
       </div>
     </div>
 
-    <div class="form-card">
-      <h3 class="form-section-title">3. Photo de la panne (optionnel)</h3>
-      @if (!photoPreview) {
-        <label class="upload-zone-v2">
-          <input type="file" accept="image/*" style="display:none" (change)="onFileChange($event)"/>
-          <div class="upload-icon-v2">📷</div>
-          <div class="upload-text-v2">Photographier la panne ou le code erreur</div>
-          <div class="upload-chip">Choisir une photo</div>
+    <!-- SECTION 3 : Photos -->
+    <div class="cd-card">
+      <div class="cd-card-header">
+        <div class="cd-card-num">3</div>
+        <div>
+          <h2>Photos de la panne <span class="optional">(optionnel)</span></h2>
+          <p>Jusqu'à 8 photos — aidez les réparateurs à mieux évaluer</p>
+        </div>
+      </div>
+
+      @if (photoPreviews.length < 8) {
+        <label class="upload-zone">
+          <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
+          <div class="upload-zone-inner">
+            <div class="upload-zone-icon">📸</div>
+            <div class="upload-zone-title">Glissez vos photos ici</div>
+            <div class="upload-zone-sub">ou cliquez pour parcourir</div>
+            <div class="upload-zone-chip">+ Ajouter des photos</div>
+            <div class="upload-zone-hint">JPG, PNG, HEIC · Max 10 Mo/photo</div>
+          </div>
         </label>
-      } @else {
-        <img [src]="photoPreview" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px"/>
+      }
+
+      @if (photoPreviews.length > 0) {
+        <div class="photo-gallery">
+          @for (photo of photoPreviews; track $index) {
+            <div class="photo-thumb">
+              <img [src]="photo.url" [alt]="photo.name"/>
+              <div class="photo-overlay">
+                <div class="photo-meta">
+                  <span class="photo-name">{{ photo.name }}</span>
+                  <span class="photo-size">{{ photo.size }}</span>
+                </div>
+                <button type="button" class="photo-remove" (click)="removePhoto($index)">✕</button>
+              </div>
+              <div class="photo-badge">{{ $index + 1 }}</div>
+            </div>
+          }
+          @if (photoPreviews.length < 8) {
+            <label class="photo-add-more">
+              <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
+              <span class="add-more-icon">+</span>
+              <span class="add-more-label">Ajouter</span>
+            </label>
+          }
+        </div>
+        <div class="photo-count-bar">
+          <span class="photo-count-text">{{ photoPreviews.length }} / 8 photo{{ photoPreviews.length > 1 ? 's' : '' }}</span>
+          <div class="photo-count-dots">
+            @for (i of [0,1,2,3,4,5,6,7]; track i) {
+              <div class="count-dot" [class.filled]="i < photoPreviews.length"></div>
+            }
+          </div>
+        </div>
       }
     </div>
 
-    <div class="form-card">
-      <h3 class="form-section-title">4. Adresse d'intervention</h3>
-      <div class="fg"><label>Adresse complète</label><input type="text" formControlName="adresseIntervention" placeholder="123 rue de la Paix, Paris 15e"/></div>
-      <div class="type-intervention">
-        @for (t of [['DOMICILE','🏠 À domicile'],['ATELIER','🔧 En atelier'],['INDIFFERENT','🔄 Indifférent']]; track t[0]) {
-          <div class="ti-btn" [class.selected]="form.value.typeIntervention === t[0]" (click)="form.patchValue({typeIntervention: t[0]})">
-            {{ t[1] }}
-          </div>
-        }
+    <!-- SECTION 4 : Localisation -->
+    <div class="cd-card">
+      <div class="cd-card-header">
+        <div class="cd-card-num">4</div>
+        <div>
+          <h2>Adresse d'intervention</h2>
+          <p>Nous trouvons les réparateurs proches de chez vous</p>
+        </div>
+      </div>
+
+      <div class="cd-field">
+        <label>Adresse complète</label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">📍</span>
+          <input type="text" formControlName="adresse" placeholder="123 rue de la Paix, Paris 15e"/>
+        </div>
+      </div>
+
+      <div class="cd-row mt-16">
+        <div class="cd-field">
+          <label>Ville</label>
+          <input type="text" formControlName="ville" placeholder="Paris"/>
+        </div>
+        <div class="cd-field small">
+          <label>Code postal</label>
+          <input type="text" formControlName="codePostal" placeholder="75015"/>
+        </div>
+      </div>
+
+      <div class="ti-group mt-20">
+        <div class="ti-label">Type d'intervention préféré</div>
+        <div class="ti-options">
+          @for (t of [['DOMICILE','🏠','À domicile','Le réparateur se déplace chez vous'],['ATELIER','🔧','En atelier','Vous apportez l\'appareil'],['INDIFFERENT','🔄','Indifférent','Les deux me conviennent']]; track t[0]) {
+            <button type="button" class="ti-btn" [class.selected]="form.value.typeIntervention === t[0]"
+                    (click)="form.patchValue({typeIntervention: t[0]})">
+              <span class="ti-icon">{{ t[1] }}</span>
+              <div class="ti-info">
+                <strong>{{ t[2] }}</strong>
+                <span>{{ t[3] }}</span>
+              </div>
+              @if (form.value.typeIntervention === t[0]) {
+                <span class="ti-check">✓</span>
+              }
+            </button>
+          }
+        </div>
       </div>
     </div>
 
-    <div class="form-actions">
-      <a routerLink="/recherche" class="btn-secondary">Annuler</a>
-      <button type="submit" class="btn-primary" [disabled]="form.invalid || loading">
-        {{ loading ? 'Envoi...' : '🔍 Trouver des réparateurs →' }}
+    <!-- BONUS RECAP -->
+    <div class="cd-bonus-recap">
+      <div class="bonus-icon">🎁</div>
+      <div class="bonus-text">
+        <strong>Bonus État inclus automatiquement</strong>
+        <span>Jusqu'à <em>65€ déduits</em> de votre facture finale — aucune démarche de votre part.</span>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="cd-actions">
+      <a routerLink="/dashboard" class="cd-btn-cancel">Annuler</a>
+      <button type="submit" class="cd-btn-submit" [disabled]="form.invalid || loading">
+        @if (loading) {
+          <span class="spin"></span> Envoi…
+        } @else {
+          🔍 Trouver des réparateurs →
+        }
       </button>
     </div>
+
   </form>
 </div>

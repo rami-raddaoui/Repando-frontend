@@ -18,15 +18,7 @@ export class CreerDemandeComponent {
   step = 1;
   loading = false;
   error = '';
-  photoPreview: string | null = null;
-
-  onFileChange(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => this.photoPreview = e.target?.result as string;
-    reader.readAsDataURL(file);
-  }
+  photoPreviews: { url: string; name: string; size: string }[] = [];
 
   readonly TypeAppareil = TypeAppareil;
   readonly TypePanne = TypePanne;
@@ -62,18 +54,39 @@ export class CreerDemandeComponent {
     });
   }
 
+  onFileChange(event: Event): void {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      const sizeKb = (file.size / 1024).toFixed(0);
+      const sizeLabel = file.size > 1024 * 1024
+        ? (file.size / 1024 / 1024).toFixed(1) + ' Mo'
+        : sizeKb + ' Ko';
+      reader.onload = e => {
+        this.photoPreviews.push({
+          url: e.target?.result as string,
+          name: file.name,
+          size: sizeLabel
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    // reset input so same file can be re-added
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  removePhoto(index: number): void {
+    this.photoPreviews.splice(index, 1);
+  }
+
   submit(): void {
     if (this.form.invalid) return;
-
-    // Si pas connecté, rediriger vers connexion
     if (!this.auth.isLoggedIn()) {
       this.router.navigate(['/connexion']);
       return;
     }
-
     this.loading = true;
     this.error = '';
-
     this.demandeService.create(this.form.value).subscribe({
       next: () => {
         this.loading = false;
