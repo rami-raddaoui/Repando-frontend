@@ -165,13 +165,22 @@
               <button type="button" class="cp-tooltip-close" (click)="idfError = ''">✕</button>
             </div>
           }
-          @if (postalMatches.length > 0) {
-            <label class="cp-list-label">Commune</label>
-            <ul class="cp-list">
-              @for (m of postalMatches; track m.code) {
-                <li (click)="selectCommune(m)">{{ m.nom }} <span class="cp-list-code">{{ m.code ? '(' + m.code + ')' : '' }}</span></li>
-              }
-            </ul>
+          @if (postalMatches.length > 1) {
+            <div class="cp-dropdown">
+              <div class="cp-choose">
+                <div class="cp-choose-icon">📍</div>
+                <div class="cp-choose-text">
+                  <div class="cp-choose-title">Choisissez votre commune</div>
+                  <div class="cp-choose-sub">Plusieurs communes correspondent à ce code postal — sélectionnez celle qui correspond à votre adresse.</div>
+                </div>
+              </div>
+              <label class="cp-list-label">Commune</label>
+              <ul class="cp-list">
+                @for (m of postalMatches; track m.code) {
+                  <li (click)="selectCommune(m)">{{ m.nom }} <span class="cp-list-code">{{ m.code ? '(' + m.code + ')' : '' }}</span></li>
+                }
+              </ul>
+            </div>
           }
         </div>
         <div class="cd-field">

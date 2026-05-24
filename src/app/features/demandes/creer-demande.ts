@@ -106,11 +106,14 @@ export class CreerDemandeComponent {
         await this.ensureLocalMapLoaded();
         if (this.localPostalMap && this.localPostalMap[cp]) {
           const matches = this.localPostalMap[cp];
-          this.postalMatches = matches.map((n) => ({ nom: n, code: '' }));
-          if (this.postalMatches.length === 1) {
-            this.form.get('ville')!.setValue(this.postalMatches[0].nom);
+          if (matches.length === 1) {
+            // single match: auto-fill and do not show list
+            this.form.get('ville')!.setValue(matches[0]);
+            this.postalMatches = [];
             this.idfError = '';
           } else {
+            // multiple matches: show list for selection
+            this.postalMatches = matches.map((n) => ({ nom: n, code: '' }));
             this.form.get('ville')!.setValue('');
             this.idfError = '';
           }
@@ -122,21 +125,23 @@ export class CreerDemandeComponent {
         fetch(url).then(async (res) => {
           if (!res.ok) throw new Error('API error');
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            // store matches for user to choose if multiple
-            this.postalMatches = data.map((c: any) => ({ nom: c.nom, code: c.code, codesPostaux: c.codesPostaux }));
-            if (this.postalMatches.length === 1) {
-              const match = this.postalMatches[0];
-              const depCode = (match.code || '').substring(0, 2);
+            if (Array.isArray(data) && data.length > 0) {
+            // if single result, auto-fill; if multiple, show list
+            if (data.length === 1) {
+              const m = data[0];
+              const depCode = (m.code || '').substring(0,2);
               if (this.IDF_DEPS[depCode]) {
-                this.form.get('ville')!.setValue(match.nom);
+                this.form.get('ville')!.setValue(m.nom);
+                this.postalMatches = [];
                 this.idfError = '';
               } else {
                 this.form.get('ville')!.setValue('');
+                this.postalMatches = [];
                 this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
               }
             } else {
-              // multiple matches: clear city and show choices
+              // multiple matches: show choices
+              this.postalMatches = data.map((c: any) => ({ nom: c.nom, code: c.code, codesPostaux: c.codesPostaux }));
               this.form.get('ville')!.setValue('');
               this.idfError = '';
             }
