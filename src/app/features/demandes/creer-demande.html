@@ -154,13 +154,21 @@
       </div>
 
       <div class="cd-row mt-16">
+        <div class="cd-field small cp-field">
+          <label>Code postal</label>
+          <input type="text" formControlName="codePostal" placeholder="75015" />
+          @if (idfError) {
+            <div class="cp-tooltip">
+              <div class="cp-tooltip-arrow"></div>
+              <span class="cp-tooltip-icon">🚫</span>
+              <span class="cp-tooltip-msg">{{ idfError }}</span>
+              <button type="button" class="cp-tooltip-close" (click)="idfError = ''">✕</button>
+            </div>
+          }
+        </div>
         <div class="cd-field">
           <label>Ville</label>
-          <input type="text" formControlName="ville" placeholder="Paris"/>
-        </div>
-        <div class="cd-field small">
-          <label>Code postal</label>
-          <input type="text" formControlName="codePostal" placeholder="75015"/>
+          <input type="text" formControlName="ville" placeholder="Ville" readonly />
         </div>
       </div>
 

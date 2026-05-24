@@ -19,6 +19,7 @@ export class CreerDemandeComponent {
   loading = false;
   error = '';
   photoPreviews: { url: string; name: string; size: string }[] = [];
+  idfError: string = '';
 
   readonly TypeAppareil = TypeAppareil;
   readonly TypePanne = TypePanne;
@@ -52,6 +53,83 @@ export class CreerDemandeComponent {
       codePostal:      [''],
       typeIntervention:[TypeIntervention.INDIFFERENT, Validators.required],
     });
+
+    // when codePostal changes, update ville dynamically
+    this.form.get('codePostal')!.valueChanges.subscribe((cp: string) => this.onCodePostalChange(cp));
+  }
+
+  private readonly POSTAL_TO_CITY: Record<string, string> = {
+    '92370': 'Chaville',
+    '92100': 'Boulogne-Billancourt',
+    '75015': 'Paris 15e',
+    '75001': 'Paris 1er',
+    '94000': 'Créteil',
+    '93100': 'Montreuil',
+    '92190': 'Meudon'
+  };
+
+  private readonly IDF_DEPS: Record<string, string> = {
+    '75': 'Paris',
+    '77': 'Seine-et-Marne',
+    '78': 'Yvelines',
+    '91': 'Essonne',
+    '92': 'Hauts-de-Seine',
+    '93': 'Seine-Saint-Denis',
+    '94': 'Val-de-Marne',
+    '95': 'Val-d\'Oise'
+  };
+
+  private onCodePostalChange(cpRaw?: string): void {
+    const cp = (cpRaw || '').toString().trim();
+    if (!cp) {
+      this.form.get('ville')!.setValue('');
+      return;
+    }
+
+    // If we have a full 5-digit postal code try the gov API for precise commune
+    if (/^\d{5}$/.test(cp)) {
+      const url = `https://geo.api.gouv.fr/communes?codePostal=${cp}&fields=nom,code,codesPostaux&boost=population`;
+      fetch(url).then(async (res) => {
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          // prefer commune where codesPostaux includes the exact postal code
+          const match = data.find((c: any) => Array.isArray(c.codesPostaux) && c.codesPostaux.includes(cp)) || data[0];
+          const depCode = (match.code || '').substring(0, 2);
+          if (this.IDF_DEPS[depCode]) {
+            this.form.get('ville')!.setValue(match.nom);
+            this.idfError = '';
+            return;
+          }
+        }
+        // no match or not IDF
+        this.form.get('ville')!.setValue('');
+        this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+      }).catch(() => {
+        // on API error fallback to department prefix
+        const dep = cp.substring(0,2);
+        if (this.IDF_DEPS[dep]) {
+          this.form.get('ville')!.setValue(this.IDF_DEPS[dep]);
+          this.idfError = '';
+        } else {
+          this.form.get('ville')!.setValue('');
+          this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+        }
+      });
+      return;
+    }
+
+    // If less than 5 digits use department prefix fallback
+    const dep = cp.substring(0,2);
+    if (this.IDF_DEPS[dep]) {
+      this.form.get('ville')!.setValue(this.IDF_DEPS[dep]);
+      this.idfError = '';
+      return;
+    }
+
+    // Not IDF
+    this.form.get('ville')!.setValue('');
+    this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
   }
 
   onFileChange(event: Event): void {

@@ -716,3 +716,24 @@ $white: #ffffff;
   .cd-actions { flex-direction: column-reverse; .cd-btn-cancel,.cd-btn-submit { width: 100%; justify-content: center; } }
 }
 
+
+/* ── Code postal tooltip (IDF) ── */
+.cp-field { position: relative; overflow: visible !important; z-index: 10; }
+.cp-field .cp-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  max-width: 360px;
+  background: linear-gradient(135deg, #fff8ed 0%, #fffdf7 100%);
+  border: 1.5px solid #f59e0b;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 30px rgba(245,158,11,0.12);
+  display: flex; gap: 8px; align-items: center;
+}
+.cp-field .cp-tooltip .cp-tooltip-icon { font-size: 18px; }
+.cp-field .cp-tooltip .cp-tooltip-msg { font-size: 13px; color: #7a2e0d; font-weight: 600; }
+.cp-field .cp-tooltip .cp-tooltip-close { margin-left: 8px; background: none; border: none; color: #b45309; cursor: pointer; font-weight: 700; }
+
+
