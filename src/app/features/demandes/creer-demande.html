@@ -146,7 +146,7 @@
       </div>
 
       <div class="cd-field">
-        <label>Adresse complète</label>
+        <label>Adresse complète (utile si vous souhaitez une réparation à domicile)</label>
         <div class="input-icon-wrap">
           <span class="input-icon">📍</span>
           <input type="text" formControlName="adresse" placeholder="123 rue de la Paix, Paris 15e"/>
@@ -164,6 +164,13 @@
               <span class="cp-tooltip-msg">{{ idfError }}</span>
               <button type="button" class="cp-tooltip-close" (click)="idfError = ''">✕</button>
             </div>
+          }
+          @if (postalMatches.length > 0) {
+            <ul class="cp-list">
+              @for (m of postalMatches; track m.code) {
+                <li (click)="selectCommune(m)">{{ m.nom }} <span class="cp-list-code">{{ m.code ? '(' + m.code + ')' : '' }}</span></li>
+              }
+            </ul>
           }
         </div>
         <div class="cd-field">

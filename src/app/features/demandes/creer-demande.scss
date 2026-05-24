@@ -731,9 +731,35 @@ $white: #ffffff;
   padding: 10px 12px;
   box-shadow: 0 10px 30px rgba(245,158,11,0.12);
   display: flex; gap: 8px; align-items: center;
+  z-index: 60;
 }
 .cp-field .cp-tooltip .cp-tooltip-icon { font-size: 18px; }
 .cp-field .cp-tooltip .cp-tooltip-msg { font-size: 13px; color: #7a2e0d; font-weight: 600; }
 .cp-field .cp-tooltip .cp-tooltip-close { margin-left: 8px; background: none; border: none; color: #b45309; cursor: pointer; font-weight: 700; }
+
+/* list of communes when multiple results */
+.cp-list {
+  margin: 8px 0 0 0;
+  padding: 6px 8px;
+  list-style: none;
+  background: white;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  max-height: 220px;
+  overflow: auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+.cp-list li {
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #0f172a;
+  display: flex;
+  justify-content: space-between;
+}
+.cp-list li:hover { background: #f8fafc; }
+.cp-list-code { color: #64748b; font-size: 12px; margin-left: 8px; }
+
+.cp-list { z-index: 65; }
 
 

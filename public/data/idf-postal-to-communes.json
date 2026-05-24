@@ -1,0 +1,2355 @@
+{
+  "75001": [
+    "Paris"
+  ],
+  "75002": [
+    "Paris"
+  ],
+  "75003": [
+    "Paris"
+  ],
+  "75004": [
+    "Paris"
+  ],
+  "75005": [
+    "Paris"
+  ],
+  "75006": [
+    "Paris"
+  ],
+  "75007": [
+    "Paris"
+  ],
+  "75008": [
+    "Paris"
+  ],
+  "75009": [
+    "Paris"
+  ],
+  "75010": [
+    "Paris"
+  ],
+  "75011": [
+    "Paris"
+  ],
+  "75012": [
+    "Paris"
+  ],
+  "75013": [
+    "Paris"
+  ],
+  "75014": [
+    "Paris"
+  ],
+  "75015": [
+    "Paris"
+  ],
+  "75016": [
+    "Paris"
+  ],
+  "75017": [
+    "Paris"
+  ],
+  "75018": [
+    "Paris"
+  ],
+  "75019": [
+    "Paris"
+  ],
+  "75020": [
+    "Paris"
+  ],
+  "75116": [
+    "Paris"
+  ],
+  "77000": [
+    "Livry-sur-Seine",
+    "Melun",
+    "La Rochette",
+    "Vaux-le-Pénil"
+  ],
+  "77090": [
+    "Collégien"
+  ],
+  "77100": [
+    "Mareuil-lès-Meaux",
+    "Meaux",
+    "Nanteuil-lès-Meaux"
+  ],
+  "77111": [
+    "Soignolles-en-Brie",
+    "Solers"
+  ],
+  "77114": [
+    "Gouaix",
+    "Hermé",
+    "Noyen-sur-Seine",
+    "Villiers-sur-Seine"
+  ],
+  "77115": [
+    "Blandy",
+    "Sivry-Courtry"
+  ],
+  "77118": [
+    "Balloy",
+    "Bazoches-lès-Bray",
+    "Gravon"
+  ],
+  "77120": [
+    "Amillis",
+    "Aulnoy",
+    "Chailly-en-Brie",
+    "Coulommiers",
+    "Giremoutiers",
+    "Marolles-en-Brie",
+    "Mauperthuis",
+    "Mouroux",
+    "Beautheil-Saints"
+  ],
+  "77122": [
+    "Monthyon"
+  ],
+  "77123": [
+    "Noisy-sur-École",
+    "Tousson",
+    "Le Vaudoué"
+  ],
+  "77124": [
+    "Crégy-lès-Meaux",
+    "Chauconin-Neufmontiers",
+    "Penchard",
+    "Villenoy"
+  ],
+  "77126": [
+    "Châtenay-sur-Seine",
+    "Courcelles-en-Bassée",
+    "Égligny"
+  ],
+  "77127": [
+    "Lieusaint"
+  ],
+  "77130": [
+    "Barbey",
+    "Cannes-Écluse",
+    "Dormelles",
+    "Forges",
+    "La Grande-Paroisse",
+    "Marolles-sur-Seine",
+    "Misy-sur-Yonne",
+    "Montereau-Fault-Yonne",
+    "Saint-Germain-Laval",
+    "La Tombe",
+    "Varennes-sur-Seine",
+    "Ville-Saint-Jacques"
+  ],
+  "77131": [
+    "Pézarches",
+    "Touquin"
+  ],
+  "77133": [
+    "Féricy",
+    "Machault"
+  ],
+  "77134": [
+    "Les Ormes-sur-Voulzie"
+  ],
+  "77135": [
+    "Pontcarré"
+  ],
+  "77138": [
+    "Luzancy"
+  ],
+  "77139": [
+    "Douy-la-Ramée",
+    "Étrépilly",
+    "Marcilly",
+    "Puisieux",
+    "Vincy-Manœuvre"
+  ],
+  "77140": [
+    "Darvault",
+    "Moncourt-Fromonville",
+    "Nemours",
+    "Nonville",
+    "Saint-Pierre-lès-Nemours"
+  ],
+  "77141": [
+    "Vaudoy-en-Brie"
+  ],
+  "77144": [
+    "Chalifert",
+    "Montévrain"
+  ],
+  "77145": [
+    "May-en-Multien"
+  ],
+  "77148": [
+    "Laval-en-Brie",
+    "Salins"
+  ],
+  "77150": [
+    "Férolles-Attilly",
+    "Lésigny"
+  ],
+  "77151": [
+    "Montceaux-lès-Provins"
+  ],
+  "77154": [
+    "Coutençon",
+    "Villeneuve-les-Bordes"
+  ],
+  "77157": [
+    "Everly"
+  ],
+  "77160": [
+    "Chalautre-la-Petite",
+    "La Chapelle-Saint-Sulpice",
+    "Chenoise-Cucharmoy",
+    "Mortery",
+    "Poigny",
+    "Provins",
+    "Rouilly",
+    "Saint-Brice",
+    "Saint-Hilliers",
+    "Vulaines-lès-Provins"
+  ],
+  "77163": [
+    "Dammartin-sur-Tigeaux",
+    "Mortcerf",
+    "Tigeaux"
+  ],
+  "77164": [
+    "Ferrières-en-Brie"
+  ],
+  "77165": [
+    "Cuisy",
+    "Forfry",
+    "Gesvres-le-Chapitre",
+    "Iverny",
+    "Le Plessis-aux-Bois",
+    "Le Plessis-l'Évêque",
+    "Saint-Soupplets"
+  ],
+  "77166": [
+    "Évry-Grégy-sur-Yerre",
+    "Grisy-Suisnes"
+  ],
+  "77167": [
+    "Bagneaux-sur-Loing",
+    "Châtenoy",
+    "Faÿ-lès-Nemours",
+    "Ormesson",
+    "Poligny"
+  ],
+  "77169": [
+    "Boissy-le-Châtel",
+    "Chauffry",
+    "Saint-Germain-sous-Doue",
+    "Saint-Siméon"
+  ],
+  "77170": [
+    "Brie-Comte-Robert",
+    "Coubert",
+    "Servon"
+  ],
+  "77171": [
+    "Chalautre-la-Grande",
+    "Léchelle",
+    "Melz-sur-Seine",
+    "Sourdun"
+  ],
+  "77173": [
+    "Chevry-Cossigny"
+  ],
+  "77174": [
+    "Villeneuve-le-Comte",
+    "Villeneuve-Saint-Denis"
+  ],
+  "77176": [
+    "Nandy",
+    "Savigny-le-Temple"
+  ],
+  "77177": [
+    "Brou-sur-Chantereine"
+  ],
+  "77178": [
+    "Oissery",
+    "Saint-Pathus"
+  ],
+  "77181": [
+    "Courtry",
+    "Le Pin"
+  ],
+  "77183": [
+    "Croissy-Beaubourg"
+  ],
+  "77184": [
+    "Émerainville"
+  ],
+  "77185": [
+    "Lognes"
+  ],
+  "77186": [
+    "Noisiel"
+  ],
+  "77190": [
+    "Dammarie-les-Lys",
+    "Villiers-en-Bière"
+  ],
+  "77200": [
+    "Torcy"
+  ],
+  "77210": [
+    "Avon",
+    "Samoreau"
+  ],
+  "77220": [
+    "Favières",
+    "Gretz-Armainvilliers",
+    "Liverdy-en-Brie",
+    "Presles-en-Brie",
+    "Tournan-en-Brie"
+  ],
+  "77230": [
+    "Dammartin-en-Goële",
+    "Juilly",
+    "Longperrier",
+    "Marchémoret",
+    "Montgé-en-Goële",
+    "Moussy-le-Neuf",
+    "Moussy-le-Vieux",
+    "Nantouillet",
+    "Rouvres",
+    "Saint-Mard",
+    "Thieux",
+    "Villeneuve-sous-Dammartin",
+    "Vinantes"
+  ],
+  "77240": [
+    "Cesson",
+    "Seine-Port",
+    "Vert-Saint-Denis"
+  ],
+  "77250": [
+    "Moret-Loing-et-Orvanne",
+    "Villecerf",
+    "Villemer"
+  ],
+  "77260": [
+    "Chamigny",
+    "La Ferté-sous-Jouarre",
+    "Reuil-en-Brie",
+    "Sainte-Aulde",
+    "Sammeron",
+    "Sept-Sorts",
+    "Ussy-sur-Marne"
+  ],
+  "77270": [
+    "Villeparisis"
+  ],
+  "77280": [
+    "Othis"
+  ],
+  "77290": [
+    "Compans",
+    "Mitry-Mory"
+  ],
+  "77300": [
+    "Fontainebleau"
+  ],
+  "77310": [
+    "Boissise-le-Roi",
+    "Pringy",
+    "Saint-Fargeau-Ponthierry"
+  ],
+  "77320": [
+    "Beton-Bazoches",
+    "Cerneux",
+    "La Chapelle-Moutils",
+    "Chartronges",
+    "Chevru",
+    "Choisy-en-Brie",
+    "Dagny",
+    "La Ferté-Gaucher",
+    "Frétoy",
+    "Jouy-sur-Morin",
+    "Lescherolles",
+    "Leudon-en-Brie",
+    "Meilleray",
+    "Montdauphin",
+    "Montenils",
+    "Montolivet",
+    "Saint-Barthélemy",
+    "Saint-Mars-Vieux-Maisons",
+    "Saint-Martin-des-Champs",
+    "Saint-Martin-du-Boschet",
+    "Saint-Rémy-de-la-Vanne",
+    "Sancy-lès-Provins"
+  ],
+  "77330": [
+    "Ozoir-la-Ferrière"
+  ],
+  "77340": [
+    "Pontault-Combault"
+  ],
+  "77350": [
+    "Boissettes",
+    "Boissise-la-Bertrand",
+    "Le Mée-sur-Seine"
+  ],
+  "77360": [
+    "Vaires-sur-Marne"
+  ],
+  "77370": [
+    "La Chapelle-Rablais",
+    "Châteaubleau",
+    "Clos-Fontaine",
+    "La Croix-en-Brie",
+    "Fontains",
+    "Fontenailles",
+    "Gastins",
+    "Maison-Rouge",
+    "Nangis",
+    "Rampillon",
+    "Saint-Just-en-Brie",
+    "Vanvillé",
+    "Vieux-Champagne"
+  ],
+  "77380": [
+    "Combs-la-Ville"
+  ],
+  "77390": [
+    "Andrezel",
+    "Argentières",
+    "Beauvoir",
+    "Champdeuil",
+    "Chaumes-en-Brie",
+    "Courquetaine",
+    "Courtomer",
+    "Crisenoy",
+    "Fouju",
+    "Guignes",
+    "Ozouer-le-Voulgis",
+    "Verneuil-l'Étang",
+    "Yèbles"
+  ],
+  "77400": [
+    "Carnetin",
+    "Dampmart",
+    "Gouvernes",
+    "Lagny-sur-Marne",
+    "Pomponne",
+    "Saint-Thibault-des-Vignes",
+    "Thorigny-sur-Marne"
+  ],
+  "77410": [
+    "Annet-sur-Marne",
+    "Charmentray",
+    "Charny",
+    "Claye-Souilly",
+    "Fresnes-sur-Marne",
+    "Gressy",
+    "Messy",
+    "Précy-sur-Marne",
+    "Saint-Mesmes",
+    "Villeroy",
+    "Villevaudé"
+  ],
+  "77420": [
+    "Champs-sur-Marne"
+  ],
+  "77430": [
+    "Champagne-sur-Seine"
+  ],
+  "77440": [
+    "Armentières-en-Brie",
+    "Cocherel",
+    "Congis-sur-Thérouanne",
+    "Dhuisy",
+    "Isles-les-Meldeuses",
+    "Jaignes",
+    "Lizy-sur-Ourcq",
+    "Mary-sur-Marne",
+    "Ocquerre",
+    "Le Plessis-Placy",
+    "Tancrou",
+    "Trocy-en-Multien",
+    "Vendrest"
+  ],
+  "77450": [
+    "Condé-Sainte-Libiaire",
+    "Esbly",
+    "Isles-lès-Villenoy",
+    "Jablines",
+    "Lesches",
+    "Montry",
+    "Trilbardou",
+    "Vignely"
+  ],
+  "77460": [
+    "Chaintreaux",
+    "Souppes-sur-Loing"
+  ],
+  "77470": [
+    "Boutigny",
+    "Fublaines",
+    "Montceaux-lès-Meaux",
+    "Poincy",
+    "Saint-Fiacre",
+    "Trilport",
+    "Villemareuil"
+  ],
+  "77480": [
+    "Baby",
+    "Bray-sur-Seine",
+    "Fontaine-Fourches",
+    "Grisy-sur-Seine",
+    "Jaulnes",
+    "Montigny-le-Guesdier",
+    "Mousseaux-lès-Bray",
+    "Mouy-sur-Seine",
+    "Passy-sur-Seine",
+    "Saint-Sauveur-lès-Bray",
+    "Villenauxe-la-Petite",
+    "Villuis"
+  ],
+  "77500": [
+    "Chelles"
+  ],
+  "77510": [
+    "Bellot",
+    "Doue",
+    "Hondevilliers",
+    "Rebais",
+    "Sablonnières",
+    "Saint-Denis-lès-Rebais",
+    "Saint-Léger",
+    "La Trétoire",
+    "Verdelot",
+    "Villeneuve-sur-Bellot"
+  ],
+  "77515": [
+    "La Celle-sur-Morin",
+    "Faremoutiers",
+    "Hautefeuille",
+    "Pommeuse",
+    "Saint-Augustin"
+  ],
+  "77520": [
+    "Cessoy-en-Montois",
+    "Donnemarie-Dontilly",
+    "Gurcy-le-Châtel",
+    "Luisetaines",
+    "Meigneux",
+    "Mons-en-Montois",
+    "Montigny-Lencoup",
+    "Paroy",
+    "Sigy",
+    "Sognolles-en-Montois",
+    "Thénisy",
+    "Vimpelles"
+  ],
+  "77540": [
+    "Bernay-Vilbert",
+    "La Chapelle-Iger",
+    "Courpalay",
+    "Lumigny-Nesles-Ormeaux",
+    "Le Plessis-Feu-Aussoux",
+    "Rozay-en-Brie",
+    "Voinsles"
+  ],
+  "77550": [
+    "Limoges-Fourches",
+    "Lissy",
+    "Moissy-Cramayel",
+    "Réau"
+  ],
+  "77560": [
+    "Augers-en-Brie",
+    "Beauchery-Saint-Martin",
+    "Champcenest",
+    "Courchamp",
+    "Courtacon",
+    "Louan-Villegruis-Fontaine",
+    "Les Marêts",
+    "Rupéreux",
+    "Villiers-Saint-Georges",
+    "Voulton"
+  ],
+  "77570": [
+    "Aufferville",
+    "Bougligny",
+    "Château-Landon",
+    "Chenou",
+    "La Madeleine-sur-Loing",
+    "Maisoncelles-en-Gâtinais",
+    "Mondreville"
+  ],
+  "77580": [
+    "Bouleurs",
+    "Coulommes",
+    "Coutevroult",
+    "Crécy-la-Chapelle",
+    "Guérard",
+    "La Haute-Maison",
+    "Maisoncelles-en-Brie",
+    "Pierre-Levée",
+    "Sancy",
+    "Vaucourtois",
+    "Villiers-sur-Morin",
+    "Voulangis"
+  ],
+  "77590": [
+    "Bois-le-Roi",
+    "Chartrettes",
+    "Fontaine-le-Port"
+  ],
+  "77600": [
+    "Bussy-Saint-Georges",
+    "Bussy-Saint-Martin",
+    "Chanteloup-en-Brie",
+    "Conches-sur-Gondoire",
+    "Guermantes",
+    "Jossigny"
+  ],
+  "77610": [
+    "Les Chapelles-Bourbon",
+    "Châtres",
+    "Crèvecœur-en-Brie",
+    "Fontenay-Trésigny",
+    "La Houssaye-en-Brie",
+    "Marles-en-Brie",
+    "Neufmoutiers-en-Brie"
+  ],
+  "77620": [
+    "Bransles",
+    "Égreville"
+  ],
+  "77630": [
+    "Arbonne-la-Forêt",
+    "Barbizon",
+    "Saint-Martin-en-Bière"
+  ],
+  "77640": [
+    "Jouarre",
+    "Signy-Signets"
+  ],
+  "77650": [
+    "Chalmaison",
+    "Jutigny",
+    "Lizines",
+    "Longueville",
+    "Sainte-Colombe",
+    "Saint-Loup-de-Naud",
+    "Savins",
+    "Soisy-Bouy"
+  ],
+  "77660": [
+    "Changis-sur-Marne",
+    "Saint-Jean-les-Deux-Jumeaux"
+  ],
+  "77670": [
+    "Saint-Mammès",
+    "Vernou-la-Celle-sur-Seine"
+  ],
+  "77680": [
+    "Roissy-en-Brie"
+  ],
+  "77690": [
+    "La Genevraye",
+    "Montigny-sur-Loing"
+  ],
+  "77700": [
+    "Bailly-Romainvilliers",
+    "Chessy",
+    "Coupvray",
+    "Magny-le-Hongre",
+    "Serris"
+  ],
+  "77710": [
+    "Chevry-en-Sereine",
+    "Lorrez-le-Bocage-Préaux",
+    "Nanteau-sur-Lunain",
+    "Paley",
+    "Remauville",
+    "Treuzy-Levelay",
+    "Vaux-sur-Lunain",
+    "Villebéon",
+    "Villemaréchal"
+  ],
+  "77720": [
+    "Aubepierre-Ozouer-le-Repos",
+    "Bombon",
+    "Bréau",
+    "Champeaux",
+    "La Chapelle-Gauthier",
+    "Grandpuits-Bailly-Carrois",
+    "Mormant",
+    "Quiers",
+    "Saint-Méry",
+    "Saint-Ouen-en-Brie"
+  ],
+  "77730": [
+    "Citry",
+    "Méry-sur-Marne",
+    "Nanteuil-sur-Marne",
+    "Saâcy-sur-Marne"
+  ],
+  "77750": [
+    "Bassevelle",
+    "Boitron",
+    "Bussières",
+    "Orly-sur-Morin",
+    "Saint-Cyr-sur-Morin",
+    "Saint-Ouen-sur-Morin"
+  ],
+  "77760": [
+    "Achères-la-Forêt",
+    "Amponville",
+    "Boissy-aux-Cailles",
+    "Boulancourt",
+    "Burcy",
+    "Buthiers",
+    "La Chapelle-la-Reine",
+    "Chevrainvilliers",
+    "Fromont",
+    "Guercheville",
+    "Larchant",
+    "Nanteau-sur-Essonne",
+    "Recloses",
+    "Rumont",
+    "Ury",
+    "Villiers-sous-Grez"
+  ],
+  "77780": [
+    "Bourron-Marlotte"
+  ],
+  "77810": [
+    "Thomery"
+  ],
+  "77820": [
+    "Le Châtelet-en-Brie",
+    "Châtillon-la-Borde",
+    "Les Écrennes"
+  ],
+  "77830": [
+    "Échouboulains",
+    "Pamfou",
+    "Valence-en-Brie"
+  ],
+  "77840": [
+    "Coulombs-en-Valois",
+    "Crouy-sur-Ourcq",
+    "Germigny-sous-Coulombs"
+  ],
+  "77850": [
+    "Héricy"
+  ],
+  "77860": [
+    "Couilly-Pont-aux-Dames",
+    "Quincy-Voisins",
+    "Saint-Germain-sur-Morin"
+  ],
+  "77870": [
+    "Vulaines-sur-Seine"
+  ],
+  "77880": [
+    "Grez-sur-Loing"
+  ],
+  "77890": [
+    "Arville",
+    "Beaumont-du-Gâtinais",
+    "Garentreville",
+    "Gironville",
+    "Ichy",
+    "Obsonville"
+  ],
+  "77910": [
+    "Barcy",
+    "Chambry",
+    "Germigny-l'Évêque",
+    "Varreddes"
+  ],
+  "77920": [
+    "Samois-sur-Seine"
+  ],
+  "77930": [
+    "Cély",
+    "Chailly-en-Bière",
+    "Fleury-en-Bière",
+    "Perthes",
+    "Saint-Germain-sur-École",
+    "Saint-Sauveur-sur-École"
+  ],
+  "77940": [
+    "Blennes",
+    "La Brosse-Montceaux",
+    "Diant",
+    "Esmans",
+    "Flagy",
+    "Montmachoux",
+    "Noisy-Rudignon",
+    "Thoury-Férottes",
+    "Voulx"
+  ],
+  "77950": [
+    "Maincy",
+    "Moisenay",
+    "Montereau-sur-le-Jard",
+    "Rubelles",
+    "Saint-Germain-Laxis",
+    "Voisenon"
+  ],
+  "77970": [
+    "Bannost-Villegagnon",
+    "Bezalles",
+    "Boisdon",
+    "Jouy-le-Châtel",
+    "Pécy"
+  ],
+  "77990": [
+    "Mauregard",
+    "Le Mesnil-Amelot"
+  ],
+  "78000": [
+    "Versailles"
+  ],
+  "78100": [
+    "Saint-Germain-en-Laye"
+  ],
+  "78110": [
+    "Le Vésinet"
+  ],
+  "78111": [
+    "Dammartin-en-Serve"
+  ],
+  "78112": [
+    "Saint-Germain-en-Laye"
+  ],
+  "78113": [
+    "Adainville",
+    "Bourdonné",
+    "Condé-sur-Vesgre",
+    "Grandchamp",
+    "La Hauteville",
+    "Le Tartre-Gaudran"
+  ],
+  "78114": [
+    "Magny-les-Hameaux"
+  ],
+  "78117": [
+    "Châteaufort",
+    "Toussus-le-Noble"
+  ],
+  "78120": [
+    "Clairefontaine-en-Yvelines",
+    "Rambouillet",
+    "Sonchamp"
+  ],
+  "78121": [
+    "Crespières"
+  ],
+  "78124": [
+    "Mareil-sur-Mauldre",
+    "Montainville"
+  ],
+  "78125": [
+    "La Boissière-École",
+    "Émancé",
+    "Gazeran",
+    "Hermeray",
+    "Mittainville",
+    "Orcemont",
+    "Orphin",
+    "Poigny-la-Forêt",
+    "Raizeux",
+    "Saint-Hilarion",
+    "Vieille-Église-en-Yvelines"
+  ],
+  "78126": [
+    "Aulnay-sur-Mauldre"
+  ],
+  "78130": [
+    "Chapet",
+    "Les Mureaux"
+  ],
+  "78140": [
+    "Vélizy-Villacoublay"
+  ],
+  "78150": [
+    "Le Chesnay-Rocquencourt"
+  ],
+  "78160": [
+    "Marly-le-Roi"
+  ],
+  "78170": [
+    "La Celle-Saint-Cloud"
+  ],
+  "78180": [
+    "Montigny-le-Bretonneux"
+  ],
+  "78190": [
+    "Trappes"
+  ],
+  "78200": [
+    "Boinvilliers",
+    "Boissy-Mauvoisin",
+    "Buchelay",
+    "Favrieux",
+    "Flacourt",
+    "Fontenay-Mauvoisin",
+    "Jouy-Mauvoisin",
+    "Magnanville",
+    "Mantes-la-Jolie",
+    "Ménerville",
+    "Perdreauville",
+    "Soindres"
+  ],
+  "78210": [
+    "Saint-Cyr-l'École"
+  ],
+  "78220": [
+    "Viroflay"
+  ],
+  "78230": [
+    "Le Pecq"
+  ],
+  "78240": [
+    "Aigremont",
+    "Chambourcy"
+  ],
+  "78250": [
+    "Gaillon-sur-Montcient",
+    "Hardricourt",
+    "Meulan-en-Yvelines",
+    "Mézy-sur-Seine",
+    "Oinville-sur-Montcient",
+    "Tessancourt-sur-Aubette"
+  ],
+  "78260": [
+    "Achères"
+  ],
+  "78270": [
+    "Bennecourt",
+    "Blaru",
+    "Bonnières-sur-Seine",
+    "Chaufour-lès-Bonnières",
+    "Cravent",
+    "Gommecourt",
+    "Notre-Dame-de-la-Mer",
+    "Limetz-Villez",
+    "Lommoye",
+    "Méricourt",
+    "Mousseaux-sur-Seine",
+    "Rolleboise",
+    "La Villeneuve-en-Chevrie"
+  ],
+  "78280": [
+    "Guyancourt"
+  ],
+  "78290": [
+    "Croissy-sur-Seine"
+  ],
+  "78300": [
+    "Poissy"
+  ],
+  "78310": [
+    "Coignières",
+    "Maurepas"
+  ],
+  "78320": [
+    "Lévis-Saint-Nom",
+    "Le Mesnil-Saint-Denis",
+    "La Verrière"
+  ],
+  "78330": [
+    "Fontenay-le-Fleury"
+  ],
+  "78340": [
+    "Les Clayes-sous-Bois"
+  ],
+  "78350": [
+    "Jouy-en-Josas",
+    "Les Loges-en-Josas"
+  ],
+  "78360": [
+    "Montesson"
+  ],
+  "78370": [
+    "Plaisir"
+  ],
+  "78380": [
+    "Bougival"
+  ],
+  "78390": [
+    "Bois-d'Arcy"
+  ],
+  "78400": [
+    "Chatou"
+  ],
+  "78410": [
+    "Aubergenville",
+    "Bouafle",
+    "La Falaise",
+    "Flins-sur-Seine",
+    "Nézel"
+  ],
+  "78420": [
+    "Carrières-sur-Seine"
+  ],
+  "78430": [
+    "Louveciennes"
+  ],
+  "78440": [
+    "Brueil-en-Vexin",
+    "Drocourt",
+    "Fontenay-Saint-Père",
+    "Gargenville",
+    "Guitrancourt",
+    "Issou",
+    "Jambville",
+    "Lainville-en-Vexin",
+    "Montalet-le-Bois",
+    "Porcheville",
+    "Sailly"
+  ],
+  "78450": [
+    "Chavenay",
+    "Villepreux"
+  ],
+  "78460": [
+    "Chevreuse",
+    "Choisel"
+  ],
+  "78470": [
+    "Milon-la-Chapelle",
+    "Saint-Lambert",
+    "Saint-Rémy-lès-Chevreuse"
+  ],
+  "78480": [
+    "Verneuil-sur-Seine"
+  ],
+  "78490": [
+    "Bazoches-sur-Guyonne",
+    "Boissy-sans-Avoir",
+    "Galluis",
+    "Gambaiseuil",
+    "Grosrouvre",
+    "Mareil-le-Guyon",
+    "Méré",
+    "Les Mesnuls",
+    "Montfort-l'Amaury",
+    "Le Tremblay-sur-Mauldre",
+    "Vicq"
+  ],
+  "78500": [
+    "Sartrouville"
+  ],
+  "78510": [
+    "Triel-sur-Seine"
+  ],
+  "78520": [
+    "Follainville-Dennemont",
+    "Guernes",
+    "Limay",
+    "Saint-Martin-la-Garenne"
+  ],
+  "78530": [
+    "Buc"
+  ],
+  "78540": [
+    "Vernouillet"
+  ],
+  "78550": [
+    "Bazainville",
+    "Dannemarie",
+    "Gressey",
+    "Houdan",
+    "Maulette",
+    "Richebourg"
+  ],
+  "78560": [
+    "Le Port-Marly"
+  ],
+  "78570": [
+    "Andrésy",
+    "Chanteloup-les-Vignes"
+  ],
+  "78580": [
+    "Les Alluets-le-Roi",
+    "Bazemont",
+    "Herbeville",
+    "Jumeauville",
+    "Maule"
+  ],
+  "78590": [
+    "Noisy-le-Roi",
+    "Rennemoulin"
+  ],
+  "78600": [
+    "Maisons-Laffitte",
+    "Le Mesnil-le-Roi"
+  ],
+  "78610": [
+    "Auffargis",
+    "Les Bréviaires",
+    "Le Perray-en-Yvelines",
+    "Saint-Léger-en-Yvelines"
+  ],
+  "78620": [
+    "L'Étang-la-Ville"
+  ],
+  "78630": [
+    "Morainvilliers",
+    "Orgeval"
+  ],
+  "78640": [
+    "Neauphle-le-Château",
+    "Neauphle-le-Vieux",
+    "Saint-Germain-de-la-Grange",
+    "Villiers-Saint-Frédéric"
+  ],
+  "78650": [
+    "Beynes",
+    "Saulx-Marchais"
+  ],
+  "78660": [
+    "Ablis",
+    "Allainville",
+    "Boinville-le-Gaillard",
+    "Orsonville",
+    "Paray-Douaville",
+    "Prunay-en-Yvelines",
+    "Saint-Martin-de-Bréthencourt"
+  ],
+  "78670": [
+    "Médan",
+    "Villennes-sur-Seine"
+  ],
+  "78680": [
+    "Épône"
+  ],
+  "78690": [
+    "Les Essarts-le-Roi",
+    "Saint-Rémy-l'Honoré"
+  ],
+  "78700": [
+    "Conflans-Sainte-Honorine"
+  ],
+  "78710": [
+    "Rosny-sur-Seine"
+  ],
+  "78711": [
+    "Mantes-la-Ville"
+  ],
+  "78720": [
+    "La Celle-les-Bordes",
+    "Cernay-la-Ville",
+    "Dampierre-en-Yvelines",
+    "Saint-Forget",
+    "Senlisse"
+  ],
+  "78730": [
+    "Longvilliers",
+    "Ponthévrard",
+    "Rochefort-en-Yvelines",
+    "Saint-Arnoult-en-Yvelines",
+    "Sainte-Mesme"
+  ],
+  "78740": [
+    "Évecquemont",
+    "Vaux-sur-Seine"
+  ],
+  "78750": [
+    "Mareil-Marly"
+  ],
+  "78760": [
+    "Jouars-Pontchartrain"
+  ],
+  "78770": [
+    "Andelu",
+    "Auteuil",
+    "Autouillet",
+    "Goupillières",
+    "Marcq",
+    "Thoiry",
+    "Villiers-le-Mahieu"
+  ],
+  "78780": [
+    "Maurecourt"
+  ],
+  "78790": [
+    "Arnouville-lès-Mantes",
+    "Courgent",
+    "Flins-Neuve-Église",
+    "Hargeville",
+    "Montchauvet",
+    "Mulcent",
+    "Rosay",
+    "Saint-Martin-des-Champs",
+    "Septeuil",
+    "Tilly"
+  ],
+  "78800": [
+    "Houilles"
+  ],
+  "78810": [
+    "Davron",
+    "Feucherolles"
+  ],
+  "78820": [
+    "Juziers"
+  ],
+  "78830": [
+    "Bonnelles",
+    "Bullion"
+  ],
+  "78840": [
+    "Freneuse",
+    "Moisson"
+  ],
+  "78850": [
+    "Thiverval-Grignon"
+  ],
+  "78860": [
+    "Saint-Nom-la-Bretèche"
+  ],
+  "78870": [
+    "Bailly"
+  ],
+  "78890": [
+    "Garancières"
+  ],
+  "78910": [
+    "Béhoust",
+    "Boissets",
+    "Civry-la-Forêt",
+    "Flexanville",
+    "Orgerus",
+    "Orvilliers",
+    "Osmoy",
+    "Prunay-le-Temple",
+    "Tacoignières"
+  ],
+  "78920": [
+    "Ecquevilly"
+  ],
+  "78930": [
+    "Auffreville-Brasseuil",
+    "Boinville-en-Mantois",
+    "Breuil-Bois-Robert",
+    "Goussonville",
+    "Guerville",
+    "Vert",
+    "Villette"
+  ],
+  "78940": [
+    "Millemont",
+    "La Queue-les-Yvelines"
+  ],
+  "78950": [
+    "Gambais"
+  ],
+  "78955": [
+    "Carrières-sous-Poissy"
+  ],
+  "78960": [
+    "Voisins-le-Bretonneux"
+  ],
+  "78970": [
+    "Mézières-sur-Seine"
+  ],
+  "78980": [
+    "Bréval",
+    "Longnes",
+    "Mondreville",
+    "Neauphlette",
+    "Saint-Illiers-la-Ville",
+    "Saint-Illiers-le-Bois",
+    "Le Tertre-Saint-Denis"
+  ],
+  "78990": [
+    "Élancourt"
+  ],
+  "91000": [
+    "Évry-Courcouronnes"
+  ],
+  "91070": [
+    "Bondoufle"
+  ],
+  "91080": [
+    "Évry-Courcouronnes"
+  ],
+  "91090": [
+    "Lisses"
+  ],
+  "91100": [
+    "Corbeil-Essonnes",
+    "Villabé"
+  ],
+  "91120": [
+    "Palaiseau"
+  ],
+  "91130": [
+    "Ris-Orangis"
+  ],
+  "91140": [
+    "Villebon-sur-Yvette",
+    "Villejust"
+  ],
+  "91150": [
+    "Abbéville-la-Rivière",
+    "Blandy",
+    "Bois-Herpin",
+    "Boutervilliers",
+    "Brières-les-Scellés",
+    "Brouy",
+    "Champmotteux",
+    "Étampes",
+    "La Forêt-Sainte-Croix",
+    "Marolles-en-Beauce",
+    "Mespuits",
+    "Morigny-Champigny",
+    "Ormoy-la-Rivière",
+    "Puiselet-le-Marais",
+    "Roinvilliers"
+  ],
+  "91160": [
+    "Ballainvilliers",
+    "Champlan",
+    "Longjumeau",
+    "Saulx-les-Chartreux"
+  ],
+  "91170": [
+    "Viry-Châtillon"
+  ],
+  "91180": [
+    "Saint-Germain-lès-Arpajon"
+  ],
+  "91190": [
+    "Gif-sur-Yvette",
+    "Saint-Aubin",
+    "Villiers-le-Bâcle"
+  ],
+  "91200": [
+    "Athis-Mons"
+  ],
+  "91210": [
+    "Draveil"
+  ],
+  "91220": [
+    "Brétigny-sur-Orge",
+    "Le Plessis-Pâté"
+  ],
+  "91230": [
+    "Montgeron"
+  ],
+  "91240": [
+    "Saint-Michel-sur-Orge"
+  ],
+  "91250": [
+    "Morsang-sur-Seine",
+    "Saint-Germain-lès-Corbeil",
+    "Saintry-sur-Seine",
+    "Tigery"
+  ],
+  "91260": [
+    "Juvisy-sur-Orge"
+  ],
+  "91270": [
+    "Vigneux-sur-Seine"
+  ],
+  "91280": [
+    "Saint-Pierre-du-Perray"
+  ],
+  "91290": [
+    "Arpajon",
+    "La Norville"
+  ],
+  "91300": [
+    "Massy"
+  ],
+  "91310": [
+    "Leuville-sur-Orge",
+    "Linas",
+    "Longpont-sur-Orge",
+    "Montlhéry"
+  ],
+  "91320": [
+    "Wissous"
+  ],
+  "91330": [
+    "Yerres"
+  ],
+  "91340": [
+    "Ollainville"
+  ],
+  "91350": [
+    "Grigny"
+  ],
+  "91360": [
+    "Épinay-sur-Orge",
+    "Villemoisson-sur-Orge"
+  ],
+  "91370": [
+    "Verrières-le-Buisson"
+  ],
+  "91380": [
+    "Chilly-Mazarin"
+  ],
+  "91390": [
+    "Morsang-sur-Orge"
+  ],
+  "91400": [
+    "Gometz-la-Ville",
+    "Orsay",
+    "Saclay"
+  ],
+  "91410": [
+    "Authon-la-Plaine",
+    "Chatignonville",
+    "Corbreuse",
+    "Dourdan",
+    "La Forêt-le-Roi",
+    "Les Granges-le-Roi",
+    "Plessis-Saint-Benoist",
+    "Richarville",
+    "Roinville",
+    "Saint-Cyr-sous-Dourdan",
+    "Saint-Escobille"
+  ],
+  "91420": [
+    "Morangis"
+  ],
+  "91430": [
+    "Igny",
+    "Vauhallan"
+  ],
+  "91440": [
+    "Bures-sur-Yvette"
+  ],
+  "91450": [
+    "Étiolles",
+    "Soisy-sur-Seine"
+  ],
+  "91460": [
+    "Marcoussis"
+  ],
+  "91470": [
+    "Angervilliers",
+    "Boullay-les-Troux",
+    "Forges-les-Bains",
+    "Limours",
+    "Les Molières",
+    "Pecqueuse"
+  ],
+  "91480": [
+    "Quincy-sous-Sénart",
+    "Varennes-Jarcy"
+  ],
+  "91490": [
+    "Courances",
+    "Dannemois",
+    "Milly-la-Forêt",
+    "Moigny-sur-École",
+    "Oncy-sur-École"
+  ],
+  "91510": [
+    "Janville-sur-Juine",
+    "Lardy"
+  ],
+  "91520": [
+    "Égly"
+  ],
+  "91530": [
+    "Saint-Chéron",
+    "Saint-Maurice-Montcouronne",
+    "Sermaise",
+    "Le Val-Saint-Germain"
+  ],
+  "91540": [
+    "Écharcon",
+    "Fontenay-le-Vicomte",
+    "Mennecy",
+    "Ormoy"
+  ],
+  "91550": [
+    "Paray-Vieille-Poste"
+  ],
+  "91560": [
+    "Crosne"
+  ],
+  "91570": [
+    "Bièvres"
+  ],
+  "91580": [
+    "Auvers-Saint-Georges",
+    "Chauffour-lès-Étréchy",
+    "Étréchy",
+    "Souzy-la-Briche",
+    "Villeconin",
+    "Villeneuve-sur-Auvers"
+  ],
+  "91590": [
+    "Baulne",
+    "Boissy-le-Cutté",
+    "Cerny",
+    "D'Huison-Longueville",
+    "La Ferté-Alais",
+    "Guigneville-sur-Essonne",
+    "Mondeville",
+    "Orveau"
+  ],
+  "91600": [
+    "Savigny-sur-Orge"
+  ],
+  "91610": [
+    "Ballancourt-sur-Essonne"
+  ],
+  "91620": [
+    "Nozay",
+    "La Ville-du-Bois"
+  ],
+  "91630": [
+    "Avrainville",
+    "Cheptainville",
+    "Guibeville",
+    "Leudeville",
+    "Marolles-en-Hurepoix"
+  ],
+  "91640": [
+    "Briis-sous-Forges",
+    "Fontenay-lès-Briis",
+    "Janvry",
+    "Vaugrigneuse"
+  ],
+  "91650": [
+    "Breuillet",
+    "Breux-Jouy",
+    "Saint-Yon"
+  ],
+  "91660": [
+    "Le Mérévillois"
+  ],
+  "91670": [
+    "Angerville"
+  ],
+  "91680": [
+    "Bruyères-le-Châtel",
+    "Courson-Monteloup"
+  ],
+  "91690": [
+    "Arrancourt",
+    "Boissy-la-Rivière",
+    "Fontaine-la-Rivière",
+    "Guillerval",
+    "Saclas",
+    "Saint-Cyr-la-Rivière"
+  ],
+  "91700": [
+    "Fleury-Mérogis",
+    "Sainte-Geneviève-des-Bois",
+    "Villiers-sur-Orge"
+  ],
+  "91710": [
+    "Vert-le-Petit"
+  ],
+  "91720": [
+    "Boigneville",
+    "Buno-Bonnevaux",
+    "Courdimanche-sur-Essonne",
+    "Gironville-sur-Essonne",
+    "Maisse",
+    "Prunay-sur-Essonne",
+    "Valpuiseaux"
+  ],
+  "91730": [
+    "Chamarande",
+    "Mauchamps",
+    "Torfou"
+  ],
+  "91740": [
+    "Chalou-Moulineux",
+    "Pussay",
+    "Congerville-Thionville"
+  ],
+  "91750": [
+    "Champcueil",
+    "Chevannes",
+    "Nainville-les-Roches"
+  ],
+  "91760": [
+    "Itteville"
+  ],
+  "91770": [
+    "Saint-Vrain"
+  ],
+  "91780": [
+    "Chalo-Saint-Mars",
+    "Mérobert",
+    "Saint-Hilaire"
+  ],
+  "91790": [
+    "Boissy-sous-Saint-Yon"
+  ],
+  "91800": [
+    "Boussy-Saint-Antoine",
+    "Brunoy"
+  ],
+  "91810": [
+    "Vert-le-Grand"
+  ],
+  "91820": [
+    "Boutigny-sur-Essonne",
+    "Vayres-sur-Essonne"
+  ],
+  "91830": [
+    "Auvernaux",
+    "Le Coudray-Montceaux"
+  ],
+  "91840": [
+    "Soisy-sur-École"
+  ],
+  "91850": [
+    "Bouray-sur-Juine"
+  ],
+  "91860": [
+    "Épinay-sous-Sénart"
+  ],
+  "91870": [
+    "Boissy-le-Sec"
+  ],
+  "91880": [
+    "Bouville"
+  ],
+  "91890": [
+    "Videlles"
+  ],
+  "91910": [
+    "Saint-Sulpice-de-Favières"
+  ],
+  "91930": [
+    "Monnerville"
+  ],
+  "91940": [
+    "Gometz-le-Châtel",
+    "Saint-Jean-de-Beauregard",
+    "Les Ulis"
+  ],
+  "92000": [
+    "Nanterre"
+  ],
+  "92100": [
+    "Boulogne-Billancourt"
+  ],
+  "92110": [
+    "Clichy"
+  ],
+  "92120": [
+    "Montrouge"
+  ],
+  "92130": [
+    "Issy-les-Moulineaux"
+  ],
+  "92140": [
+    "Clamart"
+  ],
+  "92150": [
+    "Suresnes"
+  ],
+  "92160": [
+    "Antony"
+  ],
+  "92170": [
+    "Vanves"
+  ],
+  "92190": [
+    "Meudon"
+  ],
+  "92200": [
+    "Neuilly-sur-Seine"
+  ],
+  "92210": [
+    "Saint-Cloud"
+  ],
+  "92220": [
+    "Bagneux"
+  ],
+  "92230": [
+    "Gennevilliers"
+  ],
+  "92240": [
+    "Malakoff"
+  ],
+  "92250": [
+    "La Garenne-Colombes"
+  ],
+  "92260": [
+    "Fontenay-aux-Roses"
+  ],
+  "92270": [
+    "Bois-Colombes"
+  ],
+  "92290": [
+    "Châtenay-Malabry"
+  ],
+  "92300": [
+    "Levallois-Perret"
+  ],
+  "92310": [
+    "Sèvres"
+  ],
+  "92320": [
+    "Châtillon"
+  ],
+  "92330": [
+    "Sceaux"
+  ],
+  "92340": [
+    "Bourg-la-Reine"
+  ],
+  "92350": [
+    "Le Plessis-Robinson"
+  ],
+  "92360": [
+    "Meudon"
+  ],
+  "92370": [
+    "Chaville"
+  ],
+  "92380": [
+    "Garches"
+  ],
+  "92390": [
+    "Villeneuve-la-Garenne"
+  ],
+  "92400": [
+    "Courbevoie"
+  ],
+  "92410": [
+    "Ville-d'Avray"
+  ],
+  "92420": [
+    "Vaucresson"
+  ],
+  "92430": [
+    "Marnes-la-Coquette"
+  ],
+  "92500": [
+    "Rueil-Malmaison"
+  ],
+  "92600": [
+    "Asnières-sur-Seine"
+  ],
+  "92700": [
+    "Colombes"
+  ],
+  "92800": [
+    "Puteaux"
+  ],
+  "93000": [
+    "Bobigny"
+  ],
+  "93100": [
+    "Montreuil"
+  ],
+  "93110": [
+    "Rosny-sous-Bois"
+  ],
+  "93120": [
+    "La Courneuve"
+  ],
+  "93130": [
+    "Noisy-le-Sec"
+  ],
+  "93140": [
+    "Bondy"
+  ],
+  "93150": [
+    "Le Blanc-Mesnil"
+  ],
+  "93160": [
+    "Noisy-le-Grand"
+  ],
+  "93170": [
+    "Bagnolet"
+  ],
+  "93190": [
+    "Livry-Gargan"
+  ],
+  "93200": [
+    "Saint-Denis"
+  ],
+  "93210": [
+    "Saint-Denis"
+  ],
+  "93220": [
+    "Gagny"
+  ],
+  "93230": [
+    "Romainville"
+  ],
+  "93240": [
+    "Stains"
+  ],
+  "93250": [
+    "Villemomble"
+  ],
+  "93260": [
+    "Les Lilas"
+  ],
+  "93270": [
+    "Sevran"
+  ],
+  "93290": [
+    "Tremblay-en-France"
+  ],
+  "93300": [
+    "Aubervilliers"
+  ],
+  "93310": [
+    "Le Pré-Saint-Gervais"
+  ],
+  "93320": [
+    "Les Pavillons-sous-Bois"
+  ],
+  "93330": [
+    "Neuilly-sur-Marne"
+  ],
+  "93340": [
+    "Le Raincy"
+  ],
+  "93350": [
+    "Le Bourget"
+  ],
+  "93360": [
+    "Neuilly-Plaisance"
+  ],
+  "93370": [
+    "Montfermeil"
+  ],
+  "93380": [
+    "Saint-Denis"
+  ],
+  "93390": [
+    "Clichy-sous-Bois"
+  ],
+  "93400": [
+    "Saint-Ouen-sur-Seine"
+  ],
+  "93410": [
+    "Vaujours"
+  ],
+  "93420": [
+    "Villepinte"
+  ],
+  "93430": [
+    "Villetaneuse"
+  ],
+  "93440": [
+    "Dugny"
+  ],
+  "93450": [
+    "L'Île-Saint-Denis"
+  ],
+  "93460": [
+    "Gournay-sur-Marne"
+  ],
+  "93470": [
+    "Coubron"
+  ],
+  "93500": [
+    "Pantin"
+  ],
+  "93600": [
+    "Aulnay-sous-Bois"
+  ],
+  "93700": [
+    "Drancy"
+  ],
+  "93800": [
+    "Épinay-sur-Seine"
+  ],
+  "94000": [
+    "Créteil"
+  ],
+  "94100": [
+    "Saint-Maur-des-Fossés"
+  ],
+  "94110": [
+    "Arcueil"
+  ],
+  "94120": [
+    "Fontenay-sous-Bois"
+  ],
+  "94130": [
+    "Nogent-sur-Marne"
+  ],
+  "94140": [
+    "Alfortville"
+  ],
+  "94150": [
+    "Rungis"
+  ],
+  "94160": [
+    "Saint-Mandé"
+  ],
+  "94170": [
+    "Le Perreux-sur-Marne"
+  ],
+  "94190": [
+    "Villeneuve-Saint-Georges"
+  ],
+  "94200": [
+    "Ivry-sur-Seine"
+  ],
+  "94210": [
+    "Saint-Maur-des-Fossés"
+  ],
+  "94220": [
+    "Charenton-le-Pont"
+  ],
+  "94230": [
+    "Cachan"
+  ],
+  "94240": [
+    "L'Haÿ-les-Roses"
+  ],
+  "94250": [
+    "Gentilly"
+  ],
+  "94260": [
+    "Fresnes"
+  ],
+  "94270": [
+    "Le Kremlin-Bicêtre"
+  ],
+  "94290": [
+    "Villeneuve-le-Roi"
+  ],
+  "94300": [
+    "Vincennes"
+  ],
+  "94310": [
+    "Orly"
+  ],
+  "94320": [
+    "Thiais"
+  ],
+  "94340": [
+    "Joinville-le-Pont"
+  ],
+  "94350": [
+    "Villiers-sur-Marne"
+  ],
+  "94360": [
+    "Bry-sur-Marne"
+  ],
+  "94370": [
+    "Sucy-en-Brie"
+  ],
+  "94380": [
+    "Bonneuil-sur-Marne"
+  ],
+  "94390": [
+    "Paray-Vieille-Poste"
+  ],
+  "94400": [
+    "Vitry-sur-Seine"
+  ],
+  "94410": [
+    "Saint-Maurice"
+  ],
+  "94420": [
+    "Le Plessis-Trévise"
+  ],
+  "94430": [
+    "Chennevières-sur-Marne"
+  ],
+  "94440": [
+    "Marolles-en-Brie",
+    "Santeny",
+    "Villecresnes"
+  ],
+  "94450": [
+    "Limeil-Brévannes"
+  ],
+  "94460": [
+    "Valenton"
+  ],
+  "94470": [
+    "Boissy-Saint-Léger"
+  ],
+  "94480": [
+    "Ablon-sur-Seine"
+  ],
+  "94490": [
+    "Ormesson-sur-Marne"
+  ],
+  "94500": [
+    "Champigny-sur-Marne"
+  ],
+  "94510": [
+    "La Queue-en-Brie"
+  ],
+  "94520": [
+    "Mandres-les-Roses",
+    "Périgny"
+  ],
+  "94550": [
+    "Chevilly-Larue"
+  ],
+  "94600": [
+    "Choisy-le-Roi"
+  ],
+  "94700": [
+    "Maisons-Alfort"
+  ],
+  "94800": [
+    "Villejuif"
+  ],
+  "94880": [
+    "Noiseau"
+  ],
+  "95000": [
+    "Boisemont",
+    "Cergy",
+    "Neuville-sur-Oise",
+    "Pontoise"
+  ],
+  "95100": [
+    "Argenteuil"
+  ],
+  "95110": [
+    "Sannois"
+  ],
+  "95120": [
+    "Ermont"
+  ],
+  "95130": [
+    "Franconville",
+    "Le Plessis-Bouchard"
+  ],
+  "95140": [
+    "Garges-lès-Gonesse"
+  ],
+  "95150": [
+    "Taverny"
+  ],
+  "95160": [
+    "Montmorency"
+  ],
+  "95170": [
+    "Deuil-la-Barre"
+  ],
+  "95180": [
+    "Menucourt"
+  ],
+  "95190": [
+    "Châtenay-en-France",
+    "Fontenay-en-Parisis",
+    "Goussainville"
+  ],
+  "95200": [
+    "Sarcelles"
+  ],
+  "95210": [
+    "Saint-Gratien"
+  ],
+  "95220": [
+    "Herblay-sur-Seine",
+    "Pierrelaye"
+  ],
+  "95230": [
+    "Soisy-sous-Montmorency"
+  ],
+  "95240": [
+    "Cormeilles-en-Parisis"
+  ],
+  "95250": [
+    "Beauchamp"
+  ],
+  "95260": [
+    "Beaumont-sur-Oise",
+    "Mours"
+  ],
+  "95270": [
+    "Asnières-sur-Oise",
+    "Bellefontaine",
+    "Belloy-en-France",
+    "Chaumontel",
+    "Épinay-Champlâtreux",
+    "Lassy",
+    "Luzarches",
+    "Noisy-sur-Oise",
+    "Le Plessis-Luzarches",
+    "Saint-Martin-du-Tertre",
+    "Seugy",
+    "Viarmes"
+  ],
+  "95280": [
+    "Jouy-le-Moutier"
+  ],
+  "95290": [
+    "L'Isle-Adam"
+  ],
+  "95300": [
+    "Ennery",
+    "Hérouville-en-Vexin",
+    "Livilliers",
+    "Pontoise"
+  ],
+  "95310": [
+    "Saint-Ouen-l'Aumône"
+  ],
+  "95320": [
+    "Saint-Leu-la-Forêt"
+  ],
+  "95330": [
+    "Domont"
+  ],
+  "95340": [
+    "Bernes-sur-Oise",
+    "Persan",
+    "Ronquerolles"
+  ],
+  "95350": [
+    "Piscop",
+    "Saint-Brice-sous-Forêt"
+  ],
+  "95360": [
+    "Montmagny"
+  ],
+  "95370": [
+    "Montigny-lès-Cormeilles"
+  ],
+  "95380": [
+    "Chennevières-lès-Louvres",
+    "Épiais-lès-Louvres",
+    "Louvres",
+    "Puiseux-en-France",
+    "Villeron"
+  ],
+  "95390": [
+    "Saint-Prix"
+  ],
+  "95400": [
+    "Arnouville",
+    "Villiers-le-Bel"
+  ],
+  "95410": [
+    "Groslay"
+  ],
+  "95420": [
+    "Ambleville",
+    "Arthies",
+    "Banthelu",
+    "La Chapelle-en-Vexin",
+    "Charmont",
+    "Cléry-en-Vexin",
+    "Genainville",
+    "Hodent",
+    "Magny-en-Vexin",
+    "Maudétour-en-Vexin",
+    "Nucourt",
+    "Omerville",
+    "Saint-Gervais",
+    "Wy-dit-Joli-Village"
+  ],
+  "95430": [
+    "Auvers-sur-Oise",
+    "Butry-sur-Oise"
+  ],
+  "95440": [
+    "Écouen"
+  ],
+  "95450": [
+    "Ableiges",
+    "Avernes",
+    "Commeny",
+    "Condécourt",
+    "Frémainville",
+    "Guiry-en-Vexin",
+    "Longuesse",
+    "Le Perchay",
+    "Sagy",
+    "Seraincourt",
+    "Théméricourt",
+    "Us",
+    "Vigny"
+  ],
+  "95460": [
+    "Ézanville"
+  ],
+  "95470": [
+    "Fosses",
+    "Saint-Witz",
+    "Survilliers",
+    "Vémars"
+  ],
+  "95480": [
+    "Pierrelaye"
+  ],
+  "95490": [
+    "Vauréal"
+  ],
+  "95500": [
+    "Bonneuil-en-France",
+    "Gonesse",
+    "Le Thillay",
+    "Vaudherland"
+  ],
+  "95510": [
+    "Aincourt",
+    "Amenucourt",
+    "Chérence",
+    "Saint-Cyr-en-Arthies",
+    "Vétheuil",
+    "Vienne-en-Arthies",
+    "Villers-en-Arthies"
+  ],
+  "95520": [
+    "Osny"
+  ],
+  "95530": [
+    "La Frette-sur-Seine"
+  ],
+  "95540": [
+    "Méry-sur-Oise"
+  ],
+  "95550": [
+    "Bessancourt"
+  ],
+  "95560": [
+    "Baillet-en-France",
+    "Chauvry",
+    "Maffliers",
+    "Montsoult"
+  ],
+  "95570": [
+    "Attainville",
+    "Bouffémont",
+    "Moisselles",
+    "Villaines-sous-Bois"
+  ],
+  "95580": [
+    "Andilly",
+    "Margency"
+  ],
+  "95590": [
+    "Nerville-la-Forêt",
+    "Nointel",
+    "Presles"
+  ],
+  "95600": [
+    "Eaubonne"
+  ],
+  "95610": [
+    "Éragny-sur-Oise"
+  ],
+  "95620": [
+    "Parmain"
+  ],
+  "95630": [
+    "Mériel"
+  ],
+  "95640": [
+    "Bréançon",
+    "Brignancourt",
+    "Haravilliers",
+    "Le Heaulme",
+    "Marines",
+    "Moussy",
+    "Neuilly-en-Vexin",
+    "Santeuil"
+  ],
+  "95650": [
+    "Boissy-l'Aillerie",
+    "Courcelles-sur-Viosne",
+    "Génicourt",
+    "Montgeroult",
+    "Puiseux-Pontoise"
+  ],
+  "95660": [
+    "Champagne-sur-Oise"
+  ],
+  "95670": [
+    "Marly-la-Ville"
+  ],
+  "95680": [
+    "Montlignon"
+  ],
+  "95690": [
+    "Frouville",
+    "Hédouville",
+    "Labbeville",
+    "Nesles-la-Vallée"
+  ],
+  "95700": [
+    "Roissy-en-France"
+  ],
+  "95710": [
+    "Ambleville",
+    "Bray-et-Lû",
+    "Chaussy"
+  ],
+  "95720": [
+    "Bouqueval",
+    "Le Mesnil-Aubry",
+    "Le Plessis-Gassot",
+    "Villiers-le-Sec"
+  ],
+  "95740": [
+    "Frépillon"
+  ],
+  "95750": [
+    "Le Bellay-en-Vexin",
+    "Chars"
+  ],
+  "95760": [
+    "Valmondois"
+  ],
+  "95770": [
+    "Buhy",
+    "Montreuil-sur-Epte",
+    "Saint-Clair-sur-Epte"
+  ],
+  "95780": [
+    "Haute-Isle",
+    "La Roche-Guyon"
+  ],
+  "95800": [
+    "Cergy",
+    "Courdimanche"
+  ],
+  "95810": [
+    "Arronville",
+    "Berville",
+    "Épiais-Rhus",
+    "Grisy-les-Plâtres",
+    "Menouville",
+    "Theuville",
+    "Vallangoujard"
+  ],
+  "95820": [
+    "Bruyères-sur-Oise"
+  ],
+  "95830": [
+    "Cormeilles-en-Vexin",
+    "Frémécourt"
+  ],
+  "95840": [
+    "Béthemont-la-Forêt",
+    "Villiers-Adam"
+  ],
+  "95850": [
+    "Jagny-sous-Bois",
+    "Mareil-en-France"
+  ],
+  "95870": [
+    "Bezons"
+  ],
+  "95880": [
+    "Enghien-les-Bains"
+  ]
+}

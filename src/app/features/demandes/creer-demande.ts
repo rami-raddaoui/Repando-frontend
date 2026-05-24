@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DemandeService } from '../../core/services/demande';
-import { TypeAppareil, TypePanne, TypeIntervention, APPAREIL_LABELS, UserRole } from '../../core/models/models';
+import { TypeAppareil, TypePanne, TypeIntervention, APPAREIL_LABELS } from '../../core/models/models';
 import { AuthService } from '../../core/services/auth';
 
 @Component({
@@ -15,7 +15,7 @@ import { AuthService } from '../../core/services/auth';
 })
 export class CreerDemandeComponent {
   form: FormGroup;
-  step = 1;
+  // step removed: not used in this component
   loading = false;
   error = '';
   photoPreviews: { url: string; name: string; size: string }[] = [];
@@ -58,15 +58,22 @@ export class CreerDemandeComponent {
     this.form.get('codePostal')!.valueChanges.subscribe((cp: string) => this.onCodePostalChange(cp));
   }
 
-  private readonly POSTAL_TO_CITY: Record<string, string> = {
-    '92370': 'Chaville',
-    '92100': 'Boulogne-Billancourt',
-    '75015': 'Paris 15e',
-    '75001': 'Paris 1er',
-    '94000': 'Créteil',
-    '93100': 'Montreuil',
-    '92190': 'Meudon'
-  };
+  // local map loaded from public/data/idf-postal-to-communes.json (lazy)
+  private localPostalMap: Record<string, string[]> | null = null;
+  private localPostalMapLoaded = false;
+
+  private async ensureLocalMapLoaded(): Promise<void> {
+    if (this.localPostalMapLoaded) return;
+    try {
+      const res = await fetch('/data/idf-postal-to-communes.json');
+      if (!res.ok) throw new Error('local JSON not found');
+      this.localPostalMap = await res.json();
+    } catch (e) {
+      this.localPostalMap = null;
+    } finally {
+      this.localPostalMapLoaded = true;
+    }
+  }
 
   private readonly IDF_DEPS: Record<string, string> = {
     '75': 'Paris',
@@ -79,6 +86,10 @@ export class CreerDemandeComponent {
     '95': 'Val-d\'Oise'
   };
 
+  // when multiple communes are returned for a postal code, we show them for selection
+  postalMatches: { nom: string; code: string; codesPostaux?: string[] }[] = [];
+  private codePostalDebounce?: number;
+
   private onCodePostalChange(cpRaw?: string): void {
     const cp = (cpRaw || '').toString().trim();
     if (!cp) {
@@ -88,34 +99,66 @@ export class CreerDemandeComponent {
 
     // If we have a full 5-digit postal code try the gov API for precise commune
     if (/^\d{5}$/.test(cp)) {
-      const url = `https://geo.api.gouv.fr/communes?codePostal=${cp}&fields=nom,code,codesPostaux&boost=population`;
-      fetch(url).then(async (res) => {
-        if (!res.ok) throw new Error('API error');
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          // prefer commune where codesPostaux includes the exact postal code
-          const match = data.find((c: any) => Array.isArray(c.codesPostaux) && c.codesPostaux.includes(cp)) || data[0];
-          const depCode = (match.code || '').substring(0, 2);
-          if (this.IDF_DEPS[depCode]) {
-            this.form.get('ville')!.setValue(match.nom);
+      // debounce requests while user types
+      if (this.codePostalDebounce) window.clearTimeout(this.codePostalDebounce);
+      this.codePostalDebounce = window.setTimeout(async () => {
+        // try to use local mapping first (lazy-loaded)
+        await this.ensureLocalMapLoaded();
+        if (this.localPostalMap && this.localPostalMap[cp]) {
+          const matches = this.localPostalMap[cp];
+          this.postalMatches = matches.map((n) => ({ nom: n, code: '' }));
+          if (this.postalMatches.length === 1) {
+            this.form.get('ville')!.setValue(this.postalMatches[0].nom);
             this.idfError = '';
+          } else {
+            this.form.get('ville')!.setValue('');
+            this.idfError = '';
+          }
+          return;
+        }
+
+        // else fallback to remote API
+        const url = `https://geo.api.gouv.fr/communes?codePostal=${cp}&fields=nom,code,codesPostaux&boost=population`;
+        fetch(url).then(async (res) => {
+          if (!res.ok) throw new Error('API error');
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            // store matches for user to choose if multiple
+            this.postalMatches = data.map((c: any) => ({ nom: c.nom, code: c.code, codesPostaux: c.codesPostaux }));
+            if (this.postalMatches.length === 1) {
+              const match = this.postalMatches[0];
+              const depCode = (match.code || '').substring(0, 2);
+              if (this.IDF_DEPS[depCode]) {
+                this.form.get('ville')!.setValue(match.nom);
+                this.idfError = '';
+              } else {
+                this.form.get('ville')!.setValue('');
+                this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+              }
+            } else {
+              // multiple matches: clear city and show choices
+              this.form.get('ville')!.setValue('');
+              this.idfError = '';
+            }
             return;
           }
-        }
-        // no match or not IDF
-        this.form.get('ville')!.setValue('');
-        this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
-      }).catch(() => {
-        // on API error fallback to department prefix
-        const dep = cp.substring(0,2);
-        if (this.IDF_DEPS[dep]) {
-          this.form.get('ville')!.setValue(this.IDF_DEPS[dep]);
-          this.idfError = '';
-        } else {
+          // no match
+          this.postalMatches = [];
           this.form.get('ville')!.setValue('');
           this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
-        }
-      });
+        }).catch(() => {
+          // on API error fallback to department prefix
+          this.postalMatches = [];
+          const dep = cp.substring(0,2);
+          if (this.IDF_DEPS[dep]) {
+            this.form.get('ville')!.setValue(this.IDF_DEPS[dep]);
+            this.idfError = '';
+          } else {
+            this.form.get('ville')!.setValue('');
+            this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+          }
+        });
+      }, 300);
       return;
     }
 
@@ -130,6 +173,19 @@ export class CreerDemandeComponent {
     // Not IDF
     this.form.get('ville')!.setValue('');
     this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+  }
+
+  selectCommune(match: { nom: string; code: string }): void {
+    const depCode = (match.code || '').substring(0,2);
+    if (this.IDF_DEPS[depCode]) {
+      this.form.get('ville')!.setValue(match.nom);
+      this.idfError = '';
+    } else {
+      this.form.get('ville')!.setValue('');
+      this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+    }
+    // clear matches after selection
+    this.postalMatches = [];
   }
 
   onFileChange(event: Event): void {
