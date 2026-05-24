@@ -166,6 +166,7 @@
             </div>
           }
           @if (postalMatches.length > 0) {
+            <label class="cp-list-label">Commune</label>
             <ul class="cp-list">
               @for (m of postalMatches; track m.code) {
                 <li (click)="selectCommune(m)">{{ m.nom }} <span class="cp-list-code">{{ m.code ? '(' + m.code + ')' : '' }}</span></li>

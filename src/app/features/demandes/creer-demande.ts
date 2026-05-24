@@ -176,14 +176,29 @@ export class CreerDemandeComponent {
   }
 
   selectCommune(match: { nom: string; code: string }): void {
-    const depCode = (match.code || '').substring(0,2);
-    if (this.IDF_DEPS[depCode]) {
+    // Determine department: prefer match.code (INSEE) if provided, otherwise derive from current postal code input
+    let depCode = '';
+    if (match.code) {
+      depCode = match.code.substring(0, 2);
+    } else {
+      const cp = (this.form.get('codePostal')!.value || '').toString().trim();
+      if (cp.length >= 2) depCode = cp.substring(0, 2);
+    }
+
+    if (depCode && this.IDF_DEPS[depCode]) {
       this.form.get('ville')!.setValue(match.nom);
       this.idfError = '';
     } else {
-      this.form.get('ville')!.setValue('');
-      this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+      // In case dep code can't be determined, assume match is valid (local JSON may not include INSEE code)
+      if (!depCode) {
+        this.form.get('ville')!.setValue(match.nom);
+        this.idfError = '';
+      } else {
+        this.form.get('ville')!.setValue('');
+        this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+      }
     }
+
     // clear matches after selection
     this.postalMatches = [];
   }
