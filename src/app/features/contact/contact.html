@@ -1,0 +1,53 @@
+﻿<div class="contact-hero">
+  <div class="contact-hero-bg"></div>
+  <div class="contact-hero-content">
+    <h1>Contactez l'équipe Repando</h1>
+    <p>Une question, une suggestion, un souci ? Nous sommes là pour vous aider !</p>
+  </div>
+</div>
+<div class="contact-wrap contact-fancy">
+  <div class="contact-info">
+    <div class="contact-card">
+      <h2>Nos coordonnées</h2>
+      <ul>
+        <li><span class="icon">📧</span> <a href="mailto:support@repando.fr">support@repando.fr</a></li>
+        <li><span class="icon">📞</span> <a href="tel:+33123456789">01 23 45 67 89</a></li>
+        <li><span class="icon">📍</span> 42 avenue de la Réparation, 75000 Paris</li>
+      </ul>
+      <div class="contact-socials">
+        <a href="#" title="LinkedIn" class="social-link"> <img src="/assets/linkedin.svg" alt="LinkedIn"/> </a>
+        <a href="#" title="Twitter" class="social-link"> <img src="/assets/twitter.svg" alt="Twitter"/> </a>
+        <a href="#" title="Facebook" class="social-link"> <img src="/assets/facebook.svg" alt="Facebook"/> </a>
+      </div>
+    </div>
+  </div>
+  <form [formGroup]="contactForm" (ngSubmit)="submit()" class="contact-form contact-form-fancy">
+    <div class="form-title">
+      <h2>Envoyez-nous un message</h2>
+      <p>Nous répondons sous 24h ouvrées.</p>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="name">Nom</label>
+        <input id="name" formControlName="name" type="text" [class.invalid]="submitted() && contactForm.get('name')?.invalid" placeholder="Votre nom complet">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" formControlName="email" type="email" [class.invalid]="submitted() && contactForm.get('email')?.invalid" placeholder="votre@email.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="subject">Sujet</label>
+      <input id="subject" formControlName="subject" type="text" [class.invalid]="submitted() && contactForm.get('subject')?.invalid" placeholder="Sujet de votre message">
+    </div>
+    <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" formControlName="message" rows="5" [class.invalid]="submitted() && contactForm.get('message')?.invalid" placeholder="Décrivez votre demande ou question..."></textarea>
+    </div>
+    <button type="submit" class="btn-submit btn-gradient">Envoyer le message</button>
+    <div class="form-feedback">
+      <span class="success" *ngIf="success()">{{ success() }}</span>
+      <span class="error" *ngIf="error()">{{ error() }}</span>
+    </div>
+  </form>
+</div>

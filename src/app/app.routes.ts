@@ -7,6 +7,7 @@ export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/home/home').then(m => m.HomeComponent) },
   { path: 'connexion', loadComponent: () => import('./features/auth/login').then(m => m.LoginComponent) },
   { path: 'recherche', loadComponent: () => import('./features/search/search').then(m => m.SearchComponent) },
+  { path: 'contact', loadComponent: () => import('./features/contact/contact').then(m => m.ContactComponent) },
   {
     path: 'reparateur/:id',
     loadComponent: () => import('./features/reparateur/profil-reparateur').then(m => m.ProfilReparateurComponent)
