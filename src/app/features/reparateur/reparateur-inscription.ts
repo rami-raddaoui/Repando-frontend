@@ -47,12 +47,14 @@ export class ReparateurInscriptionComponent {
 
     this.profileForm = this.fb.group({
       siret: ['', [Validators.required, Validators.pattern(/^\d{14}$/)]],
-      numeroQualirepar: ['', Validators.required],
+      numeroQualirepar: [''],
       anneesExperience: [0, [Validators.required, Validators.min(0)]],
       bio: [''],
       adresseAtelier: ['', Validators.required],
       codePostal: ['', Validators.required],
-      ville: [{ value: '', disabled: true }, Validators.required],
+      // keep the input readonly in the template but the control must be enabled
+      // so its value is included when submitting the form
+      ville: ['', Validators.required],
       rayonInterventionKm: [5, [Validators.required, Validators.min(1)]],
     });
     // when codePostal changes, update ville dynamically
@@ -222,10 +224,13 @@ export class ReparateurInscriptionComponent {
     this.loading = true;
     this.error = '';
 
-    this.reparateurService.createProfile({
-      ...this.profileForm.value,
+    // include disabled controls if any in the future by using getRawValue()
+    const payload = {
+      ...this.profileForm.getRawValue(),
       specialites: this.selectedSpecialites,
-    }).subscribe({
+    } as any;
+
+    this.reparateurService.createProfile(payload).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/dashboard-reparateur']);

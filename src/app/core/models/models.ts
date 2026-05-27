@@ -114,7 +114,8 @@ export interface ReparateurDetailDto extends ReparateurPublicDto {
 /** POST /api/reparateurs/profile */
 export interface CreateReparateurRequest {
   siret: string;
-  numeroQualirepar: string;
+  // optional
+  numeroQualirepar?: string;
   bio?: string;
   anneesExperience: number;
   adresseAtelier?: string;

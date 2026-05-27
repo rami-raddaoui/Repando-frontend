@@ -60,7 +60,7 @@
       <form [formGroup]="profileForm" (ngSubmit)="submitProfile()">
         <div class="form-row">
           <div class="fg"><label>SIRET * (14 chiffres)</label><input formControlName="siret" placeholder="12345678901234"/></div>
-          <div class="fg"><label>N° QualiRépar *</label><input formControlName="numeroQualirepar" placeholder="QR-XXXXX"/></div>
+          <div class="fg"><label>N° QualiRépar</label><input formControlName="numeroQualirepar" placeholder="QR-XXXXX"/></div>
         </div>
         <div class="fg"><label>Années d'expérience *</label><input type="number" formControlName="anneesExperience" min="0"/></div>
         <div class="fg"><label>Présentation</label><textarea formControlName="bio" rows="3" placeholder="Décrivez votre expertise, vos marques de prédilection..."></textarea></div>
