@@ -18,6 +18,8 @@ export class DashboardReparateurComponent implements OnInit {
   matchings: MatchingDto[] = [];
   dashboard: any = null;
   loading = false;
+  get isVerified(): boolean { return this.dashboard?.reparateur?.isVerified === true; }
+  get hasProfile(): boolean { return this.dashboard?.reparateur != null; }
   actionLoading: string | null = null;
   actionSuccess = '';
   actionError = '';

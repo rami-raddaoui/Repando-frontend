@@ -1,4 +1,3 @@
-
 .mission-card {
   background: #fff;
   border: 1.5px solid #e2e8f0;
@@ -78,3 +77,214 @@
   font-size: 14px;
 }
 
+// ─── PENDING VALIDATION BANNER ───────────────────────────────────────────────
+.pending-banner {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 45%, #1d4ed8 100%);
+  border-radius: 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 40px rgba(29, 78, 216, 0.30), 0 2px 8px rgba(0,0,0,.12);
+
+  &__glow {
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(96,165,250,.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  &__inner {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 28px 32px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      padding: 22px 20px;
+    }
+  }
+
+  &__icon-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__icon {
+    width: 64px; height: 64px;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    backdrop-filter: blur(10px);
+  }
+
+  &__pulse {
+    position: absolute;
+    inset: -6px;
+    border-radius: 22px;
+    border: 2px solid rgba(96,165,250,.4);
+    animation: pendingPulse 2s ease-in-out infinite;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  &__text {
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(255,255,255,.75);
+    max-width: 560px;
+    margin-bottom: 16px;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__status-col {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+
+    @media (max-width: 768px) {
+      align-items: flex-start;
+    }
+  }
+
+  &__eta {
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+    font-style: italic;
+  }
+}
+
+.pending-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+
+  &--amber {
+    background: rgba(245,158,11,.2);
+    color: #fcd34d;
+    border: 1px solid rgba(245,158,11,.3);
+  }
+  &--blue {
+    background: rgba(96,165,250,.18);
+    color: #93c5fd;
+    border: 1px solid rgba(96,165,250,.25);
+  }
+  &--green {
+    background: rgba(52,211,153,.18);
+    color: #6ee7b7;
+    border: 1px solid rgba(52,211,153,.25);
+  }
+}
+
+.pending-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245,158,11,.18);
+  border: 1px solid rgba(245,158,11,.35);
+  color: #fcd34d;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 40px;
+  white-space: nowrap;
+}
+
+.pending-dot-anim {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fbbf24;
+  animation: pendingDot 1.4s ease-in-out infinite;
+}
+
+@keyframes pendingPulse {
+  0%, 100% { opacity: .4; transform: scale(1); }
+  50% { opacity: .8; transform: scale(1.04); }
+}
+@keyframes pendingDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .4; transform: scale(.6); }
+}
+
+// ─── VALIDATED BANNER ────────────────────────────────────────────────────────
+.validated-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1.5px solid #6ee7b7;
+  border-radius: 16px;
+  padding: 20px 28px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 20px rgba(5,150,105,.12);
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &__icon {
+    font-size: 36px;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: #065f46;
+    margin-bottom: 4px;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: #047857;
+    line-height: 1.6;
+  }
+}
+
+.validated-badge {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #059669, #047857);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 30px;
+  box-shadow: 0 4px 12px rgba(5,150,105,.3);
+  white-space: nowrap;
+}

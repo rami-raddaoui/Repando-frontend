@@ -7,6 +7,53 @@
     </div>
   </div>
 
+  <!-- BANNER: PROFIL NON VALIDÉ -->
+  @if (dashboard && !isVerified) {
+    <div class="pending-banner">
+      <div class="pending-banner__glow"></div>
+      <div class="pending-banner__inner">
+        <div class="pending-banner__icon-wrap">
+          <div class="pending-banner__icon">⏳</div>
+          <div class="pending-banner__pulse"></div>
+        </div>
+        <div class="pending-banner__content">
+          <div class="pending-banner__title">Profil en cours de validation</div>
+          <div class="pending-banner__text">
+            L'équipe Repando étudie votre profil avec attention et se réserve le droit de vérifier avec vous
+            l'exactitude des informations fournies lors de l'inscription. Une fois validé, vous pourrez recevoir
+            des demandes de réparation dans votre périmètre d'intervention.
+          </div>
+          <div class="pending-banner__chips">
+            <span class="pending-chip pending-chip--amber">🔍 Vérification en cours</span>
+            <span class="pending-chip pending-chip--blue">📋 Dossier transmis</span>
+            <span class="pending-chip pending-chip--green">✉️ Notification par e-mail à la validation</span>
+          </div>
+        </div>
+        <div class="pending-banner__status-col">
+          <div class="pending-status-badge">
+            <div class="pending-dot-anim"></div>
+            Profil non encore validé
+          </div>
+          <div class="pending-banner__eta">Délai moyen : 24–48h</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- BANNER: PROFIL VALIDÉ (s'affiche brièvement ou en permanence si souhaité) -->
+  @if (dashboard && isVerified) {
+    <div class="validated-banner">
+      <div class="validated-banner__icon">✅</div>
+      <div class="validated-banner__content">
+        <div class="validated-banner__title">Profil validé par Repando</div>
+        <div class="validated-banner__text">
+          Bienvenue dans l'équipe ! Vous êtes désormais visible et pouvez recevoir des demandes dans votre zone d'intervention.
+        </div>
+      </div>
+      <div class="validated-badge">⭐ Réparateur certifié</div>
+    </div>
+  }
+
   <!-- STATS -->
   @if (dashboard) {
     <div class="grid-3" style="margin-bottom:24px">
