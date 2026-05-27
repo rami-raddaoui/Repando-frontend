@@ -82,9 +82,11 @@ export class DemandeService {
   }
 
   /** POST /api/matchings/{id}/decliner-mission — réparateur décline */
-  declinerMission(matchingId: string): Observable<void> {
-    return this.http.post<ApiResponse<void>>(`${this.matchingsBase}/${matchingId}/decliner-mission`, {})
-      .pipe(map(() => void 0));
+  declinerMission(matchingId: string, raisons?: string[]): Observable<void> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.matchingsBase}/${matchingId}/decliner-mission`,
+      { raisons: raisons ?? [] }
+    ).pipe(map(() => void 0));
   }
 
   // ---- ADMIN ----

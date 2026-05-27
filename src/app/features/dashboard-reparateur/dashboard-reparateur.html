@@ -40,7 +40,7 @@
     </div>
   }
 
-  <!-- BANNER: PROFIL VALIDÉ (s'affiche brièvement ou en permanence si souhaité) -->
+  <!-- BANNER: PROFIL VALIDÉ -->
   @if (dashboard && isVerified) {
     <div class="validated-banner">
       <div class="validated-banner__icon">✅</div>
@@ -103,13 +103,25 @@
       </div>
     }
     @for (m of nouvellesMissions; track m.id) {
-      <div class="mission-card new">
+      <div class="mission-card new" [class.mission-card--fresh]="m.statut === 'NOUVEAU'">
+
+        <!-- Bandeau "Nouveau" -->
+        @if (m.statut === 'NOUVEAU') {
+          <div class="mc-new-ribbon">🆕 Nouvelle</div>
+        }
+
         <div class="mc-top">
+          <!-- Titre cliquable -->
           <div class="mc-appareil">
-            <span class="mc-icon">{{ getAppareilLabel(m.demandeAppareil).icon }}</span>
+            <div class="mc-icon-wrap" [class.mc-icon-wrap--pulse]="m.statut === 'NOUVEAU'">
+              <span class="mc-icon">{{ getAppareilLabel(m.demandeAppareil).icon }}</span>
+            </div>
             <div>
-              <div class="mc-title">{{ getAppareilLabel(m.demandeAppareil).label }}</div>
-              <div class="mc-date">📅 {{ m.createdAt | date:'dd MMM yyyy' }}</div>
+              <button class="mc-title-btn" (click)="openDetail(m)">
+                {{ getAppareilLabel(m.demandeAppareil).label }}
+                <span class="mc-title-arrow">→</span>
+              </button>
+              <div class="mc-date">📅 {{ m.createdAt | date:'dd MMM yyyy' }} · Réf. #{{ m.id.substring(0,8).toUpperCase() }}</div>
             </div>
           </div>
           <span class="mc-badge" [style.background]="getStatutLabel(m.statut).bg"
@@ -117,14 +129,22 @@
             {{ getStatutLabel(m.statut).label }}
           </span>
         </div>
+
         <div class="mc-actions">
+          <!-- Voir les détails (mobile/compact) -->
+          <button class="btn-details" (click)="openDetail(m)">
+            🔍 Voir les détails
+          </button>
+          <!-- CTA principal : démarrer la discussion -->
           <button class="btn-accept" [disabled]="actionLoading === m.id"
                   (click)="accepterMission(m.id)">
-            {{ actionLoading === m.id ? '⏳ En cours…' : '✅ Accepter la mission' }}
+            @if (actionLoading === m.id) { ⏳ En cours… }
+            @else { 💬 Démarrer la discussion }
           </button>
+          <!-- Décliner -->
           <button class="btn-decline" [disabled]="actionLoading === m.id + '_decline'"
-                  (click)="declinerMission(m.id)">
-            ❌ Décliner
+                  (click)="openDeclineModal(m)">
+            Décliner
           </button>
         </div>
       </div>
@@ -194,3 +214,133 @@
   }
 
 </div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MODAL: DÉTAIL DE LA MISSION                            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+@if (showDetailModal && selectedMission) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal-panel detail-modal" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="detail-modal__header">
+        <div class="detail-modal__icon">
+          {{ getAppareilLabel(selectedMission.demandeAppareil).icon }}
+        </div>
+        <div class="detail-modal__header-info">
+          <h2 class="detail-modal__title">{{ getAppareilLabel(selectedMission.demandeAppareil).label }}</h2>
+          <div class="detail-modal__sub">Réf. #{{ selectedMission.id.substring(0,8).toUpperCase() }}</div>
+        </div>
+        <span class="mc-badge" [style.background]="getStatutLabel(selectedMission.statut).bg"
+              [style.color]="getStatutLabel(selectedMission.statut).color">
+          {{ getStatutLabel(selectedMission.statut).label }}
+        </span>
+        <button class="modal-close" (click)="closeDetail()">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="detail-modal__body">
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-item__label">📅 Date de la demande</div>
+            <div class="detail-item__value">{{ selectedMission.createdAt | date:'dd MMMM yyyy à HH:mm' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-item__label">🔧 Appareil</div>
+            <div class="detail-item__value">{{ getAppareilLabel(selectedMission.demandeAppareil).label }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-item__label">💬 Messages échangés</div>
+            <div class="detail-item__value">{{ selectedMission.nbMessages }} message{{ selectedMission.nbMessages !== 1 ? 's' : '' }}</div>
+          </div>
+          @if (selectedMission.devisMontantClient) {
+            <div class="detail-item">
+              <div class="detail-item__label">💶 Montant devis</div>
+              <div class="detail-item__value" style="color:var(--green);font-weight:800">{{ selectedMission.devisMontantClient }}€</div>
+            </div>
+          }
+        </div>
+
+        <!-- Info box -->
+        <div class="detail-info-box">
+          <div class="detail-info-box__icon">💡</div>
+          <div>
+            <div class="detail-info-box__title">Comment ça marche ?</div>
+            <div class="detail-info-box__text">
+              En acceptant cette mission, vous ouvrez une conversation directe avec le client pour discuter
+              des détails, convenir d'un rendez-vous et lui envoyer votre devis. Aucun engagement définitif à ce stade.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="detail-modal__footer">
+        <button class="btn-decline-outline" (click)="openDeclineModal(selectedMission)">
+          ✕ Décliner cette mission
+        </button>
+        <button class="btn-accept-lg" [disabled]="actionLoading === selectedMission.id"
+                (click)="accepterMission(selectedMission.id)">
+          @if (actionLoading === selectedMission.id) { ⏳ En cours… }
+          @else { 💬 Démarrer la discussion avec le client }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MODAL: DÉCLINER (popup avec raisons)                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+@if (showDeclineModal && declineTarget) {
+  <div class="modal-overlay" (click)="closeDeclineModal()">
+    <div class="modal-panel decline-modal" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="decline-modal__header">
+        <div class="decline-modal__icon">🤔</div>
+        <div>
+          <h2 class="decline-modal__title">Pourquoi déclinez-vous ?</h2>
+          <p class="decline-modal__sub">
+            {{ getAppareilLabel(declineTarget.demandeAppareil).label }} · Réf. #{{ declineTarget.id.substring(0,8).toUpperCase() }}
+          </p>
+        </div>
+        <button class="modal-close" (click)="closeDeclineModal()">✕</button>
+      </div>
+
+      <!-- Explication -->
+      <div class="decline-modal__hint">
+        <span class="decline-hint-icon">💡</span>
+        <span>Cela nous permet de mieux cibler les missions que nous vous proposons à l'avenir.
+          Vos réponses restent confidentielles et ne sont jamais partagées avec le client.</span>
+      </div>
+
+      <!-- Raisons -->
+      <div class="decline-reasons">
+        @for (r of DECLINE_REASONS; track r.id) {
+          <button class="decline-reason-btn"
+                  [class.selected]="selectedReasons.has(r.id)"
+                  (click)="toggleReason(r.id)">
+            <span class="drb-icon">{{ r.icon }}</span>
+            <span class="drb-label">{{ r.label }}</span>
+            <span class="drb-check">
+              @if (selectedReasons.has(r.id)) { ✓ }
+            </span>
+          </button>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="decline-modal__footer">
+        <button class="btn-ghost-modal" (click)="closeDeclineModal()">Annuler</button>
+        <button class="btn-decline-confirm"
+                [disabled]="actionLoading === (declineTarget.id + '_decline')"
+                (click)="confirmDecline()">
+          @if (actionLoading === (declineTarget.id + '_decline')) { ⏳ En cours… }
+          @else { Confirmer le déclin }
+        </button>
+      </div>
+    </div>
+  </div>
+}

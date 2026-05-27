@@ -1,15 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth';
 import { DemandeService } from '../../core/services/demande';
 import { ReparateurService } from '../../core/services/reparateur';
 import { MatchingDto, APPAREIL_LABELS, StatutMatching } from '../../core/models/models';
 
+export const DECLINE_REASONS = [
+  { id: 'zone',      label: 'Pas dans ma zone d\'intervention', icon: '📍' },
+  { id: 'expertise', label: 'En dehors de mon expertise',        icon: '🔧' },
+  { id: 'dispo',     label: 'Indisponible sur cette période',     icon: '📅' },
+  { id: 'marque',    label: 'Marque / modèle non maîtrisé',       icon: '🏷️' },
+  { id: 'charge',    label: 'Trop chargé en ce moment',           icon: '⚡' },
+  { id: 'autre',     label: 'Autre raison',                       icon: '💬' },
+];
+
 @Component({
   selector: 'app-dashboard-reparateur',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './dashboard-reparateur.html',
   styleUrl: './dashboard-reparateur.scss'
 })
@@ -23,6 +33,16 @@ export class DashboardReparateurComponent implements OnInit {
   actionLoading: string | null = null;
   actionSuccess = '';
   actionError = '';
+
+  // ── Detail modal ──────────────────────────────────────────────
+  selectedMission: MatchingDto | null = null;
+  showDetailModal = false;
+
+  // ── Decline popup ─────────────────────────────────────────────
+  declineTarget: MatchingDto | null = null;
+  showDeclineModal = false;
+  selectedReasons: Set<string> = new Set();
+  readonly DECLINE_REASONS = DECLINE_REASONS;
 
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutMatching = StatutMatching;
@@ -65,6 +85,61 @@ export class DashboardReparateurComponent implements OnInit {
     return (this.APPAREIL_LABELS as any)[type] ?? { label: type, icon: '🔧' };
   }
 
+  // ── Detail modal ──────────────────────────────────────────────
+  openDetail(m: MatchingDto): void {
+    this.selectedMission = m;
+    this.showDetailModal = true;
+    // Mark as seen if NOUVEAU
+    if (m.statut === 'NOUVEAU') {
+      this.demandeService.marquerVu(m.id).subscribe();
+    }
+  }
+
+  closeDetail(): void {
+    this.showDetailModal = false;
+    this.selectedMission = null;
+  }
+
+  // ── Decline popup ─────────────────────────────────────────────
+  openDeclineModal(m: MatchingDto): void {
+    this.declineTarget = m;
+    this.selectedReasons = new Set();
+    this.showDeclineModal = true;
+    this.closeDetail();
+  }
+
+  closeDeclineModal(): void {
+    this.showDeclineModal = false;
+    this.declineTarget = null;
+    this.selectedReasons = new Set();
+  }
+
+  toggleReason(id: string): void {
+    if (this.selectedReasons.has(id)) {
+      this.selectedReasons.delete(id);
+    } else {
+      this.selectedReasons.add(id);
+    }
+  }
+
+  confirmDecline(): void {
+    if (!this.declineTarget) return;
+    const id = this.declineTarget.id;
+    const raisons = [...this.selectedReasons].map(rid =>
+      DECLINE_REASONS.find(r => r.id === rid)?.label ?? rid
+    );
+    this.actionLoading = id + '_decline';
+    this.demandeService.declinerMission(id, raisons).subscribe({
+      next: () => {
+        this.actionLoading = null;
+        this.closeDeclineModal();
+        this.loadMatchings();
+      },
+      error: () => { this.actionLoading = null; }
+    });
+  }
+
+  // ── Accept ────────────────────────────────────────────────────
   accepterMission(matchingId: string): void {
     this.actionLoading = matchingId;
     this.actionError = '';
@@ -72,6 +147,7 @@ export class DashboardReparateurComponent implements OnInit {
       next: () => {
         this.actionLoading = null;
         this.actionSuccess = 'Mission acceptée ! La conversation est ouverte.';
+        this.closeDetail();
         this.loadMatchings();
         setTimeout(() => this.actionSuccess = '', 4000);
       },
@@ -80,17 +156,6 @@ export class DashboardReparateurComponent implements OnInit {
         this.actionError = e?.error?.error ?? 'Erreur lors de l\'acceptation';
         setTimeout(() => this.actionError = '', 4000);
       }
-    });
-  }
-
-  declinerMission(matchingId: string): void {
-    this.actionLoading = matchingId + '_decline';
-    this.demandeService.declinerMission(matchingId).subscribe({
-      next: () => {
-        this.actionLoading = null;
-        this.loadMatchings();
-      },
-      error: () => { this.actionLoading = null; }
     });
   }
 
