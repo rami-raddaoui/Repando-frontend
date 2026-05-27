@@ -1,62 +1,149 @@
 ﻿<div class="client-layout">
+
   <div class="page-header">
     <div>
-      <div class="page-title">Dashboard Reparateur</div>
-      <div class="page-sub">Gerez vos demandes clients</div>
+      <div class="page-title">Mes missions 🔧</div>
+      <div class="page-sub">Bienvenue {{ auth.currentUser()?.prenom }} — gérez vos missions et conversations</div>
     </div>
   </div>
+
+  <!-- STATS -->
   @if (dashboard) {
     <div class="grid-3" style="margin-bottom:24px">
       <div class="card card-pad">
-        <div style="font-size:28px;font-weight:900;color:var(--blue)">{{ dashboard.stats?.nouvellesDemandesAujourdhui ?? 0 }}</div>
-        <div style="font-size:13px;color:var(--gray);margin-top:4px">Nouvelles demandes</div>
+        <div style="font-size:28px;font-weight:900;color:var(--blue)">{{ nouvellesMissions.length }}</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Nouvelles missions</div>
       </div>
       <div class="card card-pad">
-        <div style="font-size:28px;font-weight:900;color:var(--amber)">{{ dashboard.stats?.devisEnAttente ?? 0 }}</div>
-        <div style="font-size:13px;color:var(--gray);margin-top:4px">Devis en attente</div>
+        <div style="font-size:28px;font-weight:900;color:var(--amber)">{{ missionsActives.length }}</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Missions en cours</div>
       </div>
       <div class="card card-pad">
-        <div style="font-size:28px;font-weight:900;color:var(--green)">{{ dashboard.stats?.revenusMois ?? 0 }}€</div>
-        <div style="font-size:13px;color:var(--gray);margin-top:4px">Revenus ce mois</div>
+        <div style="font-size:28px;font-weight:900;color:var(--green)">{{ historique.length }}</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Terminées</div>
       </div>
     </div>
   }
+
+  <!-- Feedback global -->
+  @if (actionSuccess) {
+    <div class="alert-success" style="margin-bottom:16px">{{ actionSuccess }}</div>
+  }
+  @if (actionError) {
+    <div class="alert-error" style="margin-bottom:16px">{{ actionError }}</div>
+  }
+
+  <!-- TABS -->
   <div class="tabs">
-    <div class="tab" [class.active]="tab==='demandes'" (click)="tab='demandes'">Demandes ({{ matchings.length }})</div>
-    <div class="tab" [class.active]="tab==='messages'" (click)="tab='messages'">Messages</div>
+    <div class="tab" [class.active]="tab==='missions'" (click)="tab='missions'">
+      🆕 Nouvelles ({{ nouvellesMissions.length }})
+    </div>
+    <div class="tab" [class.active]="tab==='actifs'" (click)="tab='actifs'">
+      ⚡ En cours ({{ missionsActives.length }})
+    </div>
+    <div class="tab" [class.active]="tab==='historique'" (click)="tab='historique'">
+      📁 Historique ({{ historique.length }})
+    </div>
   </div>
-  @if (tab === 'demandes') {
-    @if (matchings.length === 0) {
+
+  <!-- TAB: NOUVELLES MISSIONS -->
+  @if (tab === 'missions') {
+    @if (nouvellesMissions.length === 0) {
       <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-title">Aucune demande pour linstant</div>
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Aucune nouvelle mission</div>
+        <div class="empty-sub">L'équipe Repando vous notifiera dès qu'une demande vous est proposée.</div>
       </div>
     }
-    @for (m of matchings; track m.id) {
+    @for (m of nouvellesMissions; track m.id) {
+      <div class="mission-card new">
+        <div class="mc-top">
+          <div class="mc-appareil">
+            <span class="mc-icon">{{ getAppareilLabel(m.demandeAppareil).icon }}</span>
+            <div>
+              <div class="mc-title">{{ getAppareilLabel(m.demandeAppareil).label }}</div>
+              <div class="mc-date">📅 {{ m.createdAt | date:'dd MMM yyyy' }}</div>
+            </div>
+          </div>
+          <span class="mc-badge" [style.background]="getStatutLabel(m.statut).bg"
+                [style.color]="getStatutLabel(m.statut).color">
+            {{ getStatutLabel(m.statut).label }}
+          </span>
+        </div>
+        <div class="mc-actions">
+          <button class="btn-accept" [disabled]="actionLoading === m.id"
+                  (click)="accepterMission(m.id)">
+            {{ actionLoading === m.id ? '⏳ En cours…' : '✅ Accepter la mission' }}
+          </button>
+          <button class="btn-decline" [disabled]="actionLoading === m.id + '_decline'"
+                  (click)="declinerMission(m.id)">
+            ❌ Décliner
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- TAB: EN COURS -->
+  @if (tab === 'actifs') {
+    @if (missionsActives.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">⚡</div>
+        <div class="empty-title">Aucune mission active</div>
+      </div>
+    }
+    @for (m of missionsActives; track m.id) {
       <div class="res-card">
         <div class="rc-status">
-          <div class="rc-status-icon confirmed">📩</div>
-          <div class="rc-status-label confirmed">{{ m.statut }}</div>
+          <div class="rc-status-icon confirmed">{{ getAppareilLabel(m.demandeAppareil).icon }}</div>
+          <div class="rc-status-label confirmed" [style.background]="getStatutLabel(m.statut).bg"
+               [style.color]="getStatutLabel(m.statut).color">
+            {{ getStatutLabel(m.statut).label }}
+          </div>
         </div>
         <div class="rc-info">
-          <div class="rc-title">{{ m.demandeAppareil }}</div>
+          <div class="rc-title">{{ getAppareilLabel(m.demandeAppareil).label }}</div>
           <div class="rc-details">
-            <div class="rc-detail">Reparateur : <strong>{{ m.reparateurNom }}</strong></div>
             <div class="rc-detail">{{ m.createdAt | date:'dd MMM yyyy' }}</div>
+            @if (m.devisMontantClient) {
+              <div class="rc-detail" style="color:var(--green);font-weight:700">
+                Devis : {{ m.devisMontantClient }}€
+              </div>
+            }
           </div>
           <div class="rc-actions">
-            <a [routerLink]="['/messagerie', m.id]" class="btn-secondary btn-sm">Chat</a>
-            @if (m.statut === 'NOUVEAU') {
-              <button class="btn-secondary btn-sm" (click)="marquerVu(m.id)">Marquer vu</button>
-            }
+            <a [routerLink]="['/messagerie', m.id]" class="btn-secondary btn-sm">💬 Conversation</a>
           </div>
         </div>
       </div>
     }
   }
-  @if (tab === 'messages') {
-    <div style="text-align:center;padding:40px">
-      <a routerLink="/messagerie" class="btn-primary">Ouvrir la messagerie</a>
-    </div>
+
+  <!-- TAB: HISTORIQUE -->
+  @if (tab === 'historique') {
+    @if (historique.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📁</div>
+        <div class="empty-title">Aucune mission terminée</div>
+      </div>
+    }
+    @for (m of historique; track m.id) {
+      <div class="res-card" style="opacity:.7">
+        <div class="rc-status">
+          <div class="rc-status-icon">{{ getAppareilLabel(m.demandeAppareil).icon }}</div>
+          <div class="rc-status-label" [style.background]="getStatutLabel(m.statut).bg"
+               [style.color]="getStatutLabel(m.statut).color">
+            {{ getStatutLabel(m.statut).label }}
+          </div>
+        </div>
+        <div class="rc-info">
+          <div class="rc-title">{{ getAppareilLabel(m.demandeAppareil).label }}</div>
+          <div class="rc-details">
+            <div class="rc-detail">{{ m.updatedAt | date:'dd MMM yyyy' }}</div>
+          </div>
+        </div>
+      </div>
+    }
   }
+
 </div>

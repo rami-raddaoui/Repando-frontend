@@ -227,6 +227,39 @@ export interface PagedResult<T> {
 }
 
 // ============================================================
+// ADMIN
+// ============================================================
+export interface AdminDemandeDto {
+  id: string;
+  clientNom: string;
+  clientEmail: string;
+  typeAppareil: string;
+  marque?: string;
+  description?: string;
+  ville: string;
+  codePostal?: string;
+  statut: StatutDemande;
+  nbMatchings: number;
+  createdAt: string;
+}
+
+export interface AdminReparateurDispoDto {
+  id: string;
+  nomAffiche: string;
+  email: string;
+  ville: string;
+  codePostal?: string;
+  specialites: string[];
+  noteMoyenne: number;
+  nbReparations: number;
+}
+
+export interface AffecterMatchingsRequest {
+  reparateurIds: string[];
+  messageAdmin?: string;
+}
+
+// ============================================================
 // APPAREIL LABELS (UI helpers)
 // ============================================================
 export const APPAREIL_LABELS: Record<TypeAppareil, { label: string; icon: string; bonus: number }> = {

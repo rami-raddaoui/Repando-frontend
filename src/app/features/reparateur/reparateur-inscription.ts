@@ -20,6 +20,12 @@ export class ReparateurInscriptionComponent {
   profileForm: FormGroup;
   loading = false;
   error = '';
+  idfError = '';
+  isCodePostalIDF = true;
+  postalMatches: { nom: string; code?: string; codesPostaux?: string[] }[] = [];
+  private localPostalMap: Record<string, string[]> | null = null;
+  private localPostalMapLoaded = false;
+  private codePostalDebounce?: number;
 
   readonly TypeAppareil = TypeAppareil;
   readonly appareilsList = Object.values(TypeAppareil);
@@ -45,10 +51,141 @@ export class ReparateurInscriptionComponent {
       anneesExperience: [0, [Validators.required, Validators.min(0)]],
       bio: [''],
       adresseAtelier: ['', Validators.required],
-      ville: ['Paris', Validators.required],
       codePostal: ['', Validators.required],
+      ville: [{ value: '', disabled: true }, Validators.required],
       rayonInterventionKm: [5, [Validators.required, Validators.min(1)]],
     });
+    // when codePostal changes, update ville dynamically
+    this.profileForm.get('codePostal')?.valueChanges.subscribe((value) => this.onCodePostalChange(value));
+  }
+
+  private async ensureLocalMapLoaded(): Promise<void> {
+    if (this.localPostalMapLoaded) return;
+    try {
+      const res = await fetch('/data/idf-postal-to-communes.json');
+      if (res.ok) this.localPostalMap = await res.json();
+      else this.localPostalMap = null;
+    } catch (e) {
+      this.localPostalMap = null;
+    } finally {
+      this.localPostalMapLoaded = true;
+    }
+  }
+
+  private onCodePostalChange(cpRaw?: string): void {
+    const cp = (cpRaw || '').toString().trim();
+    this.idfError = '';
+    this.isCodePostalIDF = false;
+    if (!cp) {
+      this.profileForm.get('ville')?.setValue('');
+      this.postalMatches = [];
+      return;
+    }
+    if (/^\d{5}$/.test(cp)) {
+      if (this.codePostalDebounce) window.clearTimeout(this.codePostalDebounce);
+      this.codePostalDebounce = window.setTimeout(async () => {
+        await this.ensureLocalMapLoaded();
+        if (this.localPostalMap && this.localPostalMap[cp]) {
+          const matches = this.localPostalMap[cp];
+          if (matches.length === 1) {
+            this.profileForm.get('ville')?.setValue(matches[0]);
+            this.postalMatches = [];
+            this.isCodePostalIDF = true;
+            this.idfError = '';
+          } else {
+            this.postalMatches = matches.map(n => ({ nom: n }));
+            this.profileForm.get('ville')?.setValue('');
+            this.isCodePostalIDF = true;
+            this.idfError = '';
+          }
+          return;
+        }
+        const url = `https://geo.api.gouv.fr/communes?codePostal=${cp}&fields=nom,code,codesPostaux&boost=population`;
+        fetch(url).then(async res => {
+          if (!res.ok) throw new Error('API error');
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            if (data.length === 1) {
+              const m = data[0];
+              const dep = (m.code || '').substring(0,2);
+              if (['75','77','78','91','92','93','94','95'].includes(dep)) {
+                this.profileForm.get('ville')!.setValue(m.nom);
+                this.postalMatches = [];
+                this.isCodePostalIDF = true;
+                this.idfError = '';
+              } else {
+                this.profileForm.get('ville')!.setValue('');
+                this.postalMatches = [];
+                this.isCodePostalIDF = false;
+                this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+              }
+            } else {
+              this.postalMatches = data.map((c: any) => ({ nom: c.nom, code: c.code }));
+              this.profileForm.get('ville')!.setValue('');
+              this.isCodePostalIDF = true;
+              this.idfError = '';
+            }
+            return;
+          }
+          this.postalMatches = [];
+          this.profileForm.get('ville')!.setValue('');
+          this.isCodePostalIDF = false;
+          this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+        }).catch(() => {
+          this.postalMatches = [];
+          const dep = cp.substring(0,2);
+          if (['75','77','78','91','92','93','94','95'].includes(dep)) {
+            this.profileForm.get('ville')!.setValue('');
+            this.isCodePostalIDF = true;
+            this.idfError = '';
+          } else {
+            this.profileForm.get('ville')!.setValue('');
+            this.isCodePostalIDF = false;
+            this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+          }
+        });
+      }, 300);
+      return;
+    }
+    const dep = cp.substring(0,2);
+    if (['75','77','78','91','92','93','94','95'].includes(dep)) {
+      this.profileForm.get('ville')?.setValue('');
+      this.isCodePostalIDF = true;
+      this.idfError = '';
+      return;
+    }
+    this.profileForm.get('ville')?.setValue('');
+    this.isCodePostalIDF = false;
+    this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+  }
+
+  selectCommune(match: { nom: string; code?: string }): void {
+    let depCode = '';
+    if (match.code) depCode = match.code.substring(0,2);
+    else {
+      const cp = (this.profileForm.get('codePostal')!.value || '').toString().trim();
+      if (cp.length >= 2) depCode = cp.substring(0,2);
+    }
+    if (!depCode || ['75','77','78','91','92','93','94','95'].includes(depCode)) {
+      this.profileForm.get('ville')!.setValue(match.nom);
+      this.idfError = '';
+      this.isCodePostalIDF = true;
+    } else {
+      this.profileForm.get('ville')!.setValue('');
+      this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
+      this.isCodePostalIDF = false;
+    }
+    this.postalMatches = [];
+  }
+
+  selectCommuneByName(name: string): void {
+    const match = this.postalMatches.find(m => m.nom === name);
+    if (match) this.selectCommune(match);
+  }
+
+  selectCommuneByEvent(event: Event) {
+    const value = (event.target && (event.target as HTMLSelectElement).value) || '';
+    if (value) this.selectCommuneByName(value);
   }
 
   toggleSpecialite(type: TypeAppareil): void {

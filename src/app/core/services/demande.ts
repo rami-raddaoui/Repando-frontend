@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   ApiResponse, DemandeDto, CreateDemandeRequest,
-  MatchingDto, CreateMatchingRequest, SendDevisRequest
+  MatchingDto, CreateMatchingRequest, SendDevisRequest,
+  AdminDemandeDto, AdminReparateurDispoDto, AffecterMatchingsRequest
 } from '../models/models';
 import { environment } from '../../../environments/environment';
 
@@ -12,6 +13,7 @@ import { environment } from '../../../environments/environment';
 export class DemandeService {
   private readonly base = `${environment.apiUrl}/demandes`;
   private readonly matchingsBase = `${environment.apiUrl}/matchings`;
+  private readonly adminBase = `${environment.apiUrl}/admin`;
 
   constructor(private http: HttpClient) {}
 
@@ -71,5 +73,38 @@ export class DemandeService {
   /** POST /api/matchings/{id}/vu */
   marquerVu(matchingId: string): Observable<void> {
     return this.http.post<void>(`${this.matchingsBase}/${matchingId}/vu`, {});
+  }
+
+  /** POST /api/matchings/{id}/accepter-mission — réparateur accepte la mission */
+  accepterMission(matchingId: string): Observable<void> {
+    return this.http.post<ApiResponse<void>>(`${this.matchingsBase}/${matchingId}/accepter-mission`, {})
+      .pipe(map(() => void 0));
+  }
+
+  /** POST /api/matchings/{id}/decliner-mission — réparateur décline */
+  declinerMission(matchingId: string): Observable<void> {
+    return this.http.post<ApiResponse<void>>(`${this.matchingsBase}/${matchingId}/decliner-mission`, {})
+      .pipe(map(() => void 0));
+  }
+
+  // ---- ADMIN ----
+
+  /** GET /api/admin/demandes */
+  adminGetDemandes(statut?: string): Observable<AdminDemandeDto[]> {
+    const params = statut ? `?statut=${statut}` : '';
+    return this.http.get<ApiResponse<AdminDemandeDto[]>>(`${this.adminBase}/demandes${params}`)
+      .pipe(map(r => r.data ?? []));
+  }
+
+  /** GET /api/admin/reparateurs/disponibles */
+  adminGetReparateursDispo(): Observable<AdminReparateurDispoDto[]> {
+    return this.http.get<ApiResponse<AdminReparateurDispoDto[]>>(`${this.adminBase}/reparateurs/disponibles`)
+      .pipe(map(r => r.data ?? []));
+  }
+
+  /** POST /api/admin/demandes/{id}/affecter */
+  adminAffecter(demandeId: string, req: AffecterMatchingsRequest): Observable<void> {
+    return this.http.post<ApiResponse<void>>(`${this.adminBase}/demandes/${demandeId}/affecter`, req)
+      .pipe(map(() => void 0));
   }
 }

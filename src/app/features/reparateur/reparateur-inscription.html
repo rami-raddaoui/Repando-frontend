@@ -66,10 +66,17 @@
         <div class="fg"><label>Présentation</label><textarea formControlName="bio" rows="3" placeholder="Décrivez votre expertise, vos marques de prédilection..."></textarea></div>
         <div class="fg"><label>Adresse atelier *</label><input formControlName="adresseAtelier" placeholder="123 rue de la République"/></div>
         <div class="form-row">
-          <div class="fg"><label>Ville *</label><input formControlName="ville"/></div>
-          <div class="fg"><label>Code postal *</label><input formControlName="codePostal" placeholder="75015"/></div>
+          <div class="fg small"><label>Code postal *</label><input formControlName="codePostal" placeholder="75015"/></div>
+          <div class="fg"><label>Ville *</label><input formControlName="ville" readonly/></div>
         </div>
         <div class="fg"><label>Rayon d'intervention (km) *</label><input type="number" formControlName="rayonInterventionKm" min="1"/></div>
+
+        <div *ngIf="postalMatches.length > 1" class="fg">
+          <label>Commune</label>
+          <select (change)="selectCommuneByEvent($event)">
+            <option *ngFor="let m of postalMatches" [value]="m.nom">{{ m.nom }}</option>
+          </select>
+        </div>
 
         <div class="fg">
           <label>Spécialités * (choisissez au moins une)</label>
