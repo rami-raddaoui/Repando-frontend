@@ -147,6 +147,12 @@
   &--client {
     background: linear-gradient(135deg, #0c1445 0%, #1e3a8a 50%, #1d4ed8 100%);
   }
+  &--confirmed-rep {
+    background: linear-gradient(135deg, #1c1008 0%, #451a03 50%, #78350f 100%);
+  }
+  &--confirmed-client {
+    background: linear-gradient(135deg, #1c1008 0%, #451a03 50%, #78350f 100%);
+  }
 }
 .msgr-pec-cta__glow {
   position: absolute; top: -40px; right: -40px;
@@ -155,6 +161,9 @@
   pointer-events: none;
   &--blue {
     background: radial-gradient(circle, rgba(99,102,241,.4) 0%, transparent 70%);
+  }
+  &--gold {
+    background: radial-gradient(circle, rgba(251,191,36,.45) 0%, transparent 70%);
   }
 }
 .msgr-pec-cta__body {

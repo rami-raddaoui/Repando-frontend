@@ -147,8 +147,10 @@
         </div>
       }
 
-      <!-- ═══ PRISE EN CHARGE — Réparateur (bottom CTA) ═══ -->
-      @if (auth.isReparateur() && !isClosed && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm) {
+      <!-- ═══ PRISE EN CHARGE — Réparateur ═══ -->
+
+      <!-- [REP] État 1: Peut envoyer la demande -->
+      @if (auth.isReparateur() && !isClosed && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm && !confirmedByClient) {
         <div class="msgr-pec-cta msgr-pec-cta--rep">
           <div class="msgr-pec-cta__glow"></div>
           <div class="msgr-pec-cta__body">
@@ -156,7 +158,7 @@
             <div class="msgr-pec-cta__content">
               <div class="msgr-pec-cta__title">Prêt à prendre en charge cette réparation ?</div>
               <div class="msgr-pec-cta__desc">
-                Quand vous vous mettez d'accord avec le client dans le chat, envoyez cette demande.
+                Mettez-vous d'accord avec le client dans le chat, puis envoyez cette demande.
                 S'il l'accepte, vous prenez officiellement en charge cette affaire. 🚀
               </div>
             </div>
@@ -170,20 +172,40 @@
           </div>
         </div>
       }
-      @if (auth.isReparateur() && awaitingClientConfirm) {
+
+      <!-- [REP] État 2: En attente de confirmation client -->
+      @if (auth.isReparateur() && !confirmedByClient && awaitingClientConfirm) {
         <div class="msgr-pec-cta msgr-pec-cta--waiting">
           <div class="msgr-pec-cta__body">
             <div class="msgr-pec-cta__icon">⏳</div>
             <div class="msgr-pec-cta__content">
-              <div class="msgr-pec-cta__title">En attente de confirmation du client</div>
+              <div class="msgr-pec-cta__title">Demande envoyée — en attente de confirmation</div>
               <div class="msgr-pec-cta__desc">Le client doit valider la prise en charge de son côté. Vous serez notifié dès qu'il confirme.</div>
             </div>
           </div>
         </div>
       }
 
-      <!-- ═══ PRISE EN CHARGE — Client (bottom CTA) ═══ -->
-      @if (auth.isClient() && !isClosed && awaitingClientConfirm) {
+      <!-- [REP] État 3: Client a confirmé → honorer l'engagement -->
+      @if (auth.isReparateur() && confirmedByClient) {
+        <div class="msgr-pec-cta msgr-pec-cta--confirmed-rep">
+          <div class="msgr-pec-cta__glow msgr-pec-cta__glow--gold"></div>
+          <div class="msgr-pec-cta__body">
+            <div class="msgr-pec-cta__icon">🤝</div>
+            <div class="msgr-pec-cta__content">
+              <div class="msgr-pec-cta__title">Le client a confirmé la prise en charge !</div>
+              <div class="msgr-pec-cta__desc">
+                Vous vous êtes engagé à effectuer cette réparation. Honnorez votre engagement et contactez le client pour convenir d'un rendez-vous. 🛠️
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══ PRISE EN CHARGE — Client ═══ -->
+
+      <!-- [CLIENT] État 1: Doit confirmer -->
+      @if (auth.isClient() && !isClosed && awaitingClientConfirm && !confirmedByClient) {
         <div class="msgr-pec-cta msgr-pec-cta--client">
           <div class="msgr-pec-cta__glow msgr-pec-cta__glow--blue"></div>
           <div class="msgr-pec-cta__body">
@@ -199,6 +221,22 @@
                 ✅ Confirmer la réparation
               }
             </button>
+          </div>
+        </div>
+      }
+
+      <!-- [CLIENT] État 2: A déjà confirmé → rappel d'engagement -->
+      @if (auth.isClient() && confirmedByClient) {
+        <div class="msgr-pec-cta msgr-pec-cta--confirmed-client">
+          <div class="msgr-pec-cta__glow msgr-pec-cta__glow--gold"></div>
+          <div class="msgr-pec-cta__body">
+            <div class="msgr-pec-cta__icon">🤝</div>
+            <div class="msgr-pec-cta__content">
+              <div class="msgr-pec-cta__title">Vous avez confirmé la prise en charge ✅</div>
+              <div class="msgr-pec-cta__desc">
+                Le réparateur a été informé et va vous contacter pour convenir d'un rendez-vous. Merci de votre confiance ! 🛠️
+              </div>
+            </div>
           </div>
         </div>
       }

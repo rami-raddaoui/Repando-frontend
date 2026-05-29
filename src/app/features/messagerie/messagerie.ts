@@ -24,8 +24,9 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   activeMatching: MatchingDto | null = null;
   newMessage = '';
   loading = false;
-  isClosed = false;   // conversation fermée
-  awaitingClientConfirm = false;  // réparateur a proposé prise en charge
+  isClosed = false;
+  awaitingClientConfirm = false;   // réparateur a envoyé demande, client pas encore confirmé
+  confirmedByClient = false;       // client a confirmé la prise en charge
 
   readonly TypeMessage = TypeMessage;
 
@@ -59,10 +60,21 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   ) {}
 
   ngOnInit(): void {
-    this.loadMatchings();
+    const matchingIdFromUrl = this.route.snapshot.paramMap.get('matchingId');
 
-    const matchingId = this.route.snapshot.paramMap.get('matchingId');
-    if (matchingId) this.openConversation(matchingId);
+    // Load matchings first, then open conversation from URL (so activeMatching is populated)
+    this.demandeService.getMyMatchings().subscribe({
+      next: m => {
+        this.matchings = m;
+        this.messagerieService.setRecentConvs(m);
+        if (matchingIdFromUrl) {
+          this.openConversation(matchingIdFromUrl);
+        }
+      },
+      error: () => {
+        if (matchingIdFromUrl) this.openConversation(matchingIdFromUrl);
+      }
+    });
 
     this.subs.push(
       this.messagerieService.messages$.subscribe(msgs => {
@@ -81,6 +93,10 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       this.messagerieService.priseEnChargeProposee$.subscribe(mid => {
         if (mid && mid === this.activeMatchingId) {
           this.awaitingClientConfirm = true;
+          // Update the activeMatching object too so the banner stays after loadMatchings
+          if (this.activeMatching) {
+            this.activeMatching = { ...this.activeMatching, awaitingClientConfirm: true };
+          }
           this.loadMatchings();
         }
       }),
@@ -88,6 +104,13 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       this.messagerieService.priseEnChargeConfirmee$.subscribe(mid => {
         if (mid && mid === this.activeMatchingId) {
           this.awaitingClientConfirm = false;
+          this.confirmedByClient = true;
+          if (this.activeMatching) {
+            this.activeMatching = { ...this.activeMatching, awaitingClientConfirm: false, confirmedByClient: true };
+            this.matchings = this.matchings.map(m =>
+              m.id === mid ? { ...m, awaitingClientConfirm: false, confirmedByClient: true } : m
+            );
+          }
           this.loadMatchings();
         }
       })
@@ -112,10 +135,11 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.matchings = m;
         this.messagerieService.setRecentConvs(m);
         if (this.activeMatchingId) {
-          this.activeMatching = m.find(x => x.id === this.activeMatchingId) ?? null;
-          this.isClosed = this.isConvClosed(this.activeMatching?.statut ?? '');
-          this.awaitingClientConfirm = this.activeMatching?.statut === 'ACCEPTE' &&
-            !!(this.activeMatching as any)?.awaitingConfirm;
+          const found = m.find(x => x.id === this.activeMatchingId) ?? null;
+          this.activeMatching = found;
+          this.isClosed = this.isConvClosed(found?.statut ?? '');
+          this.awaitingClientConfirm = found?.awaitingClientConfirm ?? false;
+          this.confirmedByClient = found?.confirmedByClient ?? false;
         }
       },
       error: () => {}
@@ -126,8 +150,12 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     if (this.activeMatchingId === matchingId) return;
     this.messagerieService.disconnectHub();
     this.activeMatchingId = matchingId;
-    this.activeMatching = this.matchings.find(m => m.id === matchingId) ?? null;
-    this.isClosed = this.isConvClosed(this.activeMatching?.statut ?? '');
+    // Set from current list (may be stale), loadMatchings below will refresh
+    const found = this.matchings.find(m => m.id === matchingId) ?? null;
+    this.activeMatching = found;
+    this.isClosed = this.isConvClosed(found?.statut ?? '');
+    this.awaitingClientConfirm = found?.awaitingClientConfirm ?? false;
+    this.confirmedByClient = found?.confirmedByClient ?? false;
     this.loading = true;
     this.actionSuccess = '';
     this.actionError = '';
@@ -146,6 +174,9 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     if (this.auth.isReparateur()) {
       this.demandeService.marquerVu(matchingId).subscribe();
     }
+
+    // Refresh matchings to get latest awaitingClientConfirm from backend
+    this.loadMatchings();
   }
 
   sendMessage(): void {
@@ -192,9 +223,16 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.messagerieService.validerPriseEnCharge(this.activeMatchingId).subscribe({
       next: () => {
         this.actionLoading = false;
-        this.actionSuccess = 'Proposition envoyée au client !';
+        this.actionSuccess = '✅ Demande envoyée au client ! En attente de sa confirmation.';
         this.awaitingClientConfirm = true;
-        setTimeout(() => this.actionSuccess = '', 4000);
+        // Persist locally so a subsequent loadMatchings() won't override before backend reloads
+        if (this.activeMatching) {
+          this.activeMatching = { ...this.activeMatching, awaitingClientConfirm: true };
+          this.matchings = this.matchings.map(m =>
+            m.id === this.activeMatchingId ? { ...m, awaitingClientConfirm: true } : m
+          );
+        }
+        setTimeout(() => this.actionSuccess = '', 5000);
       },
       error: (e) => { this.actionLoading = false; this.actionError = e?.error?.error ?? 'Erreur'; }
     });
@@ -206,10 +244,15 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.messagerieService.confirmerPriseEnCharge(this.activeMatchingId).subscribe({
       next: () => {
         this.actionLoading = false;
-        this.actionSuccess = '🎉 Réparation confirmée ! Les autres conversations sont clôturées.';
         this.awaitingClientConfirm = false;
+        this.confirmedByClient = true;
+        if (this.activeMatching) {
+          this.activeMatching = { ...this.activeMatching, awaitingClientConfirm: false, confirmedByClient: true };
+          this.matchings = this.matchings.map(m =>
+            m.id === this.activeMatchingId ? { ...m, awaitingClientConfirm: false, confirmedByClient: true } : m
+          );
+        }
         this.loadMatchings();
-        setTimeout(() => this.actionSuccess = '', 5000);
       },
       error: (e) => { this.actionLoading = false; this.actionError = e?.error?.error ?? 'Erreur'; }
     });

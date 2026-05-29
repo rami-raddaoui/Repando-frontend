@@ -184,6 +184,8 @@ export interface MatchingDto {
   updatedAt: string;
   nbMessages: number;
   hasUnreadMessages: boolean;
+  awaitingClientConfirm: boolean;
+  confirmedByClient: boolean;
 }
 
 export interface SendDevisRequest {
