@@ -18,7 +18,7 @@ const PAGE_SIZE = 12;
   styleUrl: './admin.scss'
 })
 export class AdminComponent implements OnInit {
-  tab: 'demandes' | 'reparateurs' | 'stats' = 'demandes';
+  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' = 'demandes';
 
   // ── Stats ────────────────────────────────────────────────────
   stats: any = null;
@@ -89,6 +89,14 @@ export class AdminComponent implements OnInit {
   affectSuccess = '';
   affectError = '';
 
+  // ── Réclamations ─────────────────────────────────────────────
+  reclamations: any[] = [];
+  reclamationsLoading = false;
+  reclamationFilter = '';
+  repondreTarget: any = null;
+  repondreText = '';
+  repondreLoading = false;
+
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
 
@@ -137,6 +145,39 @@ export class AdminComponent implements OnInit {
     this.demandeService.adminGetReparateursDispo().subscribe({
       next: r => this.reparateursDispo = r,
       error: () => {}
+    });
+  }
+
+  loadReclamations(): void {
+    this.reclamationsLoading = true;
+    const params = this.reclamationFilter ? `?statut=${this.reclamationFilter}` : '';
+    this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/reclamations/admin${params}`)
+      .pipe(map(r => r.data ?? []))
+      .subscribe({
+        next: r => { this.reclamations = r; this.reclamationsLoading = false; },
+        error: () => { this.reclamationsLoading = false; }
+      });
+  }
+
+  openRepondre(r: any): void {
+    this.repondreTarget = r;
+    this.repondreText = r.reponseAdmin ?? '';
+  }
+  closeRepondre(): void { this.repondreTarget = null; }
+
+  submitRepondre(): void {
+    if (!this.repondreTarget || !this.repondreText.trim()) return;
+    this.repondreLoading = true;
+    this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/reclamations/${this.repondreTarget.id}/repondre`,
+      { reponse: this.repondreText }
+    ).subscribe({
+      next: () => {
+        this.repondreLoading = false;
+        this.closeRepondre();
+        this.loadReclamations();
+      },
+      error: () => { this.repondreLoading = false; }
     });
   }
 

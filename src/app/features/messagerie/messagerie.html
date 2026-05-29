@@ -1,48 +1,320 @@
-﻿<div class="messagerie-layout">
-  <aside class="conv-list">
-    <div class="conv-list-header"><h2>Messages</h2></div>
-    @for (m of matchings; track m.id) {
-      <div class="conv-item" [class.active]="activeMatchingId === m.id" (click)="openConversation(m.id)">
-        <div class="avatar avatar-md">{{ m.reparateurNom.substring(0,2).toUpperCase() }}</div>
-        <div class="conv-item-body">
-          <div class="conv-item-name">{{ m.reparateurNom }}</div>
-          <div class="conv-item-last">{{ m.demandeAppareil }} -- {{ m.statut }}</div>
-        </div>
-        @if (m.hasUnreadMessages) { <div class="unread-badge">!</div> }
+﻿<div class="msgr-layout">
+
+  <!-- ═══ SIDEBAR ═══════════════════════════════════════════════ -->
+  <aside class="msgr-sidebar">
+    <div class="msgr-sidebar-header">
+      <h2>Conversations</h2>
+      <button class="msgr-btn-recs" (click)="openReclamations()" title="Mes signalements">
+        🚩
+      </button>
+    </div>
+
+    @if (matchings.length === 0) {
+      <div class="msgr-conv-empty">
+        <div style="font-size:32px">💬</div>
+        <p>Aucune conversation</p>
+        @if (!auth.isReparateur()) {
+          <a routerLink="/recherche">Trouver un réparateur →</a>
+        }
       </div>
     }
-    @if (matchings.length === 0) {
-      <p class="conv-empty">Aucune conversation.<br/><a routerLink="/recherche" style="color:var(--blue)">Trouver un reparateur</a></p>
+
+    @for (m of matchings; track m.id) {
+      <div class="msgr-conv-item" [class.active]="activeMatchingId === m.id"
+           [class.is-closed]="isConvClosed(m.statut)"
+           (click)="openConversation(m.id)">
+        <div class="msgr-conv-avatar" [class.has-unread]="m.hasUnreadMessages">
+          {{ m.reparateurNom.substring(0,2).toUpperCase() }}
+        </div>
+        <div class="msgr-conv-body">
+          <div class="msgr-conv-name">{{ m.reparateurNom }}</div>
+          <div class="msgr-conv-preview">
+            <span class="msgr-conv-app">{{ m.demandeAppareil }}</span>
+            <span class="msgr-status-dot"
+                  [class.dot-open]="m.statut==='ACCEPTE' || m.statut==='DEVIS_ENVOYE'"
+                  [class.dot-closed]="isConvClosed(m.statut)"
+                  [class.dot-new]="m.statut==='NOUVEAU'||m.statut==='VU'">
+            </span>
+          </div>
+        </div>
+        @if (m.hasUnreadMessages) {
+          <div class="msgr-unread-dot">●</div>
+        }
+      </div>
     }
   </aside>
-  <main class="chat-window">
+
+  <!-- ═══ CHAT WINDOW ═══════════════════════════════════════════ -->
+  <main class="msgr-chat-win">
+
     @if (!activeMatchingId) {
-      <div class="chat-placeholder">
-        <div style="font-size:48px;margin-bottom:16px">💬</div>
-        <div style="font-size:18px;font-weight:700">Selectionnez une conversation</div>
-        <a routerLink="/creer-demande" class="btn-primary" style="margin-top:20px">Decrire ma panne</a>
+      <div class="msgr-placeholder">
+        <div class="msgr-placeholder__icon">💬</div>
+        <div class="msgr-placeholder__title">Sélectionnez une conversation</div>
+        <div class="msgr-placeholder__sub">Vos échanges avec les réparateurs apparaissent ici</div>
+        @if (!auth.isReparateur()) {
+          <a routerLink="/creer-demande" class="btn-primary" style="margin-top:24px">Décrire ma panne</a>
+        }
       </div>
     } @else {
-      <div class="messages-area">
-        @if (loading) { <div class="loading-state">Chargement...</div> }
-        @for (msg of messages; track msg.id) {
-          <div class="message" [class.own]="isOwn(msg)" [class.other]="!isOwn(msg)">
-            <div class="message-bubble">
-              @if (msg.type === TypeMessage.DEVIS) {
-                <div class="devis-bubble"><div style="font-weight:700;margin-bottom:4px">📋 Devis officiel</div><div>{{ msg.contenu }}</div></div>
-              } @else if (msg.type === TypeMessage.SYSTEME) {
-                <div style="font-style:italic;opacity:0.8">{{ msg.contenu }}</div>
-              } @else { {{ msg.contenu }} }
-            </div>
-            <div class="message-time">{{ msg.createdAt | date:'HH:mm' }}</div>
+
+      <!-- Chat header -->
+      <div class="msgr-header">
+        <div class="msgr-header-avatar">
+          {{ activeMatching?.reparateurNom?.substring(0,2)?.toUpperCase() ?? '??' }}
+        </div>
+        <div class="msgr-header-info">
+          <div class="msgr-header-name">{{ activeMatching?.reparateurNom ?? '…' }}</div>
+          <div class="msgr-header-sub">
+            {{ activeMatching?.demandeAppareil }}
+            @if (isClosed) { · <span style="color:#ef4444">Clôturée</span> }
+            @else { · <span style="color:#22c55e">Active</span> }
           </div>
+        </div>
+        @if (!isClosed) {
+          <button class="msgr-btn-signal" (click)="openSignal()" title="Signaler un problème">
+            🚩 Signaler
+          </button>
+        }
+      </div>
+
+      <!-- Action banners -->
+      @if (actionSuccess) {
+        <div class="msgr-banner msgr-banner--success">{{ actionSuccess }}</div>
+      }
+      @if (actionError) {
+        <div class="msgr-banner msgr-banner--error">{{ actionError }}</div>
+      }
+
+      <!-- Prise en charge: réparateur -->
+      @if (auth.isReparateur() && !isClosed && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm) {
+        <div class="msgr-pec-bar msgr-pec-bar--rep">
+          <div class="msgr-pec-icon">🔧</div>
+          <div class="msgr-pec-text">
+            <strong>Prêt à prendre en charge cette réparation ?</strong>
+            <span>Confirmez ici — le client devra valider de son côté.</span>
+          </div>
+          <button class="msgr-pec-btn msgr-pec-btn--green" [disabled]="actionLoading" (click)="validerPriseEnCharge()">
+            {{ actionLoading ? '⏳…' : '✅ Valider la prise en charge' }}
+          </button>
+        </div>
+      }
+      @if (auth.isReparateur() && awaitingClientConfirm) {
+        <div class="msgr-pec-bar msgr-pec-bar--waiting">
+          <div class="msgr-pec-icon">⏳</div>
+          <div class="msgr-pec-text">
+            <strong>En attente de confirmation du client</strong>
+            <span>Le client doit valider la prise en charge de son côté.</span>
+          </div>
+        </div>
+      }
+
+      <!-- Prise en charge: client -->
+      @if (auth.isClient() && !isClosed && awaitingClientConfirm) {
+        <div class="msgr-pec-bar msgr-pec-bar--client">
+          <div class="msgr-pec-icon">🎉</div>
+          <div class="msgr-pec-text">
+            <strong>Le réparateur confirme la prise en charge</strong>
+            <span>Validez pour confirmer la réparation. Les autres conversations seront clôturées.</span>
+          </div>
+          <button class="msgr-pec-btn msgr-pec-btn--blue" [disabled]="actionLoading" (click)="confirmerPriseEnCharge()">
+            {{ actionLoading ? '⏳…' : '✅ Confirmer la réparation' }}
+          </button>
+        </div>
+      }
+
+      <!-- Messages area -->
+      <div class="msgr-messages-area">
+        @if (loading) {
+          <div class="msgr-loading">
+            <div class="msgr-spinner"></div><span>Chargement des messages…</span>
+          </div>
+        }
+
+        @for (msg of messages; track msg.id) {
+          @if (msg.type === TypeMessage.SYSTEME) {
+            <div class="msgr-msg-system">
+              <span class="msgr-system-line"></span>
+              <span class="msgr-system-text">{{ msg.contenu }}</span>
+              <span class="msgr-system-line"></span>
+            </div>
+          } @else {
+            <div class="msgr-msg-row" [class.is-own]="isOwn(msg)" [class.is-other]="!isOwn(msg)">
+              @if (!isOwn(msg)) {
+                <div class="msgr-msg-avatar">{{ msg.senderNom.substring(0,2).toUpperCase() }}</div>
+              }
+              <div class="msgr-msg-col">
+                @if (!isOwn(msg)) {
+                  <div class="msgr-msg-sender">{{ msg.senderNom }}</div>
+                }
+
+                @if (msg.type === TypeMessage.DEVIS) {
+                  <div class="msgr-bubble msgr-bubble--devis">
+                    <div class="msgr-devis-header">📋 <strong>Devis officiel</strong></div>
+                    @if (msg.contenu) { <div class="msgr-devis-content">{{ msg.contenu }}</div> }
+                  </div>
+                } @else {
+                  <div class="msgr-bubble"
+                       [class.msgr-bubble--own]="isOwn(msg)"
+                       [class.msgr-bubble--other]="!isOwn(msg)">
+                    {{ msg.contenu }}
+                  </div>
+                }
+
+                <div class="msgr-msg-meta">
+                  <span class="msgr-msg-time">{{ msg.createdAt | date:'HH:mm' }}</span>
+                  @if (isOwn(msg)) {
+                    <span class="msgr-msg-read" [class.is-seen]="msg.isRead">
+                      @if (msg.isRead) { <span title="Vu">✓✓</span> } @else { <span title="Envoyé">✓</span> }
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
         }
         <div #messagesEnd></div>
       </div>
-      <div class="chat-input-bar">
-        <input type="text" [(ngModel)]="newMessage" placeholder="Votre message..." (keydown.enter)="sendMessage()"/>
-        <button class="btn-primary" (click)="sendMessage()" [disabled]="!newMessage.trim()">Envoyer</button>
-      </div>
+
+      <!-- Closed banner -->
+      @if (isClosed && activeMatching) {
+        <div class="msgr-closed-banner">
+          <span>🔒</span>
+          <span>{{ getClosedReason(activeMatching.statut) }} — La conversation reste visible.</span>
+        </div>
+      }
+
+      <!-- Input bar -->
+      @if (!isClosed) {
+        <div class="msgr-input-bar">
+          <input class="msgr-input" type="text" [(ngModel)]="newMessage"
+                 placeholder="Votre message…"
+                 (keydown.enter)="sendMessage()" />
+          <button class="msgr-btn-send" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      }
     }
   </main>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: SIGNALEMENT                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (showSignalModal) {
+  <div class="msgr-modal-overlay" (click)="closeSignal()">
+    <div class="msgr-signal-modal" (click)="$event.stopPropagation()">
+
+      <div class="msgr-signal-header">
+        <div class="msgr-signal-header__icon">🚩</div>
+        <div style="flex:1">
+          <h2 class="msgr-signal-header__title">Signaler un problème</h2>
+          <p class="msgr-signal-header__sub">À propos de cette conversation</p>
+        </div>
+        <button class="msgr-modal-close" (click)="closeSignal()">✕</button>
+      </div>
+
+      <div class="msgr-signal-notice">
+        <span class="msgr-signal-notice__icon">🛡️</span>
+        <span>Pour garantir la qualité des acteurs de notre marketplace, nous veillons à ce que
+          chaque échange respecte nos valeurs de confiance, de sérieux et de professionnalisme.
+          Votre signalement reste strictement confidentiel et sera examiné sous 24h par notre équipe.</span>
+      </div>
+
+      @if (!signalSuccess) {
+        <div class="msgr-signal-form">
+          <div class="msgr-signal-group">
+            <label class="msgr-signal-label">Objet du signalement</label>
+            <select class="msgr-signal-select" [(ngModel)]="signalObjet">
+              <option value="">-- Sélectionner --</option>
+              <option value="Comportement irrespectueux">Comportement irrespectueux</option>
+              <option value="Tentative de contournement de la plateforme">Tentative de contournement</option>
+              <option value="Informations fausses ou trompeuses">Informations fausses ou trompeuses</option>
+              <option value="Non-respect des engagements">Non-respect des engagements</option>
+              <option value="Problème de paiement">Problème de paiement</option>
+              <option value="Autre problème">Autre problème</option>
+            </select>
+          </div>
+          <div class="msgr-signal-group">
+            <label class="msgr-signal-label">Décrivez le problème</label>
+            <textarea class="msgr-signal-textarea" [(ngModel)]="signalMessage" rows="4"
+                      placeholder="Décrivez les faits objectivement. Pas besoin d'inclure vos informations personnelles, nous les avons déjà."></textarea>
+          </div>
+          @if (signalError) { <div class="msgr-signal-error">{{ signalError }}</div> }
+        </div>
+        <div class="msgr-signal-footer">
+          <button class="msgr-btn-ghost" (click)="closeSignal()">Annuler</button>
+          <button class="msgr-btn-submit"
+                  [disabled]="!signalObjet.trim() || !signalMessage.trim() || signalLoading"
+                  (click)="submitSignal()">
+            {{ signalLoading ? '⏳ Envoi…' : '🚩 Envoyer le signalement' }}
+          </button>
+        </div>
+      } @else {
+        <div class="msgr-signal-success">
+          <div class="msgr-signal-success-icon">✅</div>
+          <div class="msgr-signal-success-text">{{ signalSuccess }}</div>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: MES RÉCLAMATIONS                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (showReclamations) {
+  <div class="msgr-modal-overlay" (click)="closeReclamations()">
+    <div class="msgr-recs-modal" (click)="$event.stopPropagation()">
+
+      <div class="msgr-recs-header">
+        <div class="msgr-recs-header__icon">📋</div>
+        <div style="flex:1">
+          <h2 class="msgr-recs-header__title">Mes signalements</h2>
+          <p class="msgr-recs-header__sub">Historique de vos réclamations et réponses de l'équipe Repando</p>
+        </div>
+        <button class="msgr-modal-close" (click)="closeReclamations()">✕</button>
+      </div>
+
+      <div class="msgr-recs-list">
+        @if (reclamationsLoading) {
+          <div class="msgr-recs-loading"><div class="msgr-spinner"></div> Chargement…</div>
+        } @else if (reclamations.length === 0) {
+          <div class="msgr-recs-empty">
+            <div style="font-size:32px">🕊️</div>
+            <p>Aucun signalement envoyé</p>
+          </div>
+        } @else {
+          @for (r of reclamations; track r.id) {
+            <div class="msgr-rec-item" [class.treated]="r.statut === 'TRAITEE'">
+              <div class="msgr-rec-top">
+                <span class="msgr-rec-objet">{{ r.objet }}</span>
+                <span class="msgr-rec-badge" [class.pending]="r.statut==='EN_ATTENTE'" [class.done]="r.statut==='TRAITEE'">
+                  {{ r.statut === 'EN_ATTENTE' ? '⏳ En attente' : '✅ Traité' }}
+                </span>
+              </div>
+              <div class="msgr-rec-msg">{{ r.message }}</div>
+              <div class="msgr-rec-date">📅 {{ r.createdAt | date:'dd MMM yyyy HH:mm' }}</div>
+
+              @if (r.reponseAdmin) {
+                <div class="msgr-rec-reply">
+                  <div class="msgr-rec-reply-header">
+                    <div class="msgr-rec-reply-avatar">R</div>
+                    <span class="msgr-rec-reply-nom">Équipe Repando</span>
+                    <span class="msgr-rec-reply-date">{{ r.reponduAt | date:'dd/MM HH:mm' }}</span>
+                  </div>
+                  <div class="msgr-rec-reply-text">{{ r.reponseAdmin }}</div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
+

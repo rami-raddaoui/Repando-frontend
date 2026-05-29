@@ -39,18 +39,15 @@
 
   <!-- TABS -->
   <div class="admin-tabs">
-    <button class="atab" [class.active]="tab==='demandes'" (click)="tab='demandes'">
-      📋 Demandes
-    </button>
+    <button class="atab" [class.active]="tab==='demandes'" (click)="tab='demandes'">📋 Demandes</button>
     <button class="atab" [class.active]="tab==='reparateurs'" (click)="tab='reparateurs'">
       🔧 Réparateurs
-      @if (pendingReparateurs.length > 0) {
-        <span class="badge-count">{{ pendingReparateurs.length }}</span>
-      }
+      @if (pendingReparateurs.length > 0) { <span class="badge-count">{{ pendingReparateurs.length }}</span> }
     </button>
-    <button class="atab" [class.active]="tab==='stats'" (click)="tab='stats'; loadStats()">
-      📊 Stats
+    <button class="atab" [class.active]="tab==='reclamations'" (click)="tab='reclamations'; loadReclamations()">
+      🚩 Signalements
     </button>
+    <button class="atab" [class.active]="tab==='stats'" (click)="tab='stats'; loadStats()">📊 Stats</button>
   </div>
 
   <!-- ===================== TAB: DEMANDES ===================== -->
@@ -231,9 +228,58 @@
     </div>
   }
 
-  <!-- ===================== TAB: STATS ===================== -->
-  @if (tab === 'stats') {
+  <!-- ===================== TAB: RÉCLAMATIONS ===================== -->
+  @if (tab === 'reclamations') {
     <div class="tab-content">
+      <div class="toolbar">
+        <div class="filter-chips">
+          <button class="fchip" [class.active]="reclamationFilter===''" (click)="reclamationFilter=''; loadReclamations()">Toutes</button>
+          <button class="fchip fchip--amber" [class.active]="reclamationFilter==='EN_ATTENTE'" (click)="reclamationFilter='EN_ATTENTE'; loadReclamations()">⏳ En attente</button>
+          <button class="fchip fchip--green" [class.active]="reclamationFilter==='TRAITEE'" (click)="reclamationFilter='TRAITEE'; loadReclamations()">✅ Traitées</button>
+        </div>
+      </div>
+
+      @if (reclamationsLoading) { <div class="loading-row"><div class="spinner"></div> Chargement…</div> }
+
+      @if (!reclamationsLoading && reclamations.length === 0) {
+        <div class="empty-admin"><div style="font-size:40px">🕊️</div><div class="empty-admin-title">Aucun signalement</div></div>
+      }
+
+      <div class="recs-admin-list">
+        @for (r of reclamations; track r.id) {
+          <div class="rec-admin-card" [class.rec-admin-card--treated]="r.statut==='TRAITEE'">
+            <div class="rec-admin-top">
+              <div class="rec-admin-parties">
+                <span class="rec-admin-signalant">🚩 <strong>{{ r.signalantNom }}</strong></span>
+                <span class="rec-admin-arrow">→</span>
+                <span class="rec-admin-sujet">👤 {{ r.sujetNom }}</span>
+              </div>
+              <span class="rec-statut-badge" [class.badge-amber]="r.statut==='EN_ATTENTE'" [class.badge-green]="r.statut==='TRAITEE'">
+                {{ r.statut === 'EN_ATTENTE' ? '⏳ En attente' : '✅ Traité' }}
+              </span>
+            </div>
+            <div class="rec-admin-objet">{{ r.objet }}</div>
+            <div class="rec-admin-message">{{ r.message }}</div>
+            <div class="rec-admin-date">📅 {{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+            @if (r.reponseAdmin) {
+              <div class="rec-admin-reponse">
+                <span class="rec-reponse-lbl">💬 Réponse admin :</span>
+                {{ r.reponseAdmin }}
+              </div>
+            }
+            <div class="rec-admin-actions">
+              <button class="btn-repondre" (click)="openRepondre(r)">
+                {{ r.reponseAdmin ? '✏️ Modifier la réponse' : '💬 Répondre' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===================== TAB: STATS ===================== -->
+  @if (tab === 'stats') {    <div class="tab-content">
       @if (stats) {
         <div class="stats-grid">
           <div class="stat-card blue"><div class="sc-icon">📋</div><div class="sc-val">{{ stats.totalDemandes }}</div><div class="sc-lbl">Total demandes</div></div>
@@ -553,6 +599,37 @@
 
       <div class="chat-modal__footer">
         <button class="btn-ghost-admin" (click)="closeChat()">← Retour à la demande</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: RÉPONDRE RÉCLAMATION                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (repondreTarget) {
+  <div class="modal-overlay" (click)="closeRepondre()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">💬 Répondre au signalement</div>
+          <div class="modal-sub">{{ repondreTarget.objet }} — {{ repondreTarget.signalantNom }}</div>
+        </div>
+        <button class="modal-close" (click)="closeRepondre()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-msg-group">
+          <div class="rec-admin-message" style="margin-bottom:12px">{{ repondreTarget.message }}</div>
+          <label class="modal-msg-lbl">Votre réponse (visible par l'utilisateur)</label>
+          <textarea class="modal-textarea" [(ngModel)]="repondreText" rows="5"
+                    placeholder="Rédigez une réponse claire et professionnelle au nom de l'équipe Repando…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeRepondre()">Annuler</button>
+        <button class="btn-send" [disabled]="!repondreText.trim() || repondreLoading" (click)="submitRepondre()">
+          {{ repondreLoading ? 'Envoi…' : '📬 Envoyer la réponse' }}
+        </button>
       </div>
     </div>
   </div>

@@ -17,13 +17,78 @@
 
     @if (auth.isLoggedIn() && auth.isClient()) {
       <a routerLink="/mes-demandes" class="nav-link">Mes demandes</a>
-      <a routerLink="/messagerie" class="nav-link">Messages</a>
+
+      <!-- Messenger bubble -->
+      <div class="msg-bubble-wrap">
+        <button class="msg-bubble-btn" (click)="toggleBubble()">
+          💬
+          @if (unreadCount > 0) {
+            <span class="msg-unread-dot">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+          }
+        </button>
+        @if (showConvBubble) {
+          <div class="msg-bubble-dropdown">
+            <div class="mbd-header">
+              <span class="mbd-title">Messages</span>
+              <a routerLink="/messagerie" class="mbd-see-all" (click)="showConvBubble=false">Tout voir →</a>
+            </div>
+            @if (recentConvs.length === 0) {
+              <div class="mbd-empty">Aucune conversation</div>
+            }
+            @for (c of recentConvs; track c.id) {
+              <a class="mbd-item" [routerLink]="['/messagerie', c.id]" (click)="showConvBubble=false">
+                <div class="mbd-avatar" [class.mbd-avatar--unread]="c.hasUnreadMessages">
+                  {{ c.reparateurNom.substring(0,2).toUpperCase() }}
+                </div>
+                <div class="mbd-info">
+                  <div class="mbd-nom">{{ c.reparateurNom }}</div>
+                  <div class="mbd-app">{{ getAppareilIcon(c.demandeAppareil) }} {{ c.demandeAppareil }}</div>
+                </div>
+                @if (c.hasUnreadMessages) { <div class="mbd-dot"></div> }
+              </a>
+            }
+          </div>
+        }
+      </div>
+
       <a routerLink="/dashboard" class="btn-ghost">Mon espace</a>
       <button class="btn-ghost" (click)="logout()">Déconnexion</button>
     }
 
     @if (auth.isLoggedIn() && auth.isReparateur()) {
-      <a routerLink="/messagerie" class="nav-link">Messages</a>
+      <!-- Messenger bubble for reparateur -->
+      <div class="msg-bubble-wrap">
+        <button class="msg-bubble-btn" (click)="toggleBubble()">
+          💬
+          @if (unreadCount > 0) {
+            <span class="msg-unread-dot">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+          }
+        </button>
+        @if (showConvBubble) {
+          <div class="msg-bubble-dropdown">
+            <div class="mbd-header">
+              <span class="mbd-title">Messages</span>
+              <a routerLink="/messagerie" class="mbd-see-all" (click)="showConvBubble=false">Tout voir →</a>
+            </div>
+            @if (recentConvs.length === 0) {
+              <div class="mbd-empty">Aucune conversation</div>
+            }
+            @for (c of recentConvs; track c.id) {
+              <a class="mbd-item" [routerLink]="['/messagerie', c.id]" (click)="showConvBubble=false">
+                <div class="mbd-avatar" [class.mbd-avatar--unread]="c.hasUnreadMessages">
+                  {{ c.reparateurNom.substring(0,2).toUpperCase() }}
+                </div>
+                <div class="mbd-info">
+                  <div class="mbd-nom">{{ c.reparateurNom }}</div>
+                  <div class="mbd-app">{{ getAppareilIcon(c.demandeAppareil) }} {{ c.demandeAppareil }}</div>
+                </div>
+                @if (c.hasUnreadMessages) { <div class="mbd-dot"></div> }
+              </a>
+            }
+          </div>
+        }
+      </div>
+
       <a routerLink="/dashboard-reparateur" class="btn-ghost">Dashboard</a>
       <button class="btn-ghost" (click)="logout()">Déconnexion</button>
     }

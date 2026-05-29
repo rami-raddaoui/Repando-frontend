@@ -432,7 +432,36 @@
 .chat-devis-msg { font-size:12px; color:#6d28d9; margin-top:3px; }
 .chat-time { font-size:10px; color:#94a3b8; }
 
-/* ─── RESPONSIVE ───────────────────────────────────────────────────── */
+/* ─── RÉCLAMATIONS ─────────────────────────────────────────────── */
+.recs-admin-list { display: flex; flex-direction: column; gap: 12px; }
+.rec-admin-card {
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  border-left: 4px solid #f59e0b;
+  &--treated { border-left-color: #22c55e; }
+}
+.rec-admin-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; }
+.rec-admin-parties { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.rec-admin-signalant { color: #dc2626; font-size: 13px; }
+.rec-admin-arrow { color: #94a3b8; }
+.rec-admin-sujet { color: #475569; font-size: 13px; }
+.rec-admin-objet { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+.rec-admin-message { font-size: 13px; color: #475569; line-height: 1.6; margin-bottom: 6px; background: #f8fafc; padding: 8px 12px; border-radius: 8px; }
+.rec-admin-date { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+.rec-admin-reponse { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #1d4ed8; line-height: 1.6; margin-bottom: 10px; }
+.rec-reponse-lbl { font-weight: 700; display: block; margin-bottom: 4px; }
+.rec-admin-actions { display: flex; gap: 8px; }
+.btn-repondre {
+  background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border: none;
+  padding: 8px 16px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: opacity .15s; &:hover { opacity: .9; }
+}
+.rec-statut-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; flex-shrink: 0;
+  &.badge-amber { background: #fef3c7; color: #92400e; }
+  &.badge-green { background: #dcfce7; color: #15803d; }
+}
+
+/* ─── RESPONSIVE ───────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .admin-wrap { padding:80px 16px 48px; }
   .demandes-grid { grid-template-columns:1fr; }
