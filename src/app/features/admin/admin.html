@@ -6,7 +6,7 @@
       <div class="admin-badge">🛡️ Admin</div>
       <div>
         <h1 class="admin-title">Tableau de bord Repando</h1>
-        <p class="admin-sub">Gérez les demandes, affectez les réparateurs et validez les profils.</p>
+        <p class="admin-sub">Gérez les demandes, réparateurs et suivez l'activité en temps réel.</p>
       </div>
     </div>
   </div>
@@ -20,19 +20,19 @@
       </div>
       <div class="stat-chip">
         <span class="stat-num amber">{{ stats.reparateursEnAttente }}</span>
-        <span class="stat-lbl">Réparateurs à valider</span>
+        <span class="stat-lbl">À valider</span>
       </div>
       <div class="stat-chip">
         <span class="stat-num green">{{ stats.matchingsAcceptes }}</span>
-        <span class="stat-lbl">Missions acceptées</span>
+        <span class="stat-lbl">Acceptés</span>
       </div>
       <div class="stat-chip">
         <span class="stat-num purple">{{ stats.gmvTotal | number:'1.0-0' }}€</span>
-        <span class="stat-lbl">GMV total</span>
+        <span class="stat-lbl">GMV</span>
       </div>
       <div class="stat-chip">
-        <span class="stat-num teal">{{ stats.commissionGeneree | number:'1.2-2' }}€</span>
-        <span class="stat-lbl">Commissions</span>
+        <span class="stat-num teal">{{ stats.totalReparateurs }}</span>
+        <span class="stat-lbl">Réparateurs actifs</span>
       </div>
     </div>
   }
@@ -57,39 +57,50 @@
   @if (tab === 'demandes') {
     <div class="tab-content">
 
-      <!-- Filter bar -->
-      <div class="filter-bar">
-        <div class="filter-label">Filtrer par statut :</div>
-        <div class="filter-chips">
-          @for (s of ['', 'OUVERTE', 'TRAITEE', 'ANNULEE']; track s) {
-            <button class="fchip" [class.active]="demandeFilter === s"
-                    (click)="demandeFilter = s; loadDemandes()">
-              {{ s === '' ? 'Toutes' : s }}
-            </button>
-          }
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="filter-chips">
+            @for (s of ['', 'OUVERTE', 'TRAITEE', 'ANNULEE']; track s) {
+              <button class="fchip" [class.active]="demandeFilter === s"
+                      (click)="demandeFilter = s; loadDemandes()">
+                {{ s === '' ? 'Toutes' : s === 'OUVERTE' ? '🟦 Ouvertes' : s === 'TRAITEE' ? '✅ Traitées' : '❌ Annulées' }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" [(ngModel)]="demandesSearch" (ngModelChange)="demandesPage=1"
+                 placeholder="Rechercher client, ville, appareil…" />
         </div>
       </div>
 
-      @if (loading) {
-        <div class="loading-row">
-          <div class="spinner"></div>
-          <span>Chargement…</span>
-        </div>
-      }
+      <div class="results-bar">
+        <span>{{ filteredDemandes.length }} demande(s)</span>
+        @if (demandePages > 1) {
+          <div class="pagination">
+            <button class="pg-btn" [disabled]="demandesPage === 1" (click)="demandesPage = demandesPage - 1">‹</button>
+            @for (p of pageRange(demandePages); track p) {
+              <button class="pg-btn" [class.active]="p === demandesPage" (click)="demandesPage = p">{{ p }}</button>
+            }
+            <button class="pg-btn" [disabled]="demandesPage === demandePages" (click)="demandesPage = demandesPage + 1">›</button>
+          </div>
+        }
+      </div>
 
-      @if (!loading && demandes.length === 0) {
-        <div class="empty-admin">
-          <div style="font-size:48px">📭</div>
-          <div class="empty-admin-title">Aucune demande trouvée</div>
-        </div>
+      @if (loading) { <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div> }
+
+      @if (!loading && filteredDemandes.length === 0) {
+        <div class="empty-admin"><div style="font-size:48px">📭</div><div class="empty-admin-title">Aucune demande trouvée</div></div>
       }
 
       <div class="demandes-grid">
-        @for (d of demandes; track d.id) {
-          <div class="demande-card" [class.card-ouverte]="d.statut === 'OUVERTE'">
+        @for (d of pagedDemandes; track d.id) {
+          <div class="demande-card" [class.card-ouverte]="d.statut === 'OUVERTE'" [class.card-traitee]="d.statut === 'TRAITEE'">
             <div class="dc-top">
               <div class="dc-appareil">
-                <span class="dc-icon">{{ getAppareilLabel(d.typeAppareil).icon }}</span>
+                <div class="dc-icon-wrap">{{ getAppareilLabel(d.typeAppareil).icon }}</div>
                 <div>
                   <div class="dc-type">{{ getAppareilLabel(d.typeAppareil).label }}</div>
                   @if (d.marque) { <div class="dc-marque">{{ d.marque }}</div> }
@@ -97,32 +108,27 @@
               </div>
               <span class="badge" [class]="getStatutClass(d.statut)">{{ d.statut }}</span>
             </div>
-
             <div class="dc-client">
-              <span class="dc-client-icon">👤</span>
+              <div class="dc-avatar">{{ d.clientNom.charAt(0) }}</div>
               <div>
                 <div class="dc-client-nom">{{ d.clientNom }}</div>
                 <div class="dc-client-email">{{ d.clientEmail }}</div>
               </div>
             </div>
-
             <div class="dc-meta">
               <span>📍 {{ d.ville }}{{ d.codePostal ? ' ' + d.codePostal : '' }}</span>
-              <span>🔗 {{ d.nbMatchings }} matching(s)</span>
-              <span>📅 {{ d.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="dc-matchings-badge">💬 {{ d.nbMatchings }}</span>
+              <span>📅 {{ d.createdAt | date:'dd/MM/yy' }}</span>
             </div>
-
-            @if (d.description) {
-              <div class="dc-desc">"{{ d.description }}"</div>
-            }
-
-            @if (d.statut === 'OUVERTE') {
-              <button class="btn-affect" (click)="openAffect(d)">
-                ⚡ Affecter des réparateurs
-              </button>
-            } @else {
-              <div class="dc-closed">Mission {{ d.statut === 'TRAITEE' ? 'traitée ✅' : 'annulée ❌' }}</div>
-            }
+            @if (d.description) { <div class="dc-desc">"{{ d.description }}"</div> }
+            <div class="dc-footer">
+              <button class="btn-detail" (click)="openDemandeDetail(d.id)">🔍 Détails</button>
+              @if (d.statut === 'OUVERTE') {
+                <button class="btn-affect" (click)="openAffect(d)">⚡ Affecter</button>
+              } @else {
+                <div class="dc-closed">{{ d.statut === 'TRAITEE' ? 'Traitée ✅' : 'Annulée ❌' }}</div>
+              }
+            </div>
           </div>
         }
       </div>
@@ -133,71 +139,91 @@
   @if (tab === 'reparateurs') {
     <div class="tab-content">
 
-      @if (pendingReparateurs.length > 0) {
-        <div class="section-title">
-          <span class="section-dot amber"></span>
-          Profils en attente de validation ({{ pendingReparateurs.length }})
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="filter-chips">
+            <button class="fchip" [class.active]="repFilter === 'all'"     (click)="repFilter='all'; repsPage=1">Tous ({{ allReparateurs.length }})</button>
+            <button class="fchip fchip--amber" [class.active]="repFilter === 'pending'"  (click)="repFilter='pending'; repsPage=1">⏳ En attente ({{ pendingReparateurs.length }})</button>
+            <button class="fchip fchip--green" [class.active]="repFilter === 'verified'" (click)="repFilter='verified'; repsPage=1">✅ Validés</button>
+          </div>
         </div>
-        <div class="rep-grid">
-          @for (r of pendingReparateurs; track r.id) {
-            <div class="rep-card pending">
-              <div class="rep-card-top">
-                <div class="rep-avatar">{{ r.nom[0] }}</div>
-                <div>
-                  <div class="rep-nom">{{ r.nom }}</div>
-                  <div class="rep-email">{{ r.email }}</div>
-                </div>
-              </div>
-              <div class="rep-details">
-                <div>📍 {{ r.ville }}</div>
-                <div>🏛️ SIRET : {{ r.siret }}</div>
-                <div>🏅 QualiRépar : {{ r.numeroQualirepar }}</div>
-                <div>⭐ {{ r.anneesExperience }} ans d'expérience</div>
-                @if (r.isFounder) {
-                  <div class="founder-badge">🎖️ Fondateur #{{ r.founderNumber }}</div>
-                }
-              </div>
-              <div class="rep-specialites">
-                @for (s of r.specialites; track s) {
-                  <span class="spec-tag">{{ s }}</span>
-                }
-              </div>
-              <div class="rep-actions">
-                <button class="btn-valider" (click)="validerReparateur(r.id)">✅ Valider</button>
-                <button class="btn-suspendre" (click)="suspendreReparateur(r.id)">❌ Refuser</button>
-              </div>
-            </div>
-          }
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" [(ngModel)]="repsSearch" (ngModelChange)="repsPage=1"
+                 placeholder="Nom, email, ville…" />
         </div>
-      } @else {
-        <div class="empty-admin" style="margin-bottom:32px">
-          <div style="font-size:36px">✅</div>
-          <div class="empty-admin-title">Aucun réparateur en attente</div>
-        </div>
+      </div>
+
+      <div class="results-bar">
+        <span>{{ filteredReps.length }} réparateur(s)</span>
+        @if (repPages > 1) {
+          <div class="pagination">
+            <button class="pg-btn" [disabled]="repsPage === 1" (click)="repsPage = repsPage - 1">‹</button>
+            @for (p of pageRange(repPages); track p) {
+              <button class="pg-btn" [class.active]="p === repsPage" (click)="repsPage = p">{{ p }}</button>
+            }
+            <button class="pg-btn" [disabled]="repsPage === repPages" (click)="repsPage = repsPage + 1">›</button>
+          </div>
+        }
+      </div>
+
+      @if (repsLoading) { <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div> }
+
+      @if (!repsLoading && filteredReps.length === 0) {
+        <div class="empty-admin"><div style="font-size:40px">🔧</div><div class="empty-admin-title">Aucun réparateur trouvé</div></div>
       }
 
-      <div class="section-title" style="margin-top:32px">
-        <span class="section-dot green"></span>
-        Réparateurs actifs et disponibles ({{ reparateursDispo.length }})
-      </div>
       <div class="rep-grid">
-        @for (r of reparateursDispo; track r.id) {
-          <div class="rep-card active">
-            <div class="rep-card-top">
-              <div class="rep-avatar green">{{ r.nomAffiche[0] }}</div>
-              <div>
-                <div class="rep-nom">{{ r.nomAffiche }}</div>
-                <div class="rep-email">{{ r.ville }}{{ r.codePostal ? ' ' + r.codePostal : '' }}</div>
-              </div>
-              <div class="rep-note">⭐ {{ r.noteMoyenne | number:'1.1-1' }}</div>
+        @for (r of pagedReps; track r.id) {
+          <div class="rep-card" [class.rep-card--pending]="!r.isVerified" [class.rep-card--verified]="r.isVerified">
+
+            <!-- Status ribbon -->
+            <div class="rep-ribbon" [class.rep-ribbon--pending]="!r.isVerified" [class.rep-ribbon--ok]="r.isVerified">
+              {{ r.isVerified ? '✅ Validé' : '⏳ En attente' }}
             </div>
-            <div class="rep-specialites">
-              @for (s of r.specialites; track s) {
-                <span class="spec-tag">{{ s }}</span>
+
+            <div class="rep-card-top">
+              <div class="rep-avatar" [class.rep-avatar--green]="r.isVerified">
+                {{ r.nom.charAt(0).toUpperCase() }}
+              </div>
+              <div class="rep-info">
+                <div class="rep-nom">{{ r.nom }}</div>
+                <div class="rep-email">{{ r.email }}</div>
+                <div class="rep-loc">📍 {{ r.ville }}{{ r.codePostal ? ' ' + r.codePostal : '' }}</div>
+              </div>
+              @if (r.isFounder) {
+                <span class="founder-pill">⭐ #{{ r.founderNumber }}</span>
               }
             </div>
-            <div class="rep-stats-row">
+
+            @if (r.noteMoyenne > 0) {
+              <div class="rep-stars">
+                @for (s of stars(r.noteMoyenne); track $index) {
+                  <span [class.star-full]="s==='★'" [class.star-empty]="s==='☆'">{{ s }}</span>
+                }
+                <span class="rep-note-val">{{ r.noteMoyenne | number:'1.1-1' }}</span>
+                <span class="rep-avis-cnt">({{ r.nbAvis }} avis)</span>
+              </div>
+            }
+
+            <div class="rep-specs">
+              @for (s of (r.specialites ?? []).slice(0, 4); track s) {
+                <span class="spec-tag">{{ getAppareilLabel(s).icon }} {{ getAppareilLabel(s).label }}</span>
+              }
+            </div>
+
+            <div class="rep-stats">
               <span>🔧 {{ r.nbReparations }} réparations</span>
+              <span>📅 {{ r.createdAt | date:'dd/MM/yy' }}</span>
+            </div>
+
+            <div class="rep-actions">
+              <button class="btn-rep-detail" (click)="openRepDetail(r.id)">Consulter</button>
+              @if (!r.isVerified) {
+                <button class="btn-valider" (click)="validerReparateur(r.id)">✅ Valider</button>
+                <button class="btn-suspendre" (click)="suspendreReparateur(r.id)">❌ Refuser</button>
+              }
             </div>
           </div>
         }
@@ -210,36 +236,12 @@
     <div class="tab-content">
       @if (stats) {
         <div class="stats-grid">
-          <div class="stat-card blue">
-            <div class="sc-icon">📋</div>
-            <div class="sc-val">{{ stats.totalDemandes }}</div>
-            <div class="sc-lbl">Total demandes</div>
-          </div>
-          <div class="stat-card amber">
-            <div class="sc-icon">🔗</div>
-            <div class="sc-val">{{ stats.totalMatchings }}</div>
-            <div class="sc-lbl">Total matchings</div>
-          </div>
-          <div class="stat-card green">
-            <div class="sc-icon">✅</div>
-            <div class="sc-val">{{ stats.matchingsAcceptes }}</div>
-            <div class="sc-lbl">Missions acceptées</div>
-          </div>
-          <div class="stat-card purple">
-            <div class="sc-icon">💶</div>
-            <div class="sc-val">{{ stats.gmvTotal | number:'1.0-0' }}€</div>
-            <div class="sc-lbl">GMV total</div>
-          </div>
-          <div class="stat-card teal">
-            <div class="sc-icon">💰</div>
-            <div class="sc-val">{{ stats.commissionGeneree | number:'1.2-2' }}€</div>
-            <div class="sc-lbl">Commissions générées</div>
-          </div>
-          <div class="stat-card red">
-            <div class="sc-icon">⚠️</div>
-            <div class="sc-val">{{ stats.alertesAdmin }}</div>
-            <div class="sc-lbl">Alertes admin</div>
-          </div>
+          <div class="stat-card blue"><div class="sc-icon">📋</div><div class="sc-val">{{ stats.totalDemandes }}</div><div class="sc-lbl">Total demandes</div></div>
+          <div class="stat-card amber"><div class="sc-icon">🔗</div><div class="sc-val">{{ stats.totalMatchings }}</div><div class="sc-lbl">Total matchings</div></div>
+          <div class="stat-card green"><div class="sc-icon">✅</div><div class="sc-val">{{ stats.matchingsAcceptes }}</div><div class="sc-lbl">Missions acceptées</div></div>
+          <div class="stat-card purple"><div class="sc-icon">💶</div><div class="sc-val">{{ stats.gmvTotal | number:'1.0-0' }}€</div><div class="sc-lbl">GMV total</div></div>
+          <div class="stat-card teal"><div class="sc-icon">💰</div><div class="sc-val">{{ stats.commissionGeneree | number:'1.2-2' }}€</div><div class="sc-lbl">Commissions</div></div>
+          <div class="stat-card red"><div class="sc-icon">⚠️</div><div class="sc-val">{{ stats.alertesAdmin }}</div><div class="sc-lbl">Alertes</div></div>
         </div>
       } @else {
         <div class="loading-row"><div class="spinner"></div> Chargement…</div>
@@ -249,7 +251,316 @@
 
 </div>
 
-<!-- ===================== MODAL AFFECTATION ===================== -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: DÉTAIL RÉPARATEUR                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (repDetailLoading) {
+  <div class="modal-overlay"><div class="modal-loading"><div class="spinner"></div><span>Chargement du profil…</span></div></div>
+}
+@if (repDetailModal) {
+  <div class="modal-overlay" (click)="closeRepDetail()">
+    <div class="modal-wide" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="mwd-header">
+        <div class="mwd-hero" [class.mwd-hero--verified]="repDetailModal.isVerified" [class.mwd-hero--pending]="!repDetailModal.isVerified">
+          <div class="mwd-avatar">{{ repDetailModal.nom.charAt(0).toUpperCase() }}</div>
+          <div class="mwd-hero-info">
+            <h2 class="mwd-nom">{{ repDetailModal.nom }}
+              @if (repDetailModal.isFounder) { <span class="founder-pill ml">⭐ Fondateur #{{ repDetailModal.founderNumber }}</span> }
+            </h2>
+            <div class="mwd-meta">
+              <span>📧 {{ repDetailModal.email }}</span>
+              @if (repDetailModal.telephone) { <span>📞 {{ repDetailModal.telephone }}</span> }
+              <span>📍 {{ repDetailModal.ville }}{{ repDetailModal.codePostal ? ' ' + repDetailModal.codePostal : '' }}</span>
+            </div>
+            <div class="mwd-status-row">
+              @if (repDetailModal.isVerified) {
+                <span class="status-badge status-badge--green">✅ Profil validé</span>
+              } @else {
+                <span class="status-badge status-badge--amber">⏳ En attente de validation</span>
+              }
+              @if (repDetailModal.noteMoyenne > 0) {
+                <span class="mwd-stars">
+                  @for (s of stars(repDetailModal.noteMoyenne); track $index) { <span>{{ s }}</span> }
+                  {{ repDetailModal.noteMoyenne | number:'1.1-1' }}
+                </span>
+              }
+            </div>
+          </div>
+          <button class="modal-close-abs" (click)="closeRepDetail()">✕</button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="mwd-body">
+        <div class="mwd-grid">
+
+          <!-- Col 1: Infos pro -->
+          <div class="mwd-section">
+            <div class="mwd-section-title">📋 Informations professionnelles</div>
+            <div class="mwd-info-list">
+              <div class="mwd-info-item"><span class="mwd-info-lbl">SIRET</span><span class="mwd-info-val">{{ repDetailModal.siret }}</span></div>
+              @if (repDetailModal.numeroQualirepar) {
+                <div class="mwd-info-item"><span class="mwd-info-lbl">N° QualiRépar</span><span class="mwd-info-val badge-green-sm">{{ repDetailModal.numeroQualirepar }}</span></div>
+              }
+              <div class="mwd-info-item"><span class="mwd-info-lbl">Expérience</span><span class="mwd-info-val">{{ repDetailModal.anneesExperience }} ans</span></div>
+              <div class="mwd-info-item"><span class="mwd-info-lbl">Rayon</span><span class="mwd-info-val">{{ repDetailModal.rayonInterventionKm }} km</span></div>
+              @if (repDetailModal.adresseAtelier) {
+                <div class="mwd-info-item"><span class="mwd-info-lbl">Atelier</span><span class="mwd-info-val">{{ repDetailModal.adresseAtelier }}</span></div>
+              }
+            </div>
+          </div>
+
+          <!-- Col 2: Performances -->
+          <div class="mwd-section">
+            <div class="mwd-section-title">📊 Performances</div>
+            <div class="mwd-kpis">
+              <div class="mwd-kpi blue"><div class="mwd-kpi-val">{{ repDetailModal.statsMatchings?.total ?? 0 }}</div><div class="mwd-kpi-lbl">Matchings total</div></div>
+              <div class="mwd-kpi green"><div class="mwd-kpi-val">{{ repDetailModal.statsMatchings?.acceptes ?? 0 }}</div><div class="mwd-kpi-lbl">Acceptés</div></div>
+              <div class="mwd-kpi amber"><div class="mwd-kpi-val">{{ repDetailModal.statsMatchings?.enCours ?? 0 }}</div><div class="mwd-kpi-lbl">En cours</div></div>
+              <div class="mwd-kpi purple"><div class="mwd-kpi-val">{{ repDetailModal.nbReparations }}</div><div class="mwd-kpi-lbl">Réparations</div></div>
+            </div>
+          </div>
+
+          <!-- Spécialités -->
+          <div class="mwd-section mwd-section--full">
+            <div class="mwd-section-title">🔧 Spécialités</div>
+            <div class="rep-specs-big">
+              @for (s of (repDetailModal.specialites ?? []); track s) {
+                <span class="spec-tag-big">{{ getAppareilLabel(s).icon }} {{ getAppareilLabel(s).label }}</span>
+              }
+            </div>
+          </div>
+
+          @if (repDetailModal.bio) {
+            <div class="mwd-section mwd-section--full">
+              <div class="mwd-section-title">💬 Présentation</div>
+              <div class="mwd-bio">{{ repDetailModal.bio }}</div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mwd-footer">
+        <button class="btn-ghost-admin" (click)="closeRepDetail()">Fermer</button>
+        @if (!repDetailModal.isVerified) {
+          <button class="btn-suspendre-lg" (click)="suspendreReparateur(repDetailModal.id)">❌ Refuser</button>
+          <button class="btn-valider-lg" (click)="validerReparateur(repDetailModal.id)">✅ Valider le profil</button>
+        } @else {
+          <button class="btn-suspendre-lg" (click)="suspendreReparateur(repDetailModal.id)">🚫 Suspendre</button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: DÉTAIL DEMANDE                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (demandeDetailLoading) {
+  <div class="modal-overlay"><div class="modal-loading"><div class="spinner"></div><span>Chargement de la demande…</span></div></div>
+}
+@if (demandeDetail && !chatModal) {
+  <div class="modal-overlay" (click)="closeDemandeDetail()">
+    <div class="modal-xl" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="mxl-header">
+        <div class="mxl-icon">{{ getAppareilLabel(demandeDetail.typeAppareil).icon }}</div>
+        <div class="mxl-header-info">
+          <h2 class="mxl-title">{{ getAppareilLabel(demandeDetail.typeAppareil).label }}
+            @if (demandeDetail.marque) { <span class="mxl-marque">{{ demandeDetail.marque }}</span> }
+          </h2>
+          <div class="mxl-sub">Réf. #{{ demandeDetail.id.substring(0,8).toUpperCase() }} · {{ demandeDetail.createdAt | date:'dd MMM yyyy HH:mm' }}</div>
+        </div>
+        <span class="badge" [class]="getStatutClass(demandeDetail.statut)">{{ demandeDetail.statut }}</span>
+        <button class="modal-close-abs" (click)="closeDemandeDetail()">✕</button>
+      </div>
+
+      <div class="mxl-body">
+
+        <!-- 2-col grid: client + détails -->
+        <div class="mxl-top-grid">
+
+          <div class="mxl-section">
+            <div class="mxl-section-title">👤 Client</div>
+            <div class="mxl-client-card">
+              <div class="mxl-client-avatar">{{ demandeDetail.clientNom.charAt(0) }}</div>
+              <div>
+                <div class="mxl-client-nom">{{ demandeDetail.clientNom }}</div>
+                <div class="mxl-client-email">{{ demandeDetail.email }}</div>
+                @if (demandeDetail.telephone) { <div class="mxl-client-tel">📞 {{ demandeDetail.telephone }}</div> }
+              </div>
+            </div>
+          </div>
+
+          <div class="mxl-section">
+            <div class="mxl-section-title">📋 Détails de la demande</div>
+            <div class="mxl-details-grid">
+              <div class="mxl-detail"><span class="mxl-dl">Appareil</span><span class="mxl-dv">{{ getAppareilLabel(demandeDetail.typeAppareil).label }}</span></div>
+              @if (demandeDetail.marque) { <div class="mxl-detail"><span class="mxl-dl">Marque</span><span class="mxl-dv">{{ demandeDetail.marque }}</span></div> }
+              @if (demandeDetail.modele) { <div class="mxl-detail"><span class="mxl-dl">Modèle</span><span class="mxl-dv">{{ demandeDetail.modele }}</span></div> }
+              @if (demandeDetail.typePanne) { <div class="mxl-detail"><span class="mxl-dl">Panne</span><span class="mxl-dv">{{ demandeDetail.typePanne }}</span></div> }
+              <div class="mxl-detail"><span class="mxl-dl">Intervention</span><span class="mxl-dv">{{ demandeDetail.typeIntervention }}</span></div>
+              <div class="mxl-detail"><span class="mxl-dl">Localisation</span><span class="mxl-dv">{{ demandeDetail.ville }}{{ demandeDetail.codePostal ? ' ' + demandeDetail.codePostal : '' }}</span></div>
+              @if (demandeDetail.adresse) { <div class="mxl-detail mxl-detail--full"><span class="mxl-dl">Adresse</span><span class="mxl-dv">{{ demandeDetail.adresse }}</span></div> }
+            </div>
+          </div>
+
+        </div>
+
+        @if (demandeDetail.description) {
+          <div class="mxl-desc">"{{ demandeDetail.description }}"</div>
+        }
+
+        <!-- Matchings / Réparateurs -->
+        <div class="mxl-section" style="margin-top:24px">
+          <div class="mxl-section-title">
+            💬 Réparateurs impliqués
+            <span class="mxl-count-badge">{{ demandeDetail.matchings?.length ?? 0 }}</span>
+          </div>
+
+          @if (!demandeDetail.matchings?.length) {
+            <div class="mxl-no-matchings">Aucun réparateur n'a encore été affecté à cette demande.</div>
+          }
+
+          <div class="matchings-list">
+            @for (m of demandeDetail.matchings; track m.id) {
+              <div class="matching-row">
+                <div class="matching-row__left">
+                  <div class="matching-row__avatar">{{ m.reparateurNom.charAt(0) }}</div>
+                  <div class="matching-row__info">
+                    <div class="matching-row__nom">{{ m.reparateurNom }}</div>
+                    <div class="matching-row__meta">
+                      📍 {{ m.ville }} ·
+                      @if (m.noteMoyenne > 0) { ⭐ {{ m.noteMoyenne | number:'1.1-1' }} · }
+                      {{ m.createdAt | date:'dd/MM/yy HH:mm' }}
+                    </div>
+                    @if (m.devisMontantClient) {
+                      <div class="matching-row__devis">💶 Devis: {{ m.devisMontantClient }}€</div>
+                    }
+                  </div>
+                </div>
+                <div class="matching-row__right">
+                  <span class="matching-statut-badge"
+                        [style.background]="getMatchingStatutStyle(m.statut).bg"
+                        [style.color]="getMatchingStatutStyle(m.statut).color">
+                    {{ getMatchingStatutStyle(m.statut).label }}
+                  </span>
+                  <span class="matching-msg-count">{{ m.nbMessages }} msg</span>
+                  <button class="btn-chat-view" (click)="openChat(m)">
+                    👁️ Voir le chat
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="mxl-footer">
+        <button class="btn-ghost-admin" (click)="closeDemandeDetail()">Fermer</button>
+        @if (demandeDetail.statut === 'OUVERTE') {
+          <button class="btn-affect-lg" (click)="openAffect({id: demandeDetail.id, clientNom: demandeDetail.clientNom, clientEmail: demandeDetail.email, typeAppareil: demandeDetail.typeAppareil, ville: demandeDetail.ville, statut: demandeDetail.statut, nbMatchings: demandeDetail.matchings?.length ?? 0, createdAt: demandeDetail.createdAt})">
+            ⚡ Affecter des réparateurs
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: CHAT READONLY                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (chatLoading) {
+  <div class="modal-overlay" style="z-index:1100"><div class="modal-loading"><div class="spinner"></div><span>Chargement des messages…</span></div></div>
+}
+@if (chatModal) {
+  <div class="modal-overlay chat-overlay" (click)="closeChat()" style="z-index:1100">
+    <div class="chat-modal" (click)="$event.stopPropagation()">
+
+      <!-- Chat header -->
+      <div class="chat-modal__header">
+        <div class="chat-modal__header-icon">💬</div>
+        <div>
+          <div class="chat-modal__title">Conversation — {{ chatModal.matching.reparateurNom }}</div>
+          <div class="chat-modal__sub">
+            {{ chatModal.messages.length }} message(s) ·
+            <span class="chat-readonly-badge">👁️ Mode lecture seule</span>
+          </div>
+        </div>
+        <span class="matching-statut-badge"
+              [style.background]="getMatchingStatutStyle(chatModal.matching.statut).bg"
+              [style.color]="getMatchingStatutStyle(chatModal.matching.statut).color">
+          {{ getMatchingStatutStyle(chatModal.matching.statut).label }}
+        </span>
+        <button class="modal-close-abs" (click)="closeChat()">✕</button>
+      </div>
+
+      <!-- Chat notice -->
+      <div class="chat-notice">
+        <span>🛡️</span>
+        <span>Vous consultez cette conversation en tant qu'administrateur Repando. Le contenu est en lecture seule.</span>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages">
+        @if (chatModal.messages.length === 0) {
+          <div class="chat-empty">Aucun message dans cette conversation.</div>
+        }
+        @for (msg of chatModal.messages; track msg.id) {
+          <div class="chat-msg" [class.chat-msg--rep]="msg.senderIsReparateur" [class.chat-msg--client]="!msg.senderIsReparateur" [class.chat-msg--system]="msg.type === 'SYSTEME'">
+            @if (msg.type === 'SYSTEME') {
+              <div class="chat-system-msg">
+                <span class="chat-system-icon">ℹ️</span>
+                {{ msg.contenu }}
+              </div>
+            } @else {
+              <div class="chat-bubble-wrap">
+                <div class="chat-sender-avatar">{{ msg.senderNom.charAt(0) }}</div>
+                <div class="chat-bubble-col">
+                  <div class="chat-sender-name">
+                    {{ msg.senderNom }}
+                    <span class="chat-sender-role">{{ msg.senderIsReparateur ? '🔧 Réparateur' : '👤 Client' }}</span>
+                  </div>
+                  @if (msg.type === 'TEXTE') {
+                    <div class="chat-bubble">{{ msg.contenu }}</div>
+                  }
+                  @if (msg.type === 'PHOTO' && msg.photoUrl) {
+                    <div class="chat-bubble chat-bubble--photo">
+                      <img [src]="msg.photoUrl" alt="photo" class="chat-photo" />
+                    </div>
+                  }
+                  @if (msg.type === 'DEVIS') {
+                    <div class="chat-bubble chat-bubble--devis">
+                      <div class="chat-devis-icon">📋</div>
+                      <div>
+                        <div class="chat-devis-title">Devis envoyé</div>
+                        @if (msg.contenu) { <div class="chat-devis-msg">{{ msg.contenu }}</div> }
+                      </div>
+                    </div>
+                  }
+                  <div class="chat-time">{{ msg.createdAt | date:'dd/MM HH:mm' }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="chat-modal__footer">
+        <button class="btn-ghost-admin" (click)="closeChat()">← Retour à la demande</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: AFFECTATION                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
 @if (affectModal) {
   <div class="modal-overlay" (click)="closeAffect()">
     <div class="modal-box" (click)="$event.stopPropagation()">
@@ -263,56 +574,40 @@
         </div>
         <button class="modal-close" (click)="closeAffect()">✕</button>
       </div>
-
       <div class="modal-body">
         <div class="modal-section-lbl">
           Sélectionnez 1 à 5 réparateurs
-          <span class="sel-count">({{ selectedReps.size }}/5 sélectionné(s))</span>
+          <span class="sel-count">({{ selectedReps.size }}/5)</span>
         </div>
-
         @if (reparateursDispo.length === 0) {
-          <div class="no-reps">Aucun réparateur disponible actuellement.</div>
+          <div class="no-reps">Aucun réparateur disponible.</div>
         }
-
         <div class="rep-select-list">
           @for (r of reparateursDispo; track r.id) {
-            <div class="rep-select-item" [class.selected]="selectedReps.has(r.id)"
-                 (click)="toggleRep(r.id)">
+            <div class="rep-select-item" [class.selected]="selectedReps.has(r.id)" (click)="toggleRep(r.id)">
               <div class="rsi-check">{{ selectedReps.has(r.id) ? '✓' : '' }}</div>
               <div class="rsi-avatar">{{ r.nomAffiche[0] }}</div>
               <div class="rsi-info">
                 <div class="rsi-nom">{{ r.nomAffiche }}</div>
-                <div class="rsi-meta">
-                  📍 {{ r.ville }} · ⭐ {{ r.noteMoyenne | number:'1.1-1' }} · 🔧 {{ r.nbReparations }} rép.
-                </div>
+                <div class="rsi-meta">📍 {{ r.ville }} · ⭐ {{ r.noteMoyenne | number:'1.1-1' }} · 🔧 {{ r.nbReparations }} rép.</div>
                 <div class="rsi-specs">
-                  @for (s of r.specialites.slice(0,3); track s) {
-                    <span class="spec-tag mini">{{ s }}</span>
-                  }
+                  @for (s of r.specialites.slice(0,3); track s) { <span class="spec-tag mini">{{ s }}</span> }
                 </div>
               </div>
             </div>
           }
         </div>
-
         <div class="modal-msg-group">
-          <label class="modal-msg-lbl">Message pour les réparateurs (optionnel)</label>
-          <textarea [(ngModel)]="messageAdmin" placeholder="Ex: Client disponible en semaine, appareil accessible au sous-sol…"
-                    rows="3" class="modal-textarea"></textarea>
+          <label class="modal-msg-lbl">Message (optionnel)</label>
+          <textarea [(ngModel)]="messageAdmin" rows="3" class="modal-textarea"
+                    placeholder="Ex: Client dispo le matin, appareil au 2ème…"></textarea>
         </div>
-
-        @if (affectError) {
-          <div class="modal-error">{{ affectError }}</div>
-        }
-        @if (affectSuccess) {
-          <div class="modal-success">{{ affectSuccess }}</div>
-        }
+        @if (affectError)   { <div class="modal-error">{{ affectError }}</div> }
+        @if (affectSuccess) { <div class="modal-success">{{ affectSuccess }}</div> }
       </div>
-
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeAffect()">Annuler</button>
-        <button class="btn-send" [disabled]="selectedReps.size === 0 || affectLoading"
-                (click)="submitAffect()">
+        <button class="btn-send" [disabled]="selectedReps.size === 0 || affectLoading" (click)="submitAffect()">
           {{ affectLoading ? 'Envoi…' : '⚡ Notifier ' + selectedReps.size + ' réparateur(s)' }}
         </button>
       </div>
