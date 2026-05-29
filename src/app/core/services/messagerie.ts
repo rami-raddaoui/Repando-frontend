@@ -105,7 +105,14 @@ export class MessagerieService {
 
     this.hub.on('ReceiveMessage', (msg: MessageDto) => {
       if (msg.matchingId === matchingId) {
-        this._messages$.next([...this._messages$.value, msg]);
+        const current = this._messages$.value;
+        // Deduplicate: don't add if already present (sent optimistically)
+        if (!current.find(m => m.id === msg.id)) {
+          this._messages$.next([...current, msg]);
+        } else {
+          // Update the existing message (e.g. isRead flag)
+          this._messages$.next(current.map(m => m.id === msg.id ? { ...m, ...msg } : m));
+        }
       }
     });
 
@@ -159,6 +166,17 @@ export class MessagerieService {
 
   setMessages(msgs: MessageDto[]): void {
     this._messages$.next(msgs);
+  }
+
+  getMessagesSnapshot(): MessageDto[] {
+    return this._messages$.value;
+  }
+
+  appendMessage(msg: MessageDto): void {
+    const current = this._messages$.value;
+    if (!current.find(m => m.id === msg.id)) {
+      this._messages$.next([...current, msg]);
+    }
   }
 
   setRecentConvs(matchings: MatchingDto[]): void {

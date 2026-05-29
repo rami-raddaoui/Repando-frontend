@@ -86,43 +86,6 @@
         <div class="msgr-banner msgr-banner--error">{{ actionError }}</div>
       }
 
-      <!-- Prise en charge: réparateur -->
-      @if (auth.isReparateur() && !isClosed && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm) {
-        <div class="msgr-pec-bar msgr-pec-bar--rep">
-          <div class="msgr-pec-icon">🔧</div>
-          <div class="msgr-pec-text">
-            <strong>Prêt à prendre en charge cette réparation ?</strong>
-            <span>Confirmez ici — le client devra valider de son côté.</span>
-          </div>
-          <button class="msgr-pec-btn msgr-pec-btn--green" [disabled]="actionLoading" (click)="validerPriseEnCharge()">
-            {{ actionLoading ? '⏳…' : '✅ Valider la prise en charge' }}
-          </button>
-        </div>
-      }
-      @if (auth.isReparateur() && awaitingClientConfirm) {
-        <div class="msgr-pec-bar msgr-pec-bar--waiting">
-          <div class="msgr-pec-icon">⏳</div>
-          <div class="msgr-pec-text">
-            <strong>En attente de confirmation du client</strong>
-            <span>Le client doit valider la prise en charge de son côté.</span>
-          </div>
-        </div>
-      }
-
-      <!-- Prise en charge: client -->
-      @if (auth.isClient() && !isClosed && awaitingClientConfirm) {
-        <div class="msgr-pec-bar msgr-pec-bar--client">
-          <div class="msgr-pec-icon">🎉</div>
-          <div class="msgr-pec-text">
-            <strong>Le réparateur confirme la prise en charge</strong>
-            <span>Validez pour confirmer la réparation. Les autres conversations seront clôturées.</span>
-          </div>
-          <button class="msgr-pec-btn msgr-pec-btn--blue" [disabled]="actionLoading" (click)="confirmerPriseEnCharge()">
-            {{ actionLoading ? '⏳…' : '✅ Confirmer la réparation' }}
-          </button>
-        </div>
-      }
-
       <!-- Messages area -->
       <div class="msgr-messages-area">
         @if (loading) {
@@ -181,6 +144,62 @@
         <div class="msgr-closed-banner">
           <span>🔒</span>
           <span>{{ getClosedReason(activeMatching.statut) }} — La conversation reste visible.</span>
+        </div>
+      }
+
+      <!-- ═══ PRISE EN CHARGE — Réparateur (bottom CTA) ═══ -->
+      @if (auth.isReparateur() && !isClosed && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm) {
+        <div class="msgr-pec-cta msgr-pec-cta--rep">
+          <div class="msgr-pec-cta__glow"></div>
+          <div class="msgr-pec-cta__body">
+            <div class="msgr-pec-cta__icon">🔧</div>
+            <div class="msgr-pec-cta__content">
+              <div class="msgr-pec-cta__title">Prêt à prendre en charge cette réparation ?</div>
+              <div class="msgr-pec-cta__desc">
+                Quand vous vous mettez d'accord avec le client dans le chat, envoyez cette demande.
+                S'il l'accepte, vous prenez officiellement en charge cette affaire. 🚀
+              </div>
+            </div>
+            <button class="msgr-pec-cta__btn" [disabled]="actionLoading" (click)="validerPriseEnCharge()">
+              @if (actionLoading) {
+                <span class="msgr-pec-cta__btn-spinner"></span> En cours…
+              } @else {
+                ✅ Envoyer la demande
+              }
+            </button>
+          </div>
+        </div>
+      }
+      @if (auth.isReparateur() && awaitingClientConfirm) {
+        <div class="msgr-pec-cta msgr-pec-cta--waiting">
+          <div class="msgr-pec-cta__body">
+            <div class="msgr-pec-cta__icon">⏳</div>
+            <div class="msgr-pec-cta__content">
+              <div class="msgr-pec-cta__title">En attente de confirmation du client</div>
+              <div class="msgr-pec-cta__desc">Le client doit valider la prise en charge de son côté. Vous serez notifié dès qu'il confirme.</div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══ PRISE EN CHARGE — Client (bottom CTA) ═══ -->
+      @if (auth.isClient() && !isClosed && awaitingClientConfirm) {
+        <div class="msgr-pec-cta msgr-pec-cta--client">
+          <div class="msgr-pec-cta__glow msgr-pec-cta__glow--blue"></div>
+          <div class="msgr-pec-cta__body">
+            <div class="msgr-pec-cta__icon">🎉</div>
+            <div class="msgr-pec-cta__content">
+              <div class="msgr-pec-cta__title">Le réparateur confirme la prise en charge !</div>
+              <div class="msgr-pec-cta__desc">Confirmez pour démarrer officiellement la réparation. Les autres conversations seront clôturées automatiquement.</div>
+            </div>
+            <button class="msgr-pec-cta__btn msgr-pec-cta__btn--blue" [disabled]="actionLoading" (click)="confirmerPriseEnCharge()">
+              @if (actionLoading) {
+                <span class="msgr-pec-cta__btn-spinner"></span> En cours…
+              } @else {
+                ✅ Confirmer la réparation
+              }
+            </button>
+          </div>
         </div>
       }
 

@@ -150,12 +150,22 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
 
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.activeMatchingId || this.isClosed) return;
-    const text = this.newMessage;
+    const text = this.newMessage.trim();
     this.newMessage = '';
-    this.messagerieService.sendMessage(this.activeMatchingId, {
+    const matchingId = this.activeMatchingId;
+    this.messagerieService.sendMessage(matchingId, {
       contenu: text,
       type: TypeMessage.TEXTE
-    }).subscribe();
+    }).subscribe({
+      next: (msg) => {
+        // Optimistically add message if not already present (in case SignalR echoes it back too)
+        const current = this.messagerieService.getMessagesSnapshot();
+        if (!current.find(m => m.id === msg.id)) {
+          this.messagerieService.appendMessage(msg);
+        }
+      },
+      error: () => {}
+    });
   }
 
   isOwn(msg: MessageDto): boolean {
