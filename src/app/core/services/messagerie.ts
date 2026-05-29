@@ -129,6 +129,20 @@ export class MessagerieService {
       });
     });
 
+    // Mission acceptée par un réparateur → notify client
+    this.globalHub.on('MissionAcceptee', (data: any) => {
+      this.refreshConvs();
+      this.pushNotification({
+        id: crypto.randomUUID(),
+        type: 'MISSION_ACCEPTEE',
+        titre: '🎉 Réparateur disponible !',
+        message: 'Un réparateur a accepté votre demande. Vous pouvez maintenant échanger.',
+        matchingId: data.matching_id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    });
+
     // Conversation fermée
     this.globalHub.on('ConversationClosed', (data: any) => {
       this._convClosed$.next(data);
