@@ -18,6 +18,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly UserRole = UserRole;
   showConvBubble = false;
   showNotifPanel = false;
+  showUserMenu = false;
   recentConvs: MatchingDto[] = [];
   unreadCount = 0;
   notifications: AppNotification[] = [];
@@ -56,19 +57,32 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   toggleBubble(): void {
     this.showConvBubble = !this.showConvBubble;
-    if (this.showConvBubble) this.showNotifPanel = false;
+    if (this.showConvBubble) { this.showNotifPanel = false; this.showUserMenu = false; }
   }
 
   toggleNotifPanel(): void {
     this.showNotifPanel = !this.showNotifPanel;
-    if (this.showNotifPanel) {
-      this.showConvBubble = false;
-    }
+    if (this.showNotifPanel) { this.showConvBubble = false; this.showUserMenu = false; }
   }
+
+  toggleUserMenu(): void {
+    this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu) { this.showConvBubble = false; this.showNotifPanel = false; }
+  }
+
+  closeUserMenu(): void { this.showUserMenu = false; }
 
   closeAll(): void {
     this.showConvBubble = false;
     this.showNotifPanel = false;
+    this.showUserMenu = false;
+  }
+
+  get lastLoginLabel(): string {
+    const u = this.auth.currentUser();
+    if (!(u as any)?.lastLoginAt) return '';
+    const d = new Date((u as any).lastLoginAt);
+    return `Connexion le ${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
   }
 
   navigateToNotif(notif: AppNotification): void {
@@ -88,6 +102,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (!this.elRef.nativeElement.contains(e.target)) {
       this.showConvBubble = false;
       this.showNotifPanel = false;
+      this.showUserMenu = false;
     }
   }
 

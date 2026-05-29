@@ -54,7 +54,6 @@ export interface LoginRequest {
   password: string;
 }
 
-/** Réponse auth (token + user info) */
 export interface AuthResponse {
   token: string;
   userId: string;
@@ -62,11 +61,10 @@ export interface AuthResponse {
   prenom: string;
   nom: string;
   role: UserRole;
+  avatarUrl?: string;
 }
 
-// ============================================================
-// USER
-// ============================================================
+/** Réponse auth (token + user info) — kept for backward compat */
 export interface UserDto {
   id: string;
   email: string;
@@ -74,6 +72,28 @@ export interface UserDto {
   nom: string;
   telephone?: string;
   role: UserRole;
+  avatarUrl?: string;
+  lastLoginAt?: string;
+  createdAt?: string;
+}
+
+export interface UpdateProfileRequest {
+  prenom: string;
+  nom: string;
+  telephone?: string;
+  newPassword?: string;
+}
+
+export interface UpdateReparateurProfileRequest {
+  bio?: string;
+  anneesExperience: number;
+  adresseAtelier?: string;
+  ville: string;
+  codePostal?: string;
+  latitude?: number;
+  longitude?: number;
+  rayonInterventionKm: number;
+  specialites: TypeAppareil[];
 }
 
 // ============================================================

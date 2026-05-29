@@ -1,0 +1,219 @@
+<div class="profil-wrap">
+
+  @if (loading) {
+    <div class="profil-loading">
+      <div class="profil-spinner"></div>
+      <span>Chargement du profil…</span>
+    </div>
+  } @else if (user) {
+
+    <!-- ═══ HERO CARD ═══ -->
+    <div class="profil-hero">
+      <div class="profil-avatar-section">
+        <!-- Avatar -->
+        <div class="profil-avatar-wrap">
+          @if (user.avatarUrl) {
+            <img class="profil-avatar-img" [src]="user.avatarUrl" alt="Avatar" />
+          } @else {
+            <div class="profil-avatar-placeholder">{{ getInitials() }}</div>
+          }
+          @if (avatarLoading) {
+            <div class="profil-avatar-overlay"><div class="profil-spinner profil-spinner--sm"></div></div>
+          }
+        </div>
+        <!-- Avatar actions -->
+        <div class="profil-avatar-actions">
+          <button class="profil-btn-avatar" (click)="openFileDialog()" [disabled]="avatarLoading">
+            📷 {{ user.avatarUrl ? 'Changer la photo' : 'Ajouter une photo' }}
+          </button>
+          @if (user.avatarUrl) {
+            <button class="profil-btn-avatar profil-btn-avatar--remove" (click)="removeAvatar()" [disabled]="avatarLoading">
+              🗑️ Supprimer
+            </button>
+          }
+          <input #fileInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)" />
+        </div>
+      </div>
+
+      <div class="profil-hero-info">
+        <div class="profil-hero-name">{{ user.prenom }} {{ user.nom }}</div>
+        <div class="profil-hero-email">{{ user.email }}</div>
+        <div class="profil-hero-badges">
+          <span class="profil-role-badge">{{ getRoleBadge() }}</span>
+          @if (repProfile?.isFounder) {
+            <span class="profil-founder-badge">⭐ Fondateur #{{ repProfile?.founderNumber }}</span>
+          }
+          @if (repProfile?.isVerified) {
+            <span class="profil-verified-badge">✅ Vérifié</span>
+          }
+        </div>
+        <div class="profil-hero-meta">
+          @if (user.lastLoginAt) {
+            <span>🕐 Dernière connexion : {{ user.lastLoginAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+          }
+          @if (user.createdAt) {
+            <span>📅 Membre depuis {{ user.createdAt | date:'MMMM yyyy' }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FEEDBACK BANNERS ═══ -->
+    @if (saveSuccess) {
+      <div class="profil-banner profil-banner--success">{{ saveSuccess }}</div>
+    }
+    @if (saveError) {
+      <div class="profil-banner profil-banner--error">{{ saveError }}</div>
+    }
+
+    <!-- ═══ TABS ═══ -->
+    <div class="profil-tabs">
+      <button class="profil-tab" [class.active]="activeTab==='infos'" (click)="activeTab='infos'; saveError=''; saveSuccess=''">
+        👤 Informations
+      </button>
+      @if (auth.isReparateur()) {
+        <button class="profil-tab" [class.active]="activeTab==='metier'" (click)="activeTab='metier'; saveError=''; saveSuccess=''">
+          🔧 Profil métier
+        </button>
+      }
+      <button class="profil-tab" [class.active]="activeTab==='securite'" (click)="activeTab='securite'; saveError=''; saveSuccess=''">
+        🔒 Sécurité
+      </button>
+    </div>
+
+    <!-- ═══ TAB: INFORMATIONS ═══ -->
+    @if (activeTab === 'infos') {
+      <div class="profil-card">
+        <h3 class="profil-card-title">Informations personnelles</h3>
+        <p class="profil-card-note">L'adresse email ne peut pas être modifiée.</p>
+
+        <div class="profil-form-grid">
+          <div class="profil-field">
+            <label class="profil-label">Prénom <span class="profil-required">*</span></label>
+            <input class="profil-input" type="text" [(ngModel)]="form.prenom" placeholder="Votre prénom" />
+          </div>
+          <div class="profil-field">
+            <label class="profil-label">Nom <span class="profil-required">*</span></label>
+            <input class="profil-input" type="text" [(ngModel)]="form.nom" placeholder="Votre nom" />
+          </div>
+          <div class="profil-field profil-field--full">
+            <label class="profil-label">Email</label>
+            <input class="profil-input profil-input--readonly" type="email" [value]="user.email" readonly />
+            <span class="profil-hint">🔒 Non modifiable</span>
+          </div>
+          <div class="profil-field profil-field--full">
+            <label class="profil-label">Téléphone</label>
+            <input class="profil-input" type="tel" [(ngModel)]="form.telephone" placeholder="06 XX XX XX XX" />
+          </div>
+        </div>
+
+        <div class="profil-form-actions">
+          <button class="profil-btn-save" (click)="saveProfile()" [disabled]="saveLoading">
+            @if (saveLoading) { ⏳ Enregistrement… } @else { 💾 Enregistrer }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: PROFIL MÉTIER (réparateur) ═══ -->
+    @if (activeTab === 'metier' && auth.isReparateur()) {
+      <div class="profil-card">
+        <h3 class="profil-card-title">Profil métier</h3>
+
+        <!-- Infos readonly -->
+        @if (repProfile) {
+          <div class="profil-readonly-group">
+            <div class="profil-readonly-item">
+              <span class="profil-readonly-label">SIRET</span>
+              <span class="profil-readonly-value">{{ repProfile.siret }}</span>
+              <span class="profil-readonly-lock">🔒</span>
+            </div>
+            @if (repProfile.numeroQualirepar) {
+              <div class="profil-readonly-item">
+                <span class="profil-readonly-label">N° Qualirepar</span>
+                <span class="profil-readonly-value">{{ repProfile.numeroQualirepar }}</span>
+                <span class="profil-readonly-lock">🔒</span>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="profil-form-grid">
+          <div class="profil-field profil-field--full">
+            <label class="profil-label">Bio / Présentation</label>
+            <textarea class="profil-input profil-textarea" [(ngModel)]="repForm.bio"
+                      rows="3" placeholder="Décrivez votre activité, vos spécialités…"></textarea>
+          </div>
+          <div class="profil-field">
+            <label class="profil-label">Années d'expérience</label>
+            <input class="profil-input" type="number" [(ngModel)]="repForm.anneesExperience" min="0" max="60" />
+          </div>
+          <div class="profil-field">
+            <label class="profil-label">Rayon d'intervention (km)</label>
+            <input class="profil-input" type="number" [(ngModel)]="repForm.rayonInterventionKm" min="1" max="200" />
+          </div>
+          <div class="profil-field">
+            <label class="profil-label">Ville</label>
+            <input class="profil-input" type="text" [(ngModel)]="repForm.ville" placeholder="Paris" />
+          </div>
+          <div class="profil-field">
+            <label class="profil-label">Code postal</label>
+            <input class="profil-input" type="text" [(ngModel)]="repForm.codePostal" placeholder="75000" />
+          </div>
+          <div class="profil-field profil-field--full">
+            <label class="profil-label">Adresse de l'atelier</label>
+            <input class="profil-input" type="text" [(ngModel)]="repForm.adresseAtelier" placeholder="12 rue de la Réparation, Paris" />
+          </div>
+
+          <!-- Spécialités -->
+          <div class="profil-field profil-field--full">
+            <label class="profil-label">Spécialités <span class="profil-required">*</span></label>
+            <div class="profil-specialites">
+              @for (type of allAppareilTypes; track type) {
+                <button class="profil-spec-btn" [class.selected]="hasSpecialite(type)"
+                        (click)="toggleSpecialite(type)">
+                  {{ APPAREIL_LABELS[type]?.icon }} {{ APPAREIL_LABELS[type]?.label }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="profil-form-actions">
+          <button class="profil-btn-save" (click)="saveRepProfile()" [disabled]="saveLoading">
+            @if (saveLoading) { ⏳ Enregistrement… } @else { 💾 Enregistrer le profil métier }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: SÉCURITÉ ═══ -->
+    @if (activeTab === 'securite') {
+      <div class="profil-card">
+        <h3 class="profil-card-title">Sécurité & Mot de passe</h3>
+        <p class="profil-card-note">Choisissez un mot de passe fort d'au moins 6 caractères.</p>
+
+        <div class="profil-form-grid">
+          <div class="profil-field">
+            <label class="profil-label">Nouveau mot de passe</label>
+            <input class="profil-input" type="password" [(ngModel)]="form.newPassword"
+                   placeholder="Nouveau mot de passe" autocomplete="new-password" />
+          </div>
+          <div class="profil-field">
+            <label class="profil-label">Confirmer le mot de passe</label>
+            <input class="profil-input" type="password" [(ngModel)]="form.confirmPassword"
+                   placeholder="Confirmer" autocomplete="new-password" />
+          </div>
+        </div>
+
+        <div class="profil-form-actions">
+          <button class="profil-btn-save" (click)="showPasswordChange=true; saveProfile()" [disabled]="saveLoading || !form.newPassword">
+            @if (saveLoading) { ⏳ … } @else { 🔑 Mettre à jour le mot de passe }
+          </button>
+        </div>
+      </div>
+    }
+
+  }
+</div>
+

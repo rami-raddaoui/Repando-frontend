@@ -103,17 +103,76 @@
 
     @if (auth.isLoggedIn() && auth.isClient()) {
       <a routerLink="/dashboard" class="btn-ghost">Mon espace</a>
-      <button class="btn-ghost" (click)="logout()">Déconnexion</button>
     }
 
     @if (auth.isLoggedIn() && auth.isReparateur()) {
       <a routerLink="/dashboard-reparateur" class="btn-ghost">Dashboard</a>
-      <button class="btn-ghost" (click)="logout()">Déconnexion</button>
     }
 
     @if (auth.isLoggedIn() && auth.isAdmin()) {
       <a routerLink="/admin" class="btn-ghost">Admin</a>
-      <button class="btn-ghost" (click)="logout()">Déconnexion</button>
+    }
+
+    <!-- ═══ AVATAR DROPDOWN (tous les utilisateurs connectés) ═══ -->
+    @if (auth.isLoggedIn()) {
+      <div class="user-avatar-wrap">
+        <button class="user-avatar-btn" (click)="toggleUserMenu()" title="Mon compte">
+          @if (auth.currentUser()?.avatarUrl) {
+            <img class="user-avatar-img" [src]="auth.currentUser()?.avatarUrl" alt="avatar" />
+          } @else {
+            <div class="user-avatar-initials">
+              {{ (auth.currentUser()?.prenom?.charAt(0) ?? '') + (auth.currentUser()?.nom?.charAt(0) ?? '') | uppercase }}
+            </div>
+          }
+          <span class="user-avatar-name">{{ auth.currentUser()?.prenom }}</span>
+          <svg class="user-avatar-chevron" [class.rotated]="showUserMenu" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        @if (showUserMenu) {
+          <div class="user-dropdown">
+            <!-- User info header -->
+            <div class="udd-header">
+              <div class="udd-avatar">
+                @if (auth.currentUser()?.avatarUrl) {
+                  <img class="udd-avatar-img" [src]="auth.currentUser()?.avatarUrl" alt="avatar" />
+                } @else {
+                  <div class="udd-avatar-initials">
+                    {{ (auth.currentUser()?.prenom?.charAt(0) ?? '') + (auth.currentUser()?.nom?.charAt(0) ?? '') | uppercase }}
+                  </div>
+                }
+              </div>
+              <div class="udd-info">
+                <div class="udd-name">{{ auth.currentUser()?.prenom }} {{ auth.currentUser()?.nom }}</div>
+                <div class="udd-email">{{ auth.currentUser()?.email }}</div>
+              </div>
+            </div>
+
+            <div class="udd-divider"></div>
+
+            <!-- Menu items -->
+            <a class="udd-item" routerLink="/profil" (click)="closeUserMenu()">
+              <span class="udd-item-icon">👤</span>
+              <span>Mon profil</span>
+              <span class="udd-item-arrow">›</span>
+            </a>
+            @if (lastLoginLabel) {
+              <div class="udd-item udd-item--meta">
+                <span class="udd-item-icon">🕐</span>
+                <span>{{ lastLoginLabel }}</span>
+              </div>
+            }
+
+            <div class="udd-divider"></div>
+
+            <button class="udd-item udd-item--danger" (click)="logout()">
+              <span class="udd-item-icon">🚪</span>
+              <span>Déconnexion</span>
+            </button>
+          </div>
+        }
+      </div>
     }
   </div>
 </nav>
