@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth';
+import { resolveStaticUrl } from '../../core/services/auth';
 import {
   UserDto, UserRole, TypeAppareil, APPAREIL_LABELS,
   UpdateProfileRequest, UpdateReparateurProfileRequest, ApiResponse
@@ -84,7 +85,7 @@ export class ProfilComponent implements OnInit {
   ngOnInit(): void {
     this.auth.me().subscribe({
       next: u => {
-        this.user = u;
+        this.user = { ...u, avatarUrl: resolveStaticUrl(u.avatarUrl) };
         this.form.prenom = u.prenom;
         this.form.nom = u.nom;
         this.form.telephone = u.telephone ?? '';
@@ -129,10 +130,11 @@ export class ProfilComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = () => {
       this.avatarLoading = true;
-      this.auth.uploadAvatar(reader.result as string).subscribe({
-        next: url => {
-          this.avatarLoading = false;
-          if (this.user) this.user = { ...this.user, avatarUrl: url };
+        this.auth.uploadAvatar(reader.result as string).subscribe({
+          next: url => {
+            this.avatarLoading = false;
+            const resolved = resolveStaticUrl(url) ?? url;
+            if (this.user) this.user = { ...this.user, avatarUrl: resolved };
           this.saveSuccess = 'Avatar mis à jour !';
           setTimeout(() => this.saveSuccess = '', 3000);
         },

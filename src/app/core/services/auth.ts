@@ -9,6 +9,13 @@ import {
 } from '../models/models';
 import { environment } from '../../../environments/environment';
 
+/** Resolve a relative static path to an absolute URL */
+export function resolveStaticUrl(path: string | null | undefined): string | undefined {
+  if (!path) return undefined;
+  if (path.startsWith('http') || path.startsWith('data:')) return path;
+  return `${environment.staticUrl}${path}`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'repando_token';
@@ -29,7 +36,7 @@ export class AuthService {
     ).pipe(
       map(res => {
         if (!res.success || !res.data) throw new Error(res.error ?? 'Erreur de connexion');
-        return res.data;
+        return { ...res.data, avatarUrl: resolveStaticUrl(res.data.avatarUrl) };
       }),
       tap(data => this.storeSession(data))
     );
@@ -41,7 +48,7 @@ export class AuthService {
     ).pipe(
       map(res => {
         if (!res.success || !res.data) throw new Error(res.error ?? 'Erreur d\'inscription');
-        return res.data;
+        return { ...res.data, avatarUrl: resolveStaticUrl(res.data.avatarUrl) };
       }),
       tap(data => this.storeSession(data))
     );
@@ -59,14 +66,13 @@ export class AuthService {
     ).pipe(
       map(res => res.data!),
       tap(user => {
-        // Patch the stored session with updated info
         const current = this._currentUser();
         if (current) {
           const updated: AuthResponse = {
             ...current,
             prenom: user.prenom,
             nom: user.nom,
-            avatarUrl: user.avatarUrl
+            avatarUrl: resolveStaticUrl(user.avatarUrl)
           };
           this.storeSession(updated);
         }
@@ -79,9 +85,10 @@ export class AuthService {
       `${environment.apiUrl}/auth/avatar`, { dataUrl }
     ).pipe(
       map(res => res.data!),
-      tap(avatarUrl => {
+      tap(avatarPath => {
+        const resolvedUrl = resolveStaticUrl(avatarPath)!;
         const current = this._currentUser();
-        if (current) this.storeSession({ ...current, avatarUrl });
+        if (current) this.storeSession({ ...current, avatarUrl: resolvedUrl });
       })
     );
   }
