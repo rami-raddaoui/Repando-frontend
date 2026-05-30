@@ -40,39 +40,7 @@
 }
 
 /* ─── Filter banner ─────────────────────────────────────────── */
-.msgr-filter-banner {
-  padding: 8px 14px;
-  background: #eff6ff;
-  border-bottom: 1px solid #bfdbfe;
-  flex-shrink: 0;
-}
-
-.msgr-filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1d4ed8;
-  background: #dbeafe;
-  border-radius: 20px;
-  padding: 4px 10px;
-}
-
-.msgr-filter-clear {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #1d4ed8;
-  font-size: 13px;
-  line-height: 1;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  opacity: .7;
-  transition: opacity .15s;
-  &:hover { opacity: 1; }
-}
+/* (removed — replaced by context bar in chat area) */
 
 .msgr-conv-item {
   display: flex; align-items: center; gap: 12px; padding: 12px 16px;
@@ -110,6 +78,105 @@
 .msgr-chat-win {
   display: flex; flex-direction: column; overflow: hidden; background: #f8fafc;
 }
+/* ─── Context bar (demande filtrée) ─────────────────────────── */
+.msgr-context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f0f9ff 100%);
+  border-bottom: 1px solid #c7d2fe;
+  flex-shrink: 0;
+  animation: slideDown .2s ease;
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+.msgr-context-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.msgr-context-bar__icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.msgr-context-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.msgr-context-bar__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.msgr-context-bar__value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.msgr-context-bar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.msgr-context-bar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f46e5;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #a5b4fc;
+  background: #fff;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+  }
+}
+
+.msgr-context-bar__all {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: none;
+  border: 1.5px solid #d1d5db;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #9ca3af;
+    color: #374151;
+    background: #f9fafb;
+  }
+}
+
+/* ─── Placeholder (no conversation selected) ─────────────────── */
 .msgr-placeholder {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; padding: 40px;

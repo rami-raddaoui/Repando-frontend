@@ -19,14 +19,6 @@
       </div>
     }
 
-    @if (demandeIdFilter) {
-      <div class="msgr-filter-banner">
-        <span class="msgr-filter-chip">
-          📋 {{ demandeAppareilFilter || 'Demande filtrée' }}
-          <button class="msgr-filter-clear" (click)="clearFilter()" title="Voir toutes les conversations">✕</button>
-        </span>
-      </div>
-    }
 
     @for (m of filteredMatchings; track m.id) {
       <div class="msgr-conv-item" [class.active]="activeMatchingId === m.id"
@@ -55,6 +47,27 @@
 
   <!-- ═══ CHAT WINDOW ═══════════════════════════════════════════ -->
   <main class="msgr-chat-win">
+
+    <!-- ── Bannière contexte demande filtrée ── -->
+    @if (demandeIdFilter) {
+      <div class="msgr-context-bar">
+        <div class="msgr-context-bar__left">
+          <div class="msgr-context-bar__icon">{{ demandeAppareilIcon || '📋' }}</div>
+          <div class="msgr-context-bar__text">
+            <span class="msgr-context-bar__label">Conversations pour</span>
+            <span class="msgr-context-bar__value">{{ demandeAppareilFilter || 'cette demande' }}</span>
+          </div>
+        </div>
+        <div class="msgr-context-bar__right">
+          <a class="msgr-context-bar__link" [routerLink]="['/mes-demandes']">
+            🔍 Voir la demande
+          </a>
+          <button class="msgr-context-bar__all" (click)="clearFilter()">
+            Toutes les conversations
+          </button>
+        </div>
+      </div>
+    }
 
     @if (!activeMatchingId) {
       <div class="msgr-placeholder">

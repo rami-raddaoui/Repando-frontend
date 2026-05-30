@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { MessagerieService, ReclamationDto } from '../../core/services/messagerie';
 import { DemandeService } from '../../core/services/demande';
 import { AuthService } from '../../core/services/auth';
-import { MessageDto, MatchingDto, TypeMessage } from '../../core/models/models';
+import { MessageDto, MatchingDto, TypeMessage, APPAREIL_LABELS } from '../../core/models/models';
 
 @Component({
   selector: 'app-messagerie',
@@ -22,6 +22,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   filteredMatchings: MatchingDto[] = [];  // matchings shown in sidebar (may be filtered by demandeId)
   demandeIdFilter: string | null = null;   // when set, only show convs for this demande
   demandeAppareilFilter: string = '';
+  demandeAppareilIcon: string = '';
   messages: MessageDto[] = [];
   activeMatchingId: string | null = null;
   activeMatching: MatchingDto | null = null;
@@ -164,7 +165,11 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     if (this.demandeIdFilter) {
       this.filteredMatchings = this.matchings.filter(m => m.demandeId === this.demandeIdFilter);
       if (this.filteredMatchings.length > 0) {
-        this.demandeAppareilFilter = this.filteredMatchings[0].demandeAppareil;
+        const appareil = this.filteredMatchings[0].demandeAppareil;
+        this.demandeAppareilFilter = appareil;
+        // Resolve icon from APPAREIL_LABELS key matching the label
+        const entry = Object.values(APPAREIL_LABELS).find(v => v.label === appareil);
+        this.demandeAppareilIcon = entry?.icon ?? '📋';
       }
     } else {
       this.filteredMatchings = this.matchings;
@@ -174,8 +179,8 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   clearFilter(): void {
     this.demandeIdFilter = null;
     this.demandeAppareilFilter = '';
+    this.demandeAppareilIcon = '';
     this.filteredMatchings = this.matchings;
-    // update URL without filter
     this.router.navigate(['/messagerie'], { replaceUrl: true });
   }
 
