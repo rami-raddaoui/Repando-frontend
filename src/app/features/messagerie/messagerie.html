@@ -204,10 +204,18 @@
         </div>
       }
 
+      <!-- Surveillance admin banner -->
+      @if (auth.isImpersonating()) {
+        <div class="msgr-surveillance-banner">
+          <span>🕵️</span>
+          <span><strong>Mode surveillance admin</strong> — lecture seule. Aucune action n'est enregistrée.</span>
+        </div>
+      }
+
       <!-- ═══ PRISE EN CHARGE — Réparateur ═══ -->
 
       <!-- [REP] État 1: Peut envoyer la demande -->
-      @if (auth.isReparateur() && !isClosed && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm && !confirmedByClient) {
+      @if (auth.isReparateur() && !isClosed && !auth.isImpersonating() && activeMatching?.statut === 'ACCEPTE' && !awaitingClientConfirm && !confirmedByClient) {
         <div class="msgr-pec-cta msgr-pec-cta--rep">
           <div class="msgr-pec-cta__glow"></div>
           <div class="msgr-pec-cta__body">
@@ -262,7 +270,7 @@
       <!-- ═══ PRISE EN CHARGE — Client ═══ -->
 
       <!-- [CLIENT] État 1: Doit confirmer -->
-      @if (auth.isClient() && !isClosed && awaitingClientConfirm && !confirmedByClient) {
+      @if (auth.isClient() && !isClosed && !auth.isImpersonating() && awaitingClientConfirm && !confirmedByClient) {
         <div class="msgr-pec-cta msgr-pec-cta--client">
           <div class="msgr-pec-cta__glow msgr-pec-cta__glow--blue"></div>
           <div class="msgr-pec-cta__body">
@@ -299,7 +307,7 @@
       }
 
       <!-- Input bar -->
-      @if (!isClosed) {
+      @if (!isClosed && !auth.isImpersonating()) {
         <!-- Quick share chips -->
         <div class="msgr-quick-actions">
           @if (userTelephone()) {

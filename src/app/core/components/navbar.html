@@ -26,8 +26,8 @@
       <a routerLink="/mes-demandes" class="nav-link">Mes demandes</a>
     }
 
-    <!-- ═══ MESSAGES BUBBLE (client + réparateur) ═══ -->
-    @if (auth.isLoggedIn() && !auth.isAdmin()) {
+    <!-- ═══ MESSAGES BUBBLE (client + réparateur + admin en mode surveillance) ═══ -->
+    @if (auth.isLoggedIn() && (!auth.isAdmin() || auth.isImpersonating())) {
       <div class="msg-bubble-wrap">
         <button class="msg-bubble-btn" (click)="toggleBubble()" title="Messages">
           💬
@@ -41,6 +41,9 @@
               <span class="mbd-title">Messages</span>
               <a routerLink="/messagerie" class="mbd-see-all" (click)="closeAll()">Tout voir →</a>
             </div>
+            @if (auth.isImpersonating()) {
+              <div class="bubble-readonly-badge">👁️ Mode surveillance — lecture seule</div>
+            }
             @if (recentConvs.length === 0) {
               <div class="mbd-empty">Aucune conversation</div>
             }
@@ -78,10 +81,13 @@
           <div class="notif-dropdown">
             <div class="notif-header">
               <span class="notif-title">Notifications</span>
-              @if (notifCount > 0) {
+              @if (notifCount > 0 && !auth.isImpersonating()) {
                 <button class="notif-mark-all" (click)="markAllRead()">Tout marquer lu</button>
               }
             </div>
+            @if (auth.isImpersonating()) {
+              <div class="bubble-readonly-badge bubble-readonly-badge--notif">👁️ Mode surveillance — lecture seule</div>
+            }
             @if (notifications.length === 0) {
               <div class="notif-empty">
                 <div style="font-size:28px;margin-bottom:8px">🔕</div>

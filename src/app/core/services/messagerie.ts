@@ -191,7 +191,10 @@ export class MessagerieService {
 
   /** Force-refresh unread counts and recent convs from API */
   refreshConvs(): void {
-    if (!this.auth.isLoggedIn() || this.auth.isAdmin()) return;
+    // En mode impersonation le rôle est CLIENT/REPARATEUR, pas ADMIN — on peut rafraîchir
+    // Bloquer uniquement pour l'admin pur (non impersonifié)
+    if (!this.auth.isLoggedIn()) return;
+    if (this.auth.isAdmin() && !this.auth.isImpersonating()) return;
     this.http.get<ApiResponse<MatchingDto[]>>(`${environment.apiUrl}/matchings`)
       .pipe(map(r => r.data ?? []))
       .subscribe({ next: m => this.setRecentConvs(m), error: () => {} });
@@ -309,9 +312,12 @@ export class MessagerieService {
   // HTTP
   // ═══════════════════════════════════════════════════════════
   getMessages(matchingId: string): Observable<MessageDto[]> {
-    return this.http.get<ApiResponse<MessageDto[]>>(
-      `${environment.apiUrl}/messages/matching/${matchingId}`
-    ).pipe(map(r => (r.data ?? []).map(m => this.normalizeMsg(m))));
+    // En mode impersonation admin : utiliser l'endpoint readonly (sans marquer comme lu)
+    const endpoint = this.auth.isImpersonating()
+      ? `${environment.apiUrl}/messages/matching/${matchingId}/readonly`
+      : `${environment.apiUrl}/messages/matching/${matchingId}`;
+    return this.http.get<ApiResponse<MessageDto[]>>(endpoint)
+      .pipe(map(r => (r.data ?? []).map(m => this.normalizeMsg(m))));
   }
 
   sendMessage(matchingId: string, req: SendMessageRequest): Observable<MessageDto> {

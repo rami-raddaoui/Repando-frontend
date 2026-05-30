@@ -28,6 +28,11 @@ export class AuthService {
   readonly isReparateur = computed(() => this._currentUser()?.role === UserRole.REPARATEUR);
   readonly isAdmin      = computed(() => this._currentUser()?.role === UserRole.ADMIN);
 
+  /** Vrai si l'admin navigue en mode surveillance (impersonation) */
+  readonly isImpersonating = computed(() =>
+    typeof window !== 'undefined' && !!sessionStorage.getItem('repando_admin_token')
+  );
+
   constructor(private http: HttpClient, private router: Router) {}
 
   login(payload: LoginRequest): Observable<AuthResponse> {

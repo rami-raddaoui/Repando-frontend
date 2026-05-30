@@ -41,6 +41,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.msgService.refreshConvs();
       // Connect persistent global hub
       this.msgService.connectGlobalHub();
+    } else if (this.auth.isImpersonating()) {
+      // Mode surveillance : charger les convs sans déclencher d'actions admin
+      this.msgService.refreshConvs();
+      this.msgService.connectGlobalHub();
     }
 
     this.subs.push(
@@ -86,7 +90,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   navigateToNotif(notif: AppNotification): void {
-    this.msgService.markNotifRead(notif.id);
+    // En mode impersonation : ne pas marquer comme lu
+    if (!this.auth.isImpersonating()) {
+      this.msgService.markNotifRead(notif.id);
+    }
     this.showNotifPanel = false;
     if (notif.matchingId) {
       this.router.navigate(['/messagerie', notif.matchingId]);
@@ -94,6 +101,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   markAllRead(): void {
+    // En mode impersonation : ne rien marquer
+    if (this.auth.isImpersonating()) return;
     this.msgService.markAllNotifsRead();
   }
 

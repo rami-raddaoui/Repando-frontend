@@ -373,6 +373,13 @@
   background: #f1f5f9; border-top: 1px solid #e2e8f0; font-size: 13px; color: #475569;
 }
 
+.msgr-surveillance-banner {
+  display: flex; align-items: center; gap: 10px; padding: 10px 20px; flex-shrink: 0;
+  background: linear-gradient(90deg, #1e1b4b 0%, #312e81 100%);
+  color: #c7d2fe; font-size: 12.5px;
+  strong { color: #e0e7ff; }
+}
+
 /* Input bar */
 .msgr-input-bar {
   display: flex; gap: 10px; padding: 14px 20px; background: #fff;

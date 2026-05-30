@@ -273,7 +273,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       },
       error: () => { this.loading = false; }
     });
-    if (this.auth.isReparateur()) {
+    if (this.auth.isReparateur() && !this.auth.isImpersonating()) {
       this.demandeService.marquerVu(matchingId).subscribe();
     }
     this.loadMatchings();
