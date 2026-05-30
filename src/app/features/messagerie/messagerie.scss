@@ -508,3 +508,306 @@
   .msgr-sidebar { display: none; }
 }
 
+/* ─── Coordonnees message bubbles ────────────────────────────── */
+.msgr-coord-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 16px;
+  padding: 12px 16px;
+  max-width: 300px;
+  animation: msgr-fade-in .2s ease;
+
+  &.msgr-coord-bubble--own {
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    border: 1.5px solid #c7d2fe;
+    border-bottom-right-radius: 4px;
+    font-size: 13px;
+    color: #3730a3;
+    align-items: center;
+  }
+
+  &.msgr-coord-bubble--other {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-bottom-left-radius: 4px;
+  }
+}
+
+.msgr-coord-icon { font-size: 20px; flex-shrink: 0; line-height: 1.2; }
+
+.msgr-coord-sent {
+  font-size: 13px;
+  color: #3730a3;
+  line-height: 1.4;
+  strong { display: block; margin-top: 2px; font-size: 14px; }
+}
+
+.msgr-coord-content { flex: 1; min-width: 0; }
+.msgr-coord-label { font-size: 12px; color: #64748b; margin-bottom: 6px; line-height: 1.4; }
+
+.msgr-coord-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+  letter-spacing: .02em;
+}
+
+.msgr-coord-hidden {
+  font-size: 16px;
+  color: #94a3b8;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+
+.msgr-coord-toggle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6366f1;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color .15s;
+
+  &:hover { color: #4338ca; }
+
+  &.msgr-coord-toggle--reveal {
+    background: #f0f0ff;
+    border: 1.5px solid #c7d2fe;
+    border-radius: 20px;
+    padding: 4px 10px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+/* ─── Quick actions ──────────────────────────────────────────── */
+.msgr-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.msgr-quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4f46e5;
+  background: #f0f0ff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79,70,229,.25);
+  }
+}
+
+/* ─── Photo button ───────────────────────────────────────────── */
+.msgr-btn-photo {
+  width: 40px; height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+
+  &:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #2563eb;
+  }
+
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.msgr-spinner-sm {
+  width: 16px; height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+/* ─── Photo message in chat ──────────────────────────────────── */
+.msgr-photo-msg {
+  position: relative;
+  max-width: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: zoom-in;
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+  transition: transform .15s;
+
+  &:hover { transform: scale(1.02); }
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+  }
+
+  &.msgr-photo-msg--own { border-bottom-right-radius: 4px; }
+  &:not(.msgr-photo-msg--own) { border-bottom-left-radius: 4px; }
+}
+
+.msgr-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  opacity: 0;
+  transition: opacity .15s;
+  .msgr-photo-msg:hover & { opacity: 1; }
+}
+
+/* ─── Share modal ────────────────────────────────────────────── */
+.msgr-share-modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px 28px 28px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,.22);
+  animation: msgr-slide-up .2s ease;
+}
+
+.msgr-share-modal__icon { font-size: 52px; margin-bottom: 14px; }
+.msgr-share-modal__title {
+  font-size: 20px; font-weight: 800; color: #111;
+  margin: 0 0 12px;
+}
+.msgr-share-modal__desc {
+  font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 24px;
+  strong { color: #4f46e5; font-size: 15px; }
+}
+.msgr-share-modal__actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+
+/* ─── Detail demande modal ───────────────────────────────────── */
+.detail-modal {
+  background: #fff;
+  border-radius: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,.22);
+  display: flex;
+  flex-direction: column;
+  animation: msgr-slide-up .2s ease;
+}
+
+.detail-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid #f3f4f6;
+  position: sticky; top: 0;
+  background: #fff; z-index: 1;
+  border-radius: 24px 24px 0 0;
+}
+
+.detail-modal__icon { font-size: 36px; flex-shrink: 0; }
+.detail-modal__title-group { flex: 1; min-width: 0; }
+.detail-modal__title { font-size: 18px; font-weight: 800; margin: 0 0 2px; color: #111; }
+.detail-modal__date { font-size: 12px; color: #9ca3af; }
+.detail-modal__statut { font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.detail-modal__close {
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: #f3f4f6; font-size: 15px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  &:hover { background: #e5e7eb; }
+}
+.detail-modal__body { padding: 18px 22px; flex: 1; }
+.detail-modal__footer {
+  display: flex; gap: 10px; padding: 14px 22px;
+  border-top: 1px solid #f3f4f6; justify-content: flex-end;
+  position: sticky; bottom: 0; background: #fff;
+  border-radius: 0 0 24px 24px;
+}
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.detail-item {
+  background: #f9fafb; border-radius: 10px; padding: 10px 12px;
+  border: 1px solid #f0f0f0;
+}
+.detail-item__label { font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.detail-item__value { font-size: 13px; font-weight: 600; color: #111; }
+.detail-section { margin-bottom: 16px; }
+.detail-section__title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 8px; }
+.detail-desc {
+  background: #f9fafb; border-radius: 10px; padding: 12px 14px;
+  font-size: 13px; line-height: 1.6; color: #374151; border: 1px solid #f0f0f0;
+}
+.detail-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+.detail-photo {
+  position: relative; aspect-ratio: 1; border-radius: 10px;
+  overflow: hidden; cursor: zoom-in; border: 1.5px solid #e5e7eb;
+  img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+  &:hover img { transform: scale(1.08); }
+  &__overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; opacity: 0; transition: opacity .2s;
+  }
+  &:hover &__overlay { opacity: 1; }
+}
+
+/* ─── Lightbox ───────────────────────────────────────────────── */
+.lightbox-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: msgr-fade-in .15s ease;
+}
+.lightbox-img {
+  max-width: 90vw; max-height: 88vh; border-radius: 12px;
+  box-shadow: 0 0 60px rgba(0,0,0,.5); object-fit: contain;
+}
+.lightbox-close {
+  position: absolute; top: 20px; right: 20px;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: none; color: #fff;
+  font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  &:hover { background: rgba(255,255,255,.28); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+

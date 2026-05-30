@@ -22,7 +22,7 @@ export enum StatutMatching {
   NOUVEAU = 'NOUVEAU', VU = 'VU', DEVIS_ENVOYE = 'DEVIS_ENVOYE',
   ACCEPTE = 'ACCEPTE', CLOTURE = 'CLOTURE', REFUSE = 'REFUSE', ANNULE = 'ANNULE', EXPIRE = 'EXPIRE'
 }
-export enum TypeMessage { TEXTE = 'TEXTE', PHOTO = 'PHOTO', DEVIS = 'DEVIS', SYSTEME = 'SYSTEME', REFUS = 'REFUS' }
+export enum TypeMessage { TEXTE = 'TEXTE', PHOTO = 'PHOTO', DEVIS = 'DEVIS', SYSTEME = 'SYSTEME', REFUS = 'REFUS', COORDONNEES = 'COORDONNEES' }
 
 // ============================================================
 // GENERIC API WRAPPER — correspond à ApiResponse<T> du backend

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -6,8 +6,8 @@ import { Subscription } from 'rxjs';
 import { MessagerieService, ReclamationDto } from '../../core/services/messagerie';
 import { DemandeService } from '../../core/services/demande';
 import { AuthService } from '../../core/services/auth';
-import { MessageDto, MatchingDto, TypeMessage, APPAREIL_LABELS } from '../../core/models/models';
-
+import { MessageDto, MatchingDto, TypeMessage, APPAREIL_LABELS, DemandeDto, StatutDemande } from '../../core/models/models';
+import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-messagerie',
   standalone: true,
@@ -17,10 +17,10 @@ import { MessageDto, MatchingDto, TypeMessage, APPAREIL_LABELS } from '../../cor
 })
 export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesEnd') messagesEnd!: ElementRef;
-
+  @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
   matchings: MatchingDto[] = [];
-  filteredMatchings: MatchingDto[] = [];  // matchings shown in sidebar (may be filtered by demandeId)
-  demandeIdFilter: string | null = null;   // when set, only show convs for this demande
+  filteredMatchings: MatchingDto[] = [];
+  demandeIdFilter: string | null = null;
   demandeAppareilFilter: string = '';
   demandeAppareilIcon: string = '';
   messages: MessageDto[] = [];
@@ -29,32 +29,53 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   newMessage = '';
   loading = false;
   isClosed = false;
-  awaitingClientConfirm = false;   // réparateur a envoyé demande, client pas encore confirmé
-  confirmedByClient = false;       // client a confirmé la prise en charge
-
+  awaitingClientConfirm = false;
+  confirmedByClient = false;
   readonly TypeMessage = TypeMessage;
-
-  // ── Signalement ──────────────────────────────────────────────
+  readonly StatutDemande = StatutDemande;
+  readonly APPAREIL_LABELS = APPAREIL_LABELS;
+  readonly staticUrl = environment.staticUrl;
+  // Detail demande popup
+  showDemandeDetail = false;
+  demandeDetail: DemandeDto | null = null;
+  detailLightboxUrl: string | null = null;
+  // Partage rapide
+  showShareModal = false;
+  shareType: 'phone' | 'email' | null = null;
+  shareValue = '';
+  userTelephone = signal<string | null>(null);
+  userEmail = '';
+  // Messages dont les coordonnees sont revelees (par l'ID du message)
+  revealedMessages = new Set<string>();
+  // Upload photos
+  photoUploadCount = 0;
+  photoUploading = false;
+  readonly MAX_PHOTOS = 10;
+  // Signalement
   showSignalModal = false;
   signalObjet = '';
   signalMessage = '';
   signalLoading = false;
   signalSuccess = '';
   signalError = '';
-
-  // ── Validation prise en charge ───────────────────────────────
+  // Prise en charge
   actionLoading = false;
   actionSuccess = '';
   actionError = '';
-
-  // ── Mes réclamations ─────────────────────────────────────────
+  // Reclamations
   showReclamations = false;
   reclamations: ReclamationDto[] = [];
   reclamationsLoading = false;
-
+  readonly panneLabels: Record<string, { label: string; icon: string }> = {
+    NE_DEMARRE_PLUS: { label: 'Ne demarre plus', icon: 'lightning' },
+    FUITE_EAU:       { label: "Fuite d'eau",     icon: 'droplet'   },
+    BRUIT_ANORMAL:   { label: 'Bruit anormal',   icon: 'sound'     },
+    CODE_ERREUR:     { label: 'Code erreur',      icon: 'red'       },
+    NE_CHAUFFE_PLUS: { label: 'Ne chauffe plus',  icon: 'temp'      },
+    AUTRE:           { label: 'Autre',             icon: 'question'  },
+  };
   private subs: Subscription[] = [];
   private shouldScrollDown = false;
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -62,12 +83,18 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     public messagerieService: MessagerieService,
     private demandeService: DemandeService,
   ) {}
-
   ngOnInit(): void {
     const matchingIdFromUrl = this.route.snapshot.paramMap.get('matchingId');
     this.demandeIdFilter = this.route.snapshot.queryParamMap.get('demandeId');
-
-    // Load matchings first, then open conversation from URL (so activeMatching is populated)
+    // Load user profile for phone + email
+    this.userEmail = this.auth.currentUser()?.email ?? '';
+    this.auth.me().subscribe({
+      next: u => {
+        this.userTelephone.set(u.telephone ?? null);
+        this.userEmail = u.email;
+      },
+      error: () => {}
+    });
     this.demandeService.getMyMatchings().subscribe({
       next: m => {
         this.matchings = m;
@@ -76,45 +103,41 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
         if (matchingIdFromUrl) {
           this.openConversation(matchingIdFromUrl);
         } else if (this.demandeIdFilter) {
-          // Auto-open most recent matching for this demande
-          const demandeMatchings = m.filter(x => x.demandeId === this.demandeIdFilter);
-          if (demandeMatchings.length > 0) {
-            // Most recent = first (sorted by updatedAt desc from backend)
-            this.openConversation(demandeMatchings[0].id);
-            this.demandeAppareilFilter = demandeMatchings[0].demandeAppareil;
+          const dm = m.filter(x => x.demandeId === this.demandeIdFilter);
+          if (dm.length > 0) {
+            this.openConversation(dm[0].id);
+            this.demandeAppareilFilter = dm[0].demandeAppareil;
           }
+          this.demandeService.getById(this.demandeIdFilter).subscribe({
+            next: d => { this.demandeDetail = d; },
+            error: () => {}
+          });
         }
       },
       error: () => {
         if (matchingIdFromUrl) this.openConversation(matchingIdFromUrl);
       }
     });
-
     this.subs.push(
       this.messagerieService.messages$.subscribe(msgs => {
         this.messages = msgs;
         this.shouldScrollDown = true;
       }),
-
       this.messagerieService.convClosed$.subscribe(ev => {
         if (ev && this.activeMatchingId === ev.matchingId) {
           this.isClosed = true;
-          // Refresh matching statut
           this.loadMatchings();
         }
       }),
-
       this.messagerieService.priseEnChargeProposee$.subscribe(mid => {
         if (mid && mid === this.activeMatchingId) {
           this.awaitingClientConfirm = true;
-          // Update the activeMatching object too so the banner stays after loadMatchings
           if (this.activeMatching) {
             this.activeMatching = { ...this.activeMatching, awaitingClientConfirm: true };
           }
           this.loadMatchings();
         }
       }),
-
       this.messagerieService.priseEnChargeConfirmee$.subscribe(mid => {
         if (mid && mid === this.activeMatchingId) {
           this.awaitingClientConfirm = false;
@@ -130,19 +153,16 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       })
     );
   }
-
   ngAfterViewChecked(): void {
     if (this.shouldScrollDown) {
       this.scrollToBottom();
       this.shouldScrollDown = false;
     }
   }
-
   ngOnDestroy(): void {
     this.messagerieService.disconnectHub();
     this.subs.forEach(s => s.unsubscribe());
   }
-
   loadMatchings(): void {
     this.demandeService.getMyMatchings().subscribe({
       next: m => {
@@ -160,22 +180,19 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       error: () => {}
     });
   }
-
   applyFilter(): void {
     if (this.demandeIdFilter) {
       this.filteredMatchings = this.matchings.filter(m => m.demandeId === this.demandeIdFilter);
       if (this.filteredMatchings.length > 0) {
         const appareil = this.filteredMatchings[0].demandeAppareil;
         this.demandeAppareilFilter = appareil;
-        // Resolve icon from APPAREIL_LABELS key matching the label
         const entry = Object.values(APPAREIL_LABELS).find(v => v.label === appareil);
-        this.demandeAppareilIcon = entry?.icon ?? '📋';
+        this.demandeAppareilIcon = entry?.icon ?? '';
       }
     } else {
       this.filteredMatchings = this.matchings;
     }
   }
-
   clearFilter(): void {
     this.demandeIdFilter = null;
     this.demandeAppareilFilter = '';
@@ -183,12 +200,45 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.filteredMatchings = this.matchings;
     this.router.navigate(['/messagerie'], { replaceUrl: true });
   }
-
+  // ── Detail demande ────────────────────────────────────────────
+  openDemandeDetail(): void {
+    if (!this.demandeDetail && this.demandeIdFilter) {
+      this.demandeService.getById(this.demandeIdFilter).subscribe({
+        next: d => { this.demandeDetail = d; this.showDemandeDetail = true; },
+        error: () => {}
+      });
+    } else {
+      this.showDemandeDetail = true;
+    }
+  }
+  closeDemandeDetail(): void { this.showDemandeDetail = false; }
+  openLightbox(url: string): void { this.detailLightboxUrl = url; }
+  closeLightbox(): void { this.detailLightboxUrl = null; }
+  photoUrl(url: string): string {
+    return url.startsWith('http') ? url : `${this.staticUrl}${url}`;
+  }
+  getPanneLabel(key: string): { label: string; icon: string } {
+    return this.panneLabels[key] ?? { label: key, icon: '' };
+  }
+  getStatutMatchingLabel(statut: string): { label: string; color: string } {
+    const map: Record<string, { label: string; color: string }> = {
+      NOUVEAU:      { label: 'Nouveau',    color: '#6366f1' },
+      VU:           { label: 'Vu',         color: '#8b5cf6' },
+      DEVIS_ENVOYE: { label: 'Devis recu', color: '#f59e0b' },
+      ACCEPTE:      { label: 'En cours',   color: '#10b981' },
+      CLOTURE:      { label: 'Cloture',    color: '#22c55e' },
+      REFUSE:       { label: 'Refuse',     color: '#ef4444' },
+      ANNULE:       { label: 'Annule',     color: '#ef4444' },
+      EXPIRE:       { label: 'Expire',     color: '#94a3b8' },
+    };
+    return map[statut] ?? { label: statut, color: '#94a3b8' };
+  }
   openConversation(matchingId: string): void {
     if (this.activeMatchingId === matchingId) return;
     this.messagerieService.disconnectHub();
     this.activeMatchingId = matchingId;
-    // Set from current list (may be stale), loadMatchings below will refresh
+    this.photoUploadCount = 0;
+    this.revealedMessages = new Set<string>();
     const found = this.matchings.find(m => m.id === matchingId) ?? null;
     this.activeMatching = found;
     this.isClosed = this.isConvClosed(found?.statut ?? '');
@@ -197,37 +247,63 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.loading = true;
     this.actionSuccess = '';
     this.actionError = '';
-
     this.messagerieService.getMessages(matchingId).subscribe({
       next: msgs => {
         this.messagerieService.setMessages(msgs);
+        this.photoUploadCount = msgs.filter(m => m.type === TypeMessage.PHOTO).length;
         this.loading = false;
         this.shouldScrollDown = true;
       },
       error: () => this.loading = false
     });
-
     this.messagerieService.connectHub(matchingId);
-
     if (this.auth.isReparateur()) {
       this.demandeService.marquerVu(matchingId).subscribe();
     }
-
-    // Refresh matchings to get latest awaitingClientConfirm from backend
     this.loadMatchings();
   }
-
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.activeMatchingId || this.isClosed) return;
     const text = this.newMessage.trim();
     this.newMessage = '';
     const matchingId = this.activeMatchingId;
+    this.messagerieService.sendMessage(matchingId, { contenu: text, type: TypeMessage.TEXTE }).subscribe({
+      next: (msg) => {
+        const current = this.messagerieService.getMessagesSnapshot();
+        if (!current.find(m => m.id === msg.id)) {
+          this.messagerieService.appendMessage(msg);
+        }
+      },
+      error: (e) => {
+        // Restore message on error (blocked by anti-desintermediation)
+        this.newMessage = text;
+        if (e?.error?.error) {
+          this.actionError = e.error.error;
+          setTimeout(() => this.actionError = '', 5000);
+        }
+      }
+    });
+  }
+  // ── Partage rapide ────────────────────────────────────────────
+  openShareModal(type: 'phone' | 'email'): void {
+    this.shareType = type;
+    this.shareValue = type === 'phone' ? (this.userTelephone() ?? '') : this.userEmail;
+    this.showShareModal = true;
+  }
+  closeShareModal(): void { this.showShareModal = false; this.shareType = null; }
+  confirmShare(): void {
+    if (!this.shareType || !this.shareValue || !this.activeMatchingId || this.isClosed) return;
+    // Format: "phone::+33612345678" ou "email::user@ex.com"
+    const contenu = this.shareType + '::' + this.shareValue;
+    const label = this.shareType === 'phone' ? 'Mon numero de telephone' : 'Mon adresse email';
+    this.showShareModal = false;
+    this.shareType = null;
+    const matchingId = this.activeMatchingId;
     this.messagerieService.sendMessage(matchingId, {
-      contenu: text,
-      type: TypeMessage.TEXTE
+      contenu: contenu,
+      type: TypeMessage.COORDONNEES
     }).subscribe({
       next: (msg) => {
-        // Optimistically add message if not already present (in case SignalR echoes it back too)
         const current = this.messagerieService.getMessagesSnapshot();
         if (!current.find(m => m.id === msg.id)) {
           this.messagerieService.appendMessage(msg);
@@ -236,24 +312,82 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       error: () => {}
     });
   }
-
+  // Extraire le type et la valeur d'un message COORDONNEES
+  getCoordType(msg: MessageDto): 'phone' | 'email' {
+    return msg.contenu?.startsWith('phone::') ? 'phone' : 'email';
+  }
+  getCoordValue(msg: MessageDto): string {
+    const raw = msg.contenu ?? '';
+    const idx = raw.indexOf('::');
+    return idx >= 0 ? raw.substring(idx + 2) : raw;
+  }
+  toggleReveal(msgId: string): void {
+    if (this.revealedMessages.has(msgId)) {
+      this.revealedMessages.delete(msgId);
+    } else {
+      this.revealedMessages.add(msgId);
+    }
+    // Force change detection
+    this.revealedMessages = new Set(this.revealedMessages);
+  }
+  isRevealed(msgId: string): boolean {
+    return this.revealedMessages.has(msgId);
+  }
+  // ── Upload photo ──────────────────────────────────────────────
+  triggerPhotoUpload(): void {
+    this.photoInput?.nativeElement?.click();
+  }
+  onPhotoSelect(event: Event): void {
+    if (this.isClosed || this.photoUploadCount >= this.MAX_PHOTOS || !this.activeMatchingId) return;
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      this.photoUploading = true;
+      this.demandeService.uploadPhotos([dataUrl]).subscribe({
+        next: (urls) => {
+          if (urls?.[0] && this.activeMatchingId) {
+            const matchingId = this.activeMatchingId;
+            this.messagerieService.sendMessage(matchingId, {
+              contenu: '',
+              photoUrl: urls[0],
+              type: TypeMessage.PHOTO
+            }).subscribe({
+              next: (msg) => {
+                this.photoUploading = false;
+                this.photoUploadCount++;
+                const current = this.messagerieService.getMessagesSnapshot();
+                if (!current.find(m => m.id === msg.id)) {
+                  this.messagerieService.appendMessage(msg);
+                }
+              },
+              error: () => { this.photoUploading = false; }
+            });
+          } else {
+            this.photoUploading = false;
+          }
+        },
+        error: () => { this.photoUploading = false; }
+      });
+    };
+    reader.readAsDataURL(file);
+    (event.target as HTMLInputElement).value = '';
+  }
   isOwn(msg: MessageDto): boolean {
     return msg.senderId === this.auth.currentUser()?.userId;
   }
-
   isConvClosed(statut: string): boolean {
     return ['ANNULE', 'REFUSE', 'EXPIRE', 'CLOTURE'].includes(statut);
   }
-
   getClosedReason(statut: string): string {
     switch (statut) {
-      case 'ANNULE': return '❌ La demande a été annulée. Cette conversation est définitivement clôturée — il n\'est plus possible d\'envoyer des messages.';
-      case 'REFUSE': return '❌ Cette conversation est clôturée.';
-      case 'CLOTURE': return '✅ Réparation clôturée.';
-      default: return '🔒 Cette conversation est fermée.';
+      case 'ANNULE': return 'La demande a ete annulee. Cette conversation est definitivement cloturee.';
+      case 'REFUSE': return 'Cette conversation est cloturee.';
+      case 'CLOTURE': return 'Reparation cloturee.';
+      default: return 'Cette conversation est fermee.';
     }
   }
-
   // ── Prise en charge ──────────────────────────────────────────
   validerPriseEnCharge(): void {
     if (!this.activeMatchingId) return;
@@ -261,9 +395,8 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.messagerieService.validerPriseEnCharge(this.activeMatchingId).subscribe({
       next: () => {
         this.actionLoading = false;
-        this.actionSuccess = '✅ Demande envoyée au client ! En attente de sa confirmation.';
+        this.actionSuccess = 'Demande envoyee au client !';
         this.awaitingClientConfirm = true;
-        // Persist locally so a subsequent loadMatchings() won't override before backend reloads
         if (this.activeMatching) {
           this.activeMatching = { ...this.activeMatching, awaitingClientConfirm: true };
           this.matchings = this.matchings.map(m =>
@@ -275,7 +408,6 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       error: (e) => { this.actionLoading = false; this.actionError = e?.error?.error ?? 'Erreur'; }
     });
   }
-
   confirmerPriseEnCharge(): void {
     if (!this.activeMatchingId) return;
     this.actionLoading = true;
@@ -295,7 +427,6 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       error: (e) => { this.actionLoading = false; this.actionError = e?.error?.error ?? 'Erreur'; }
     });
   }
-
   // ── Signalement ──────────────────────────────────────────────
   openSignal(): void {
     this.showSignalModal = true;
@@ -305,7 +436,6 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.signalError = '';
   }
   closeSignal(): void { this.showSignalModal = false; }
-
   submitSignal(): void {
     if (!this.signalObjet.trim() || !this.signalMessage.trim() || !this.activeMatchingId) return;
     this.signalLoading = true;
@@ -315,14 +445,13 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     }).subscribe({
       next: () => {
         this.signalLoading = false;
-        this.signalSuccess = '✅ Signalement enregistré. L\'équipe Repando va l\'examiner sous 24h.';
+        this.signalSuccess = 'Signalement enregistre.';
         setTimeout(() => this.closeSignal(), 3000);
       },
-      error: () => { this.signalLoading = false; this.signalError = 'Erreur lors de l\'envoi.'; }
+      error: () => { this.signalLoading = false; this.signalError = 'Erreur lors de envoi.'; }
     });
   }
-
-  // ── Mes réclamations ─────────────────────────────────────────
+  // ── Reclamations ─────────────────────────────────────────────
   openReclamations(): void {
     this.showReclamations = true;
     this.reclamationsLoading = true;
@@ -332,7 +461,6 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     });
   }
   closeReclamations(): void { this.showReclamations = false; }
-
   private scrollToBottom(): void {
     this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
   }

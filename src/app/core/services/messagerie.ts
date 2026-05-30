@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, interval, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as signalR from '@microsoft/signalr';
-import { ApiResponse, MessageDto, MatchingDto, SendMessageRequest } from '../models/models';
+import { ApiResponse, MessageDto, MatchingDto, SendMessageRequest, TypeMessage } from '../models/models';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth';
 
@@ -212,11 +212,12 @@ export class MessagerieService {
 
     this.hub.on('ReceiveMessage', (msg: MessageDto) => {
       if (msg.matchingId === matchingId) {
+        const normalized = this.normalizeMsg(msg);
         const current = this._messages$.value;
-        if (!current.find(m => m.id === msg.id)) {
-          this._messages$.next([...current, msg]);
+        if (!current.find(m => m.id === normalized.id)) {
+          this._messages$.next([...current, normalized]);
         } else {
-          this._messages$.next(current.map(m => m.id === msg.id ? { ...m, ...msg } : m));
+          this._messages$.next(current.map(m => m.id === normalized.id ? { ...m, ...normalized } : m));
         }
       }
       // Always refresh navbar unread
@@ -310,13 +311,13 @@ export class MessagerieService {
   getMessages(matchingId: string): Observable<MessageDto[]> {
     return this.http.get<ApiResponse<MessageDto[]>>(
       `${environment.apiUrl}/messages/matching/${matchingId}`
-    ).pipe(map(r => r.data ?? []));
+    ).pipe(map(r => (r.data ?? []).map(m => this.normalizeMsg(m))));
   }
 
   sendMessage(matchingId: string, req: SendMessageRequest): Observable<MessageDto> {
     return this.http.post<ApiResponse<MessageDto>>(
       `${environment.apiUrl}/messages/matching/${matchingId}`, req
-    ).pipe(map(r => r.data!));
+    ).pipe(map(r => this.normalizeMsg(r.data!)));
   }
 
   getUnreadCount(): Observable<number> {
@@ -350,7 +351,7 @@ export class MessagerieService {
   }
 
   setMessages(msgs: MessageDto[]): void {
-    this._messages$.next(msgs);
+    this._messages$.next(msgs.map(m => this.normalizeMsg(m)));
   }
 
   getMessagesSnapshot(): MessageDto[] {
@@ -358,10 +359,19 @@ export class MessagerieService {
   }
 
   appendMessage(msg: MessageDto): void {
+    const normalized = this.normalizeMsg(msg);
     const current = this._messages$.value;
-    if (!current.find(m => m.id === msg.id)) {
-      this._messages$.next([...current, msg]);
+    if (!current.find(m => m.id === normalized.id)) {
+      this._messages$.next([...current, normalized]);
     }
+  }
+
+  /** Normalise le type d'un message (string → enum) pour garantir la comparaison dans le template */
+  private normalizeMsg(msg: MessageDto): MessageDto {
+    const typeStr = (msg.type as any as string).toUpperCase();
+    const validTypes: string[] = Object.values(TypeMessage);
+    const type = validTypes.includes(typeStr) ? (typeStr as TypeMessage) : TypeMessage.TEXTE;
+    return { ...msg, type };
   }
 
   setRecentConvs(matchings: MatchingDto[]): void {
