@@ -13,17 +13,26 @@
       <div class="sh-stats">
         <div class="sh-stat"><div class="sh-stat-num">{{ totalEconomises }}€</div><div class="sh-stat-label">Économisés (bonus État)</div></div>
         <div class="sh-stat"><div class="sh-stat-num">{{ demandes.length }}</div><div class="sh-stat-label">Demandes</div></div>
-        <div class="sh-stat"><div class="sh-stat-num">{{ matchings.length }}</div><div class="sh-stat-label">Devis reçus</div></div>
+        <div class="sh-stat"><div class="sh-stat-num">{{ matchings.length }}</div><div class="sh-stat-label">Conversations</div></div>
       </div>
     </div>
     <a routerLink="/recherche" class="btn-secondary" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white">Nouvelle réparation →</a>
   </div>
   <div class="tabs">
-    <div class="tab" [class.active]="tab==='en-cours'" (click)="tab='en-cours'">Actives ({{ demandesEnCours.length }})</div>
-    <div class="tab" [class.active]="tab==='historique'" (click)="tab='historique'">Historique ({{ demandesTerminees.length }})</div>
-    <div class="tab" [class.active]="tab==='messages'" (click)="tab='messages'">Messages ({{ matchings.length }})</div>
+    <div class="tab" [class.active]="tab==='en-cours'" (click)="tab='en-cours'">
+      🔧 Actives @if (demandesEnCours.length > 0) { <span class="tab-badge">{{ demandesEnCours.length }}</span> }
+    </div>
+    <div class="tab" [class.active]="tab==='historique'" (click)="tab='historique'">
+      📋 Historique
+    </div>
+    <div class="tab" [class.active]="tab==='messages'" (click)="tab='messages'">
+      💬 Messages
+      @if (matchingsUnread > 0) { <span class="tab-badge tab-badge--red">{{ matchingsUnread }}</span> }
+    </div>
   </div>
   @if (loading) { <div class="loading-state">Chargement...</div> }
+
+  <!-- ═══ TAB: EN COURS ══════════════════════════════════════════ -->
   @if (tab === 'en-cours') {
     @if (demandesEnCours.length === 0 && !loading) {
       <div class="empty-state">
@@ -49,20 +58,24 @@
           <div class="rc-details">
             <div class="rc-detail">📍 <strong>{{ d.adresse ?? d.ville }}</strong></div>
             <div class="rc-detail">📅 <strong>{{ d.createdAt | date:'dd MMM yyyy' }}</strong></div>
+            @if (d.nbMatchings > 0) {
+              <div class="rc-detail">💬 <strong>{{ d.nbMatchings }} conversation{{ d.nbMatchings > 1 ? 's' : '' }}</strong></div>
+            }
             @if (d.nbDevisRecus > 0) {
-              <div class="rc-detail">📋 <strong>{{ d.nbDevisRecus }} devis reçus</strong></div>
+              <div class="rc-detail rc-detail--highlight">📋 <strong>{{ d.nbDevisRecus }} devis reçu{{ d.nbDevisRecus > 1 ? 's' : '' }}</strong></div>
             }
           </div>
           @if (d.statut === StatutDemande.EN_PAUSE) {
             <div class="pause-notice">⏸️ Demande en pause — aucun nouveau réparateur ne recevra votre annonce. Les chats existants restent actifs.</div>
           }
           <div class="rc-actions">
+            <button class="btn-secondary btn-sm" (click)="openDetail(d)">🔍 Détails</button>
             <button class="btn-secondary btn-sm" (click)="goToMessagerie(d.id)">💬 Messagerie</button>
             <a [routerLink]="['/modifier-demande', d.id]" class="btn-secondary btn-sm">✏️ Modifier</a>
             @if (d.statut === StatutDemande.EN_PAUSE) {
               <button class="btn-secondary btn-sm" style="color:#10b981;border-color:#10b981" (click)="togglePause(d)">▶️ Réactiver</button>
             } @else {
-              <button class="btn-secondary btn-sm" style="color:#f59e0b;border-color:#f59e0b" (click)="togglePause(d)">⏸️ Mettre en pause</button>
+              <button class="btn-secondary btn-sm" style="color:#f59e0b;border-color:#f59e0b" (click)="togglePause(d)">⏸️ Pause</button>
             }
             <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="openCancelModal(d.id)">Annuler</button>
           </div>
@@ -70,9 +83,18 @@
       </div>
     }
   }
+
+  <!-- ═══ TAB: HISTORIQUE ════════════════════════════════════════ -->
   @if (tab === 'historique') {
+    @if (demandesTerminees.length === 0 && !loading) {
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">Aucun historique</div>
+        <div class="empty-sub">Vos demandes terminées et annulées apparaîtront ici.</div>
+      </div>
+    }
     @for (d of demandesTerminees; track d.id) {
-      <div class="res-card">
+      <div class="res-card" style="cursor:pointer" (click)="openDetail(d)">
         <div class="rc-status">
           @if (d.statut === StatutDemande.TRAITEE) {
             <div class="rc-status-icon done">✅</div>
@@ -85,37 +107,201 @@
         <div class="rc-info">
           <div class="rc-title">{{ APPAREIL_LABELS[d.typeAppareil]?.icon ?? '' }} {{ APPAREIL_LABELS[d.typeAppareil]?.label ?? d.typeAppareil }}</div>
           <div class="rc-details">
+            @if (d.adresse) { <div class="rc-detail">📍 <strong>{{ d.adresse }}</strong></div> }
             <div class="rc-detail">📅 <strong>{{ d.createdAt | date:'dd MMM yyyy' }}</strong></div>
+          </div>
+          <div class="rc-actions" style="margin-top:8px">
+            <button class="btn-secondary btn-sm" (click)="$event.stopPropagation(); openDetail(d)">🔍 Voir les détails</button>
           </div>
         </div>
       </div>
     }
   }
+
+  <!-- ═══ TAB: MESSAGES ═════════════════════════════════════════ -->
   @if (tab === 'messages') {
-    <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px">
-      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;margin-bottom:20px">Vos conversations</div>
+    @if (matchings.length === 0 && !loading) {
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <div class="empty-title">Aucune conversation</div>
+        <div class="empty-sub">Vos échanges avec les réparateurs apparaîtront ici.</div>
+        <a routerLink="/recherche" class="btn-primary" style="margin-top:12px">Trouver un réparateur</a>
+      </div>
+    }
+    <div class="conv-list">
       @for (m of matchings; track m.id) {
-        <div class="conversation-item" [routerLink]="['/messagerie', m.id]">
-          <div class="avatar avatar-md">{{ m.reparateurNom.substring(0,2).toUpperCase() }}</div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:700">{{ m.reparateurNom }}</div>
-            <div style="font-size:12px;color:var(--blue);font-weight:600">{{ m.demandeAppareil }} · {{ m.statut }}</div>
+        <div class="conv-card" [class.conv-card--unread]="m.hasUnreadMessages"
+             [class.conv-card--closed]="['ANNULE','REFUSE','EXPIRE','CLOTURE'].includes(m.statut)"
+             (click)="router.navigate(['/messagerie', m.id])">
+          <div class="conv-avatar" [class.conv-avatar--unread]="m.hasUnreadMessages">
+            {{ m.reparateurNom.substring(0,2).toUpperCase() }}
+            @if (m.hasUnreadMessages) { <div class="conv-unread-dot"></div> }
           </div>
-          @if (m.hasUnreadMessages) { <div class="unread-badge">!</div> }
-          @if (m.statut === 'DEVIS_ENVOYE') {
-            <div style="display:flex;gap:8px">
-              <button class="btn-primary btn-sm" (click)="$event.stopPropagation(); accepterDevis(m.id)">✅ Accepter</button>
-              <button class="btn-secondary btn-sm" (click)="$event.stopPropagation(); refuserDevis(m.id)">Refuser</button>
+          <div class="conv-body">
+            <div class="conv-header">
+              <span class="conv-name">{{ m.reparateurNom }}</span>
+              <span class="conv-time">{{ m.updatedAt | date:'dd/MM' }}</span>
             </div>
-          }
+            <div class="conv-preview">
+              <span class="conv-appareil">{{ m.demandeAppareil }}</span>
+              <span class="conv-statut-chip" [style.color]="getStatutMatchingLabel(m.statut).color"
+                    [style.borderColor]="getStatutMatchingLabel(m.statut).color">
+                {{ getStatutMatchingLabel(m.statut).label }}
+              </span>
+            </div>
+            @if (m.statut === 'DEVIS_ENVOYE') {
+              <div class="conv-devis-actions" (click)="$event.stopPropagation()">
+                <span class="conv-devis-notice">📋 Devis reçu — répondez maintenant</span>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="btn-primary btn-sm" (click)="accepterDevis(m.id)">✅ Accepter</button>
+                  <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="refuserDevis(m.id)">Refuser</button>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="conv-arrow">›</div>
         </div>
-      }
-      @if (matchings.length === 0) {
-        <p style="color:var(--gray);text-align:center;padding:20px">Aucune conversation</p>
       }
     </div>
   }
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: DETAIL DEMANDE                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (showDetailModal && detailDemande) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="detail-modal" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="detail-modal__header">
+        <div class="detail-modal__icon">{{ APPAREIL_LABELS[detailDemande.typeAppareil]?.icon ?? '🔧' }}</div>
+        <div class="detail-modal__title-group">
+          <h2 class="detail-modal__title">{{ APPAREIL_LABELS[detailDemande.typeAppareil]?.label ?? detailDemande.typeAppareil }}</h2>
+          <div class="detail-modal__date">Déposée le {{ detailDemande.createdAt | date:'dd MMMM yyyy' }}</div>
+        </div>
+        <div class="detail-modal__statut"
+             [style.color]="detailDemande.statut === StatutDemande.OUVERTE ? '#10b981' :
+                            detailDemande.statut === StatutDemande.EN_PAUSE ? '#f59e0b' :
+                            detailDemande.statut === StatutDemande.TRAITEE ? '#22c55e' : '#ef4444'">
+          @if (detailDemande.statut === StatutDemande.OUVERTE) { 🟢 Ouverte }
+          @else if (detailDemande.statut === StatutDemande.EN_PAUSE) { ⏸️ En pause }
+          @else if (detailDemande.statut === StatutDemande.TRAITEE) { ✅ Terminée }
+          @else { ❌ Annulée }
+        </div>
+        <button class="detail-modal__close" (click)="closeDetail()">✕</button>
+      </div>
+
+      <div class="detail-modal__body">
+        <!-- Infos principales -->
+        <div class="detail-grid">
+          @if (detailDemande.marque || detailDemande.modele) {
+            <div class="detail-item">
+              <div class="detail-item__label">Appareil</div>
+              <div class="detail-item__value">{{ detailDemande.marque }} {{ detailDemande.modele }}</div>
+            </div>
+          }
+          @if (detailDemande.typePanne) {
+            <div class="detail-item">
+              <div class="detail-item__label">Type de panne</div>
+              <div class="detail-item__value">{{ getPanneLabel(detailDemande.typePanne).icon }} {{ getPanneLabel(detailDemande.typePanne).label }}</div>
+            </div>
+          }
+          @if (detailDemande.adresse) {
+            <div class="detail-item">
+              <div class="detail-item__label">Adresse</div>
+              <div class="detail-item__value">📍 {{ detailDemande.adresse }}</div>
+            </div>
+          }
+          <div class="detail-item">
+            <div class="detail-item__label">Type d'intervention</div>
+            <div class="detail-item__value">
+              @if (detailDemande.typeIntervention === 'DOMICILE') { 🏠 À domicile }
+              @else if (detailDemande.typeIntervention === 'ATELIER') { 🔧 En atelier }
+              @else { 🔄 Indifférent }
+            </div>
+          </div>
+          @if (detailDemande.nbMatchings > 0) {
+            <div class="detail-item">
+              <div class="detail-item__label">Conversations</div>
+              <div class="detail-item__value">💬 {{ detailDemande.nbMatchings }} réparateur{{ detailDemande.nbMatchings > 1 ? 's' : '' }}</div>
+            </div>
+          }
+          @if (detailDemande.nbDevisRecus > 0) {
+            <div class="detail-item detail-item--highlight">
+              <div class="detail-item__label">Devis reçus</div>
+              <div class="detail-item__value">📋 {{ detailDemande.nbDevisRecus }} devis</div>
+            </div>
+          }
+        </div>
+
+        <!-- Description -->
+        @if (detailDemande.description) {
+          <div class="detail-section">
+            <div class="detail-section__title">📝 Description du problème</div>
+            <div class="detail-desc">{{ detailDemande.description }}</div>
+          </div>
+        }
+
+        <!-- Photos -->
+        @if (detailDemande.photoUrls && detailDemande.photoUrls.length > 0) {
+          <div class="detail-section">
+            <div class="detail-section__title">📸 Photos ({{ detailDemande.photoUrls.length }})</div>
+            <div class="detail-photos">
+              @for (url of detailDemande.photoUrls; track url) {
+                <div class="detail-photo" (click)="openLightbox(photoUrl(url))">
+                  <img [src]="photoUrl(url)" alt="Photo panne" loading="lazy"/>
+                  <div class="detail-photo__overlay">🔍</div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Conversations liées -->
+        @if (getMatchingsForDemande(detailDemande.id).length > 0) {
+          <div class="detail-section">
+            <div class="detail-section__title">💬 Conversations avec les réparateurs</div>
+            <div class="detail-matchings">
+              @for (m of getMatchingsForDemande(detailDemande.id); track m.id) {
+                <div class="detail-matching-row" (click)="closeDetail(); router.navigate(['/messagerie', m.id])">
+                  <div class="detail-matching-avatar">{{ m.reparateurNom.substring(0,2).toUpperCase() }}</div>
+                  <div class="detail-matching-info">
+                    <div class="detail-matching-name">{{ m.reparateurNom }}</div>
+                    @if (m.hasUnreadMessages) { <span class="detail-matching-unread">Non lu</span> }
+                  </div>
+                  <div class="detail-matching-chip"
+                       [style.color]="getStatutMatchingLabel(m.statut).color"
+                       [style.borderColor]="getStatutMatchingLabel(m.statut).color">
+                    {{ getStatutMatchingLabel(m.statut).label }}
+                  </div>
+                  <div class="detail-matching-arrow">›</div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Footer actions -->
+      <div class="detail-modal__footer">
+        @if (detailDemande.statut === StatutDemande.OUVERTE || detailDemande.statut === StatutDemande.EN_PAUSE) {
+          <button class="btn-secondary" (click)="closeDetail(); goToMessagerie(detailDemande.id)">💬 Messagerie</button>
+          <a [routerLink]="['/modifier-demande', detailDemande.id]" class="btn-secondary" (click)="closeDetail()">✏️ Modifier</a>
+        }
+        <button class="btn-secondary" (click)="closeDetail()">Fermer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Lightbox photo -->
+@if (detailLightboxUrl) {
+  <div class="lightbox-overlay" (click)="closeLightbox()">
+    <img class="lightbox-img" [src]="detailLightboxUrl" (click)="$event.stopPropagation()" />
+    <button class="lightbox-close" (click)="closeLightbox()">✕</button>
+  </div>
+}
 
 <!-- ── Popup confirmation annulation ─────────────────────────────── -->
 @if (showCancelModal) {

@@ -19,7 +19,16 @@
       </div>
     }
 
-    @for (m of matchings; track m.id) {
+    @if (demandeIdFilter) {
+      <div class="msgr-filter-banner">
+        <span class="msgr-filter-chip">
+          📋 {{ demandeAppareilFilter || 'Demande filtrée' }}
+          <button class="msgr-filter-clear" (click)="clearFilter()" title="Voir toutes les conversations">✕</button>
+        </span>
+      </div>
+    }
+
+    @for (m of filteredMatchings; track m.id) {
       <div class="msgr-conv-item" [class.active]="activeMatchingId === m.id"
            [class.is-closed]="isConvClosed(m.statut)"
            (click)="openConversation(m.id)">

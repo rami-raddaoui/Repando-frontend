@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DemandeService } from '../../core/services/demande';
 import { TypeAppareil, TypePanne, APPAREIL_LABELS, StatutDemande } from '../../core/models/models';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-modifier-demande',
@@ -20,7 +21,7 @@ export class ModifierDemandeComponent implements OnInit {
   demandeId = '';
   hasActiveChats = false;
   existingPhotoUrls: string[] = [];
-  photoPreviews: { url: string; name: string; size: string; isExisting: boolean }[] = [];
+  photoPreviews: { url: string; originalUrl?: string; name: string; size: string; isExisting: boolean }[] = [];
 
   readonly TypeAppareil = TypeAppareil;
   readonly TypePanne = TypePanne;
@@ -55,8 +56,9 @@ export class ModifierDemandeComponent implements OnInit {
         this.hasActiveChats = d.nbMatchings > 0;
         this.existingPhotoUrls = d.photoUrls ?? [];
         this.photoPreviews = this.existingPhotoUrls.map(url => ({
-          url,
-          name: url.split('/').pop() ?? 'photo',
+          url: url.startsWith('http') ? url : `${environment.staticUrl}${url}`,
+          originalUrl: url,
+          name: url.split('/').pop()?.replace(/^[a-f0-9-]{36}_/, '') ?? 'photo',
           size: '',
           isExisting: true
         }));
@@ -81,7 +83,7 @@ export class ModifierDemandeComponent implements OnInit {
         ? (file.size / 1024 / 1024).toFixed(1) + ' Mo'
         : (file.size / 1024).toFixed(0) + ' Ko';
       reader.onload = e => {
-        this.photoPreviews.push({ url: e.target?.result as string, name: file.name, size: sizeLabel, isExisting: false });
+        this.photoPreviews.push({ url: e.target?.result as string, originalUrl: undefined, name: file.name, size: sizeLabel, isExisting: false });
       };
       reader.readAsDataURL(file);
     });
@@ -97,7 +99,7 @@ export class ModifierDemandeComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    const existingUrls = this.photoPreviews.filter(p => p.isExisting).map(p => p.url);
+    const existingUrls = this.photoPreviews.filter(p => p.isExisting).map(p => p.originalUrl ?? p.url);
     const newDataUrls   = this.photoPreviews.filter(p => !p.isExisting).map(p => p.url);
 
     const doUpdate = (newUrls: string[]) => {

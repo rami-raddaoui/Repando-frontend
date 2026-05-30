@@ -19,6 +19,9 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   @ViewChild('messagesEnd') messagesEnd!: ElementRef;
 
   matchings: MatchingDto[] = [];
+  filteredMatchings: MatchingDto[] = [];  // matchings shown in sidebar (may be filtered by demandeId)
+  demandeIdFilter: string | null = null;   // when set, only show convs for this demande
+  demandeAppareilFilter: string = '';
   messages: MessageDto[] = [];
   activeMatchingId: string | null = null;
   activeMatching: MatchingDto | null = null;
@@ -61,14 +64,24 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
 
   ngOnInit(): void {
     const matchingIdFromUrl = this.route.snapshot.paramMap.get('matchingId');
+    this.demandeIdFilter = this.route.snapshot.queryParamMap.get('demandeId');
 
     // Load matchings first, then open conversation from URL (so activeMatching is populated)
     this.demandeService.getMyMatchings().subscribe({
       next: m => {
         this.matchings = m;
         this.messagerieService.setRecentConvs(m);
+        this.applyFilter();
         if (matchingIdFromUrl) {
           this.openConversation(matchingIdFromUrl);
+        } else if (this.demandeIdFilter) {
+          // Auto-open most recent matching for this demande
+          const demandeMatchings = m.filter(x => x.demandeId === this.demandeIdFilter);
+          if (demandeMatchings.length > 0) {
+            // Most recent = first (sorted by updatedAt desc from backend)
+            this.openConversation(demandeMatchings[0].id);
+            this.demandeAppareilFilter = demandeMatchings[0].demandeAppareil;
+          }
         }
       },
       error: () => {
@@ -134,6 +147,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       next: m => {
         this.matchings = m;
         this.messagerieService.setRecentConvs(m);
+        this.applyFilter();
         if (this.activeMatchingId) {
           const found = m.find(x => x.id === this.activeMatchingId) ?? null;
           this.activeMatching = found;
@@ -144,6 +158,25 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       },
       error: () => {}
     });
+  }
+
+  applyFilter(): void {
+    if (this.demandeIdFilter) {
+      this.filteredMatchings = this.matchings.filter(m => m.demandeId === this.demandeIdFilter);
+      if (this.filteredMatchings.length > 0) {
+        this.demandeAppareilFilter = this.filteredMatchings[0].demandeAppareil;
+      }
+    } else {
+      this.filteredMatchings = this.matchings;
+    }
+  }
+
+  clearFilter(): void {
+    this.demandeIdFilter = null;
+    this.demandeAppareilFilter = '';
+    this.filteredMatchings = this.matchings;
+    // update URL without filter
+    this.router.navigate(['/messagerie'], { replaceUrl: true });
   }
 
   openConversation(matchingId: string): void {
