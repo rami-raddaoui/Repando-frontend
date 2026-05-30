@@ -300,36 +300,76 @@
 
       <!-- Input bar -->
       @if (!isClosed) {
-        <!-- Quick actions -->
+        <!-- Quick share chips -->
         <div class="msgr-quick-actions">
           @if (userTelephone()) {
-            <button class="msgr-quick-chip" (click)="openShareModal('phone')">
-              📞 Mon numéro
+            <button class="msgr-quick-chip" (click)="openShareModal('phone')" title="Partager votre numéro de téléphone">
+              <span class="msgr-quick-chip__icon">📞</span>
+              <span class="msgr-quick-chip__body">
+                <span class="msgr-quick-chip__action">Partager mon numéro</span>
+                <span class="msgr-quick-chip__value">{{ userTelephone() }}</span>
+              </span>
             </button>
           }
-          <button class="msgr-quick-chip" (click)="openShareModal('email')">
-            📧 Mon email
+          <button class="msgr-quick-chip" (click)="openShareModal('email')" title="Partager votre adresse email">
+            <span class="msgr-quick-chip__icon">📧</span>
+            <span class="msgr-quick-chip__body">
+              <span class="msgr-quick-chip__action">Partager mon email</span>
+              <span class="msgr-quick-chip__value">{{ userEmail }}</span>
+            </span>
           </button>
         </div>
 
-        <div class="msgr-input-bar">
-          <!-- Hidden file input -->
-          <input type="file" accept="image/*" style="display:none" #photoInput (change)="onPhotoSelect($event)" />
+        <!-- Photo preview panel (shown after selection) -->
+        @if (photoPreviews.length > 0) {
+          <div class="msgr-photo-preview-bar">
+            <div class="msgr-photo-preview-bar__label">
+              📸 {{ photoPreviews.length }} photo{{ photoPreviews.length > 1 ? 's' : '' }} à envoyer
+            </div>
+            <div class="msgr-photo-preview-bar__items">
+              @for (p of photoPreviews; track p.dataUrl; let i = $index) {
+                <div class="msgr-photo-preview-item">
+                  <img [src]="p.dataUrl" alt="Preview" />
+                  <button class="msgr-photo-preview-remove" (click)="removePhotoPreview(i)" title="Retirer">✕</button>
+                </div>
+              }
+            </div>
+            <div class="msgr-photo-preview-bar__actions">
+              <button class="msgr-btn-ghost" (click)="cancelPhotoPreviews()">Annuler</button>
+              <button class="msgr-btn-submit" [disabled]="photoUploading" (click)="sendPhotoPreviews()">
+                @if (photoUploading) { <span class="msgr-spinner-sm"></span> Envoi… }
+                @else { ✅ Envoyer }
+              </button>
+            </div>
+          </div>
+        }
 
-          <!-- Photo upload button -->
+        <div class="msgr-input-bar">
+          <!-- Hidden file inputs -->
+          <input type="file" accept="image/*" style="display:none" #galleryInput (change)="onPhotoSelect($event, 'gallery')" multiple />
+          <input type="file" accept="image/*" capture="environment" style="display:none" #cameraInput (change)="onPhotoSelect($event, 'camera')" />
+
+          <!-- Photo upload button with dropdown -->
           @if (photoUploadCount < MAX_PHOTOS) {
-            <button class="msgr-btn-photo" (click)="triggerPhotoUpload()" [disabled]="photoUploading"
-                    title="Envoyer une photo">
-              @if (photoUploading) {
-                <span class="msgr-spinner-sm"></span>
-              } @else {
+            <div class="msgr-photo-menu" [class.open]="showPhotoMenu">
+              <button class="msgr-btn-photo" (click)="togglePhotoMenu(); $event.stopPropagation()" title="Joindre une photo">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
                   <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
+              </button>
+              @if (showPhotoMenu) {
+                <div class="msgr-photo-menu__dropdown" (click)="$event.stopPropagation()">
+                  <button class="msgr-photo-menu__item" (click)="triggerCamera()">
+                    <span>📷</span> Prendre une photo
+                  </button>
+                  <button class="msgr-photo-menu__item" (click)="triggerGallery()">
+                    <span>🖼️</span> Choisir depuis la galerie
+                  </button>
+                </div>
               }
-            </button>
+            </div>
           }
 
           <input class="msgr-input" type="text" [(ngModel)]="newMessage"

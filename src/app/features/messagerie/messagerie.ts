@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, signal } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, signal, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -17,7 +17,8 @@ import { environment } from '../../../environments/environment';
 })
 export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesEnd') messagesEnd!: ElementRef;
-  @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('galleryInput') galleryInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('cameraInput') cameraInput!: ElementRef<HTMLInputElement>;
   matchings: MatchingDto[] = [];
   filteredMatchings: MatchingDto[] = [];
   demandeIdFilter: string | null = null;
@@ -51,6 +52,8 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   photoUploadCount = 0;
   photoUploading = false;
   readonly MAX_PHOTOS = 10;
+  showPhotoMenu = false;
+  photoPreviews: { file: File; dataUrl: string }[] = [];
   // Signalement
   showSignalModal = false;
   signalObjet = '';
@@ -121,7 +124,10 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.subs.push(
       this.messagerieService.messages$.subscribe(msgs => {
         this.messages = msgs;
-        this.shouldScrollDown = true;
+        // Only trigger scroll when not in loading state (avoid scroll on empty reset)
+        if (!this.loading) {
+          this.shouldScrollDown = true;
+        }
       }),
       this.messagerieService.convClosed$.subscribe(ev => {
         if (ev && this.activeMatchingId === ev.matchingId) {
@@ -238,6 +244,8 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.messagerieService.disconnectHub();
     this.activeMatchingId = matchingId;
     this.photoUploadCount = 0;
+    this.photoPreviews = [];
+    this.showPhotoMenu = false;
     this.revealedMessages = new Set<string>();
     const found = this.matchings.find(m => m.id === matchingId) ?? null;
     this.activeMatching = found;
@@ -247,16 +255,24 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.loading = true;
     this.actionSuccess = '';
     this.actionError = '';
+    // Connect hub first so we don't miss any incoming messages while loading
+    this.messagerieService.connectHub(matchingId);
     this.messagerieService.getMessages(matchingId).subscribe({
       next: msgs => {
-        this.messagerieService.setMessages(msgs);
-        this.photoUploadCount = msgs.filter(m => m.type === TypeMessage.PHOTO).length;
+        // Merge with any messages already received via SignalR during connection
+        const existing = this.messagerieService.getMessagesSnapshot();
+        const merged = [...msgs];
+        existing.forEach(m => {
+          if (!merged.find(x => x.id === m.id)) merged.push(m);
+        });
+        merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        this.messagerieService.setMessages(merged);
+        this.photoUploadCount = merged.filter(m => m.type === TypeMessage.PHOTO).length;
         this.loading = false;
         this.shouldScrollDown = true;
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; }
     });
-    this.messagerieService.connectHub(matchingId);
     if (this.auth.isReparateur()) {
       this.demandeService.marquerVu(matchingId).subscribe();
     }
@@ -334,45 +350,75 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     return this.revealedMessages.has(msgId);
   }
   // ── Upload photo ──────────────────────────────────────────────
-  triggerPhotoUpload(): void {
-    this.photoInput?.nativeElement?.click();
+  togglePhotoMenu(): void {
+    this.showPhotoMenu = !this.showPhotoMenu;
   }
-  onPhotoSelect(event: Event): void {
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.showPhotoMenu) this.showPhotoMenu = false;
+  }
+  triggerGallery(): void {
+    this.showPhotoMenu = false;
+    this.galleryInput?.nativeElement?.click();
+  }
+  triggerCamera(): void {
+    this.showPhotoMenu = false;
+    this.cameraInput?.nativeElement?.click();
+  }
+  onPhotoSelect(event: Event, _source: 'gallery' | 'camera'): void {
     if (this.isClosed || this.photoUploadCount >= this.MAX_PHOTOS || !this.activeMatchingId) return;
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      this.photoUploading = true;
-      this.demandeService.uploadPhotos([dataUrl]).subscribe({
-        next: (urls) => {
-          if (urls?.[0] && this.activeMatchingId) {
-            const matchingId = this.activeMatchingId;
-            this.messagerieService.sendMessage(matchingId, {
-              contenu: '',
-              photoUrl: urls[0],
-              type: TypeMessage.PHOTO
-            }).subscribe({
-              next: (msg) => {
-                this.photoUploading = false;
-                this.photoUploadCount++;
-                const current = this.messagerieService.getMessagesSnapshot();
-                if (!current.find(m => m.id === msg.id)) {
-                  this.messagerieService.appendMessage(msg);
-                }
-              },
-              error: () => { this.photoUploading = false; }
-            });
-          } else {
-            this.photoUploading = false;
-          }
-        },
-        error: () => { this.photoUploading = false; }
-      });
-    };
-    reader.readAsDataURL(file);
+    const files = (event.target as HTMLInputElement).files;
+    if (!files || files.length === 0) return;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        this.photoPreviews = [...this.photoPreviews, { file, dataUrl }];
+      };
+      reader.readAsDataURL(file);
+    });
     (event.target as HTMLInputElement).value = '';
+  }
+  removePhotoPreview(index: number): void {
+    this.photoPreviews = this.photoPreviews.filter((_, i) => i !== index);
+  }
+  cancelPhotoPreviews(): void {
+    this.photoPreviews = [];
+  }
+  sendPhotoPreviews(): void {
+    if (!this.activeMatchingId || this.isClosed || this.photoPreviews.length === 0) return;
+    const previews = [...this.photoPreviews];
+    this.photoPreviews = [];
+    this.photoUploading = true;
+    const dataUrls = previews.map(p => p.dataUrl);
+    const matchingId = this.activeMatchingId;
+    this.demandeService.uploadPhotos(dataUrls).subscribe({
+      next: (urls) => {
+        const sends = urls.map((url: string) =>
+          this.messagerieService.sendMessage(matchingId, {
+            contenu: '',
+            photoUrl: url,
+            type: TypeMessage.PHOTO
+          })
+        );
+        let done = 0;
+        sends.forEach((obs: any) => obs.subscribe({
+          next: (msg: any) => {
+            this.photoUploadCount++;
+            const current = this.messagerieService.getMessagesSnapshot();
+            if (!current.find((m: any) => m.id === msg.id)) {
+              this.messagerieService.appendMessage(msg);
+            }
+            done++;
+            if (done === sends.length) this.photoUploading = false;
+          },
+          error: () => { done++; if (done === sends.length) this.photoUploading = false; }
+        }));
+      },
+      error: () => { this.photoUploading = false; }
+    });
   }
   isOwn(msg: MessageDto): boolean {
     return msg.senderId === this.auth.currentUser()?.userId;
