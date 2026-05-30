@@ -19,7 +19,7 @@
     <a routerLink="/recherche" class="btn-secondary" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white">Nouvelle réparation →</a>
   </div>
   <div class="tabs">
-    <div class="tab" [class.active]="tab==='en-cours'" (click)="tab='en-cours'">En cours ({{ demandesEnCours.length }})</div>
+    <div class="tab" [class.active]="tab==='en-cours'" (click)="tab='en-cours'">Actives ({{ demandesEnCours.length }})</div>
     <div class="tab" [class.active]="tab==='historique'" (click)="tab='historique'">Historique ({{ demandesTerminees.length }})</div>
     <div class="tab" [class.active]="tab==='messages'" (click)="tab='messages'">Messages ({{ matchings.length }})</div>
   </div>
@@ -28,16 +28,21 @@
     @if (demandesEnCours.length === 0 && !loading) {
       <div class="empty-state">
         <div class="empty-icon">🔧</div>
-        <div class="empty-title">Aucune réparation en cours</div>
+        <div class="empty-title">Aucune réparation active</div>
         <div class="empty-sub">Trouvez un réparateur certifié et économisez jusqu'à 65€.</div>
-        <a routerLink="/recherche" class="btn-primary">🔍 Trouver un réparateur</a>
+        <a routerLink="/creer-demande" class="btn-primary">🔍 Trouver un réparateur</a>
       </div>
     }
     @for (d of demandesEnCours; track d.id) {
-      <div class="res-card">
+      <div class="res-card" [class.paused]="d.statut === StatutDemande.EN_PAUSE">
         <div class="rc-status">
-          <div class="rc-status-icon confirmed">📅</div>
-          <div class="rc-status-label confirmed">En cours</div>
+          @if (d.statut === StatutDemande.EN_PAUSE) {
+            <div class="rc-status-icon pending">⏸️</div>
+            <div class="rc-status-label" style="color:#f59e0b">En pause</div>
+          } @else {
+            <div class="rc-status-icon confirmed">📅</div>
+            <div class="rc-status-label confirmed">Active</div>
+          }
         </div>
         <div class="rc-info">
           <div class="rc-title">{{ APPAREIL_LABELS[d.typeAppareil]?.icon ?? '' }} {{ APPAREIL_LABELS[d.typeAppareil]?.label ?? d.typeAppareil }}</div>
@@ -48,8 +53,17 @@
               <div class="rc-detail">📋 <strong>{{ d.nbDevisRecus }} devis reçus</strong></div>
             }
           </div>
+          @if (d.statut === StatutDemande.EN_PAUSE) {
+            <div class="pause-notice">⏸️ Demande en pause — aucun nouveau réparateur ne recevra votre annonce. Les chats existants restent actifs.</div>
+          }
           <div class="rc-actions">
             <a routerLink="/messagerie" class="btn-secondary btn-sm">💬 Messagerie</a>
+            <a [routerLink]="['/modifier-demande', d.id]" class="btn-secondary btn-sm">✏️ Modifier</a>
+            @if (d.statut === StatutDemande.EN_PAUSE) {
+              <button class="btn-secondary btn-sm" style="color:#10b981;border-color:#10b981" (click)="togglePause(d)">▶️ Réactiver</button>
+            } @else {
+              <button class="btn-secondary btn-sm" style="color:#f59e0b;border-color:#f59e0b" (click)="togglePause(d)">⏸️ Mettre en pause</button>
+            }
             <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="cancel(d.id)">Annuler</button>
           </div>
         </div>

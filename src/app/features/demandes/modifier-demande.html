@@ -1,0 +1,169 @@
+<div class="cd-page">
+
+  <!-- HERO HEADER -->
+  <div class="cd-hero">
+    <div class="cd-hero-inner">
+      <a routerLink="/dashboard" class="cd-back">← Retour au tableau de bord</a>
+      <div class="cd-hero-badge">✏️ Modifier la demande</div>
+      <h1>Mettre à jour votre demande</h1>
+      <p>Ajoutez des précisions pour aider les réparateurs à mieux évaluer votre panne.</p>
+    </div>
+    <div class="cd-hero-circle c1"></div>
+    <div class="cd-hero-circle c2"></div>
+  </div>
+
+  @if (loadingInit) {
+    <div class="loading-state" style="text-align:center;padding:40px">Chargement…</div>
+  }
+
+  @if (!loadingInit && form) {
+
+    @if (hasActiveChats) {
+      <div style="max-width:720px;margin:24px auto;padding:0 16px">
+        <div class="cd-alert-info">
+          <span style="font-size:20px">💬</span>
+          <div>
+            <strong>Des conversations sont déjà ouvertes avec des réparateurs.</strong><br/>
+            En enregistrant vos modifications, nous informerons automatiquement chaque réparateur des changements via un message système dans le chat.<br/>
+            <em>⚠️ S'il s'agit d'une nouvelle panne ou d'un appareil différent, veuillez <a routerLink="/creer-demande">créer une nouvelle demande</a>. Les modifications servent à apporter des précisions à une même demande.</em>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (error) {
+      <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
+
+      <!-- SECTION 1 : Appareil -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">1</div>
+          <div>
+            <h2>Quel appareil est en panne ?</h2>
+            <p>Le périmètre géographique n'est pas modifiable ici — il permet à Repando de trouver les réparateurs les plus proches.</p>
+          </div>
+        </div>
+        <div class="appareil-grid">
+          @for (a of appareils; track a.key) {
+            <button type="button" class="app-card" [class.selected]="form.value.typeAppareil === a.key"
+                    (click)="form.patchValue({typeAppareil: a.key})">
+              <div class="app-card-icon">{{ a.icon }}</div>
+              <div class="app-card-label">{{ a.label }}</div>
+              <div class="app-card-bonus">−{{ a.bonus }}€</div>
+            </button>
+          }
+        </div>
+        <div class="cd-row mt-20">
+          <div class="cd-field">
+            <label>Marque</label>
+            <input type="text" formControlName="marque" placeholder="Ex: Samsung, Bosch, LG..."/>
+          </div>
+          <div class="cd-field">
+            <label>Modèle</label>
+            <input type="text" formControlName="modele" placeholder="Ex: WW90T534DAW..."/>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2 : Panne -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">2</div>
+          <div>
+            <h2>Quel est le problème ?</h2>
+            <p>Choisissez le symptôme le plus proche</p>
+          </div>
+        </div>
+        <div class="panne-grid">
+          @for (p of pannes; track p.key) {
+            <button type="button" class="panne-card" [class.selected]="form.value.typePanne === p.key"
+                    (click)="form.patchValue({typePanne: p.key})">
+              <span class="panne-icon">{{ p.icon }}</span>
+              <span class="panne-label">{{ p.label }}</span>
+            </button>
+          }
+        </div>
+        <div class="cd-field mt-20">
+          <label>Description détaillée <span class="optional">(optionnel)</span></label>
+          <textarea formControlName="description" rows="4"
+            placeholder="Décrivez la panne : code erreur, depuis quand, à quelle fréquence…"></textarea>
+        </div>
+      </div>
+
+      <!-- SECTION 3 : Photos -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">3</div>
+          <div>
+            <h2>Photos de la panne <span class="optional">(optionnel)</span></h2>
+            <p>Jusqu'à 8 photos — les photos existantes sont conservées, vous pouvez en ajouter ou supprimer</p>
+          </div>
+        </div>
+
+        @if (photoPreviews.length < 8) {
+          <label class="upload-zone">
+            <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
+            <div class="upload-zone-inner">
+              <div class="upload-zone-icon">📸</div>
+              <div class="upload-zone-title">Glissez vos photos ici</div>
+              <div class="upload-zone-sub">ou cliquez pour parcourir</div>
+              <div class="upload-zone-chip">+ Ajouter des photos</div>
+              <div class="upload-zone-hint">JPG, PNG, HEIC · Max 10 Mo/photo</div>
+            </div>
+          </label>
+        }
+
+        @if (photoPreviews.length > 0) {
+          <div class="photo-gallery">
+            @for (photo of photoPreviews; track $index) {
+              <div class="photo-thumb" [class.existing]="photo.isExisting">
+                <img [src]="photo.url" [alt]="photo.name"/>
+                <div class="photo-overlay">
+                  <div class="photo-meta">
+                    <span class="photo-name">{{ photo.name }}</span>
+                    @if (!photo.isExisting) { <span class="photo-size">{{ photo.size }}</span> }
+                    @if (photo.isExisting) { <span class="photo-size" style="color:#10b981">✓ Existante</span> }
+                  </div>
+                  <button type="button" class="photo-remove" (click)="removePhoto($index)">✕</button>
+                </div>
+                <div class="photo-badge">{{ $index + 1 }}</div>
+              </div>
+            }
+            @if (photoPreviews.length < 8) {
+              <label class="photo-add-more">
+                <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
+                <span class="add-more-icon">+</span>
+                <span class="add-more-label">Ajouter</span>
+              </label>
+            }
+          </div>
+          <div class="photo-count-bar">
+            <span class="photo-count-text">{{ photoPreviews.length }} / 8 photo{{ photoPreviews.length > 1 ? 's' : '' }}</span>
+            <div class="photo-count-dots">
+              @for (i of [0,1,2,3,4,5,6,7]; track i) {
+                <div class="count-dot" [class.filled]="i < photoPreviews.length"></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="cd-actions">
+        <a routerLink="/dashboard" class="cd-btn-cancel">Annuler</a>
+        <button type="submit" class="cd-btn-submit" [disabled]="form.invalid || loading">
+          @if (loading) {
+            <span class="spin"></span> Enregistrement…
+          } @else {
+            💾 Enregistrer les modifications
+          }
+        </button>
+      </div>
+
+    </form>
+  }
+</div>
+

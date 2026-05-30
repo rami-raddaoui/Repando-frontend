@@ -111,6 +111,23 @@ $white: #ffffff;
   font-size: 13px;
 }
 
+/* ---- ALERT INFO ---- */
+.cd-alert-info {
+  max-width: 720px;
+  margin: 16px auto 0;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  a { color: #1d4ed8; font-weight: 600; }
+}
+
 /* ---- CARD ---- */
 .cd-card {
   background: $white;

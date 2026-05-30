@@ -17,7 +17,7 @@ export enum TypePanne {
 }
 
 export enum TypeIntervention { DOMICILE = 'DOMICILE', ATELIER = 'ATELIER', INDIFFERENT = 'INDIFFERENT' }
-export enum StatutDemande { OUVERTE = 'OUVERTE', TRAITEE = 'TRAITEE', ANNULEE = 'ANNULEE' }
+export enum StatutDemande { OUVERTE = 'OUVERTE', EN_PAUSE = 'EN_PAUSE', TRAITEE = 'TRAITEE', ANNULEE = 'ANNULEE' }
 export enum StatutMatching {
   NOUVEAU = 'NOUVEAU', VU = 'VU', DEVIS_ENVOYE = 'DEVIS_ENVOYE',
   ACCEPTE = 'ACCEPTE', CLOTURE = 'CLOTURE', REFUSE = 'REFUSE', ANNULE = 'ANNULE', EXPIRE = 'EXPIRE'
@@ -163,6 +163,15 @@ export interface CreateDemandeRequest {
   latitude?: number;
   longitude?: number;
   typeIntervention: TypeIntervention;
+}
+
+export interface UpdateDemandeRequest {
+  typeAppareil: TypeAppareil;
+  marque?: string;
+  modele?: string;
+  typePanne?: TypePanne;
+  description?: string;
+  photoUrls?: string[];
 }
 
 export interface DemandeDto {

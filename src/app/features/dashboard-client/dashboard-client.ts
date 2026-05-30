@@ -20,11 +20,14 @@ export class DashboardClientComponent implements OnInit {
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
 
+  get demandesActives() {
+    return this.demandes.filter(d => d.statut === StatutDemande.OUVERTE || d.statut === StatutDemande.EN_PAUSE);
+  }
   get demandesEnCours() {
-    return this.demandes.filter(d => d.statut === StatutDemande.OUVERTE);
+    return this.demandesActives;
   }
   get demandesTerminees() {
-    return this.demandes.filter(d => d.statut !== StatutDemande.OUVERTE);
+    return this.demandes.filter(d => d.statut === StatutDemande.TRAITEE || d.statut === StatutDemande.ANNULEE);
   }
   get totalEconomises() {
     return this.matchings
@@ -61,6 +64,15 @@ export class DashboardClientComponent implements OnInit {
     this.demandeService.cancel(id).subscribe(() => this.loadData());
   }
 
+  togglePause(d: DemandeDto): void {
+    const isPaused = d.statut === StatutDemande.EN_PAUSE;
+    const msg = isPaused
+      ? 'Réactiver cette demande ? Les réparateurs à proximité seront à nouveau contactés.'
+      : 'Mettre en pause cette demande ? Les réparateurs ne recevront plus votre annonce, mais les chats en cours restent accessibles.';
+    if (!confirm(msg)) return;
+    this.demandeService.togglePause(d.id).subscribe(() => this.loadData());
+  }
+
   accepterDevis(matchingId: string): void {
     this.demandeService.acceptDevis(matchingId).subscribe(() => this.loadData());
   }
@@ -69,3 +81,5 @@ export class DashboardClientComponent implements OnInit {
     this.demandeService.refuserDevis(matchingId).subscribe(() => this.loadData());
   }
 }
+
+

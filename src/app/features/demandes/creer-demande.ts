@@ -18,7 +18,7 @@ export class CreerDemandeComponent {
   // step removed: not used in this component
   loading = false;
   error = '';
-  photoPreviews: { url: string; name: string; size: string }[] = [];
+  photoPreviews: { url: string; name: string; size: string; file: File }[] = [];
   idfError: string = '';
 
   readonly TypeAppareil = TypeAppareil;
@@ -220,7 +220,8 @@ export class CreerDemandeComponent {
         this.photoPreviews.push({
           url: e.target?.result as string,
           name: file.name,
-          size: sizeLabel
+          size: sizeLabel,
+          file
         });
       };
       reader.readAsDataURL(file);
@@ -241,15 +242,30 @@ export class CreerDemandeComponent {
     }
     this.loading = true;
     this.error = '';
-    this.demandeService.create(this.form.value).subscribe({
-      next: () => {
-        this.loading = false;
-        this.router.navigate(['/mes-demandes']);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = err?.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
-      }
-    });
+
+    const dataUrls = this.photoPreviews.map(p => p.url);
+
+    const doCreate = (photoUrls: string[]) => {
+      const payload = { ...this.form.value, photoUrls };
+      this.demandeService.create(payload).subscribe({
+        next: () => {
+          this.loading = false;
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err) => {
+          this.loading = false;
+          this.error = err?.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.';
+        }
+      });
+    };
+
+    if (dataUrls.length > 0) {
+      this.demandeService.uploadPhotos(dataUrls).subscribe({
+        next: (urls) => doCreate(urls),
+        error: () => doCreate([]) // fallback: créer sans photos
+      });
+    } else {
+      doCreate([]);
+    }
   }
 }

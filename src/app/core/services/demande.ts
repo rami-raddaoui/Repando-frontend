@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
-  ApiResponse, DemandeDto, CreateDemandeRequest,
+  ApiResponse, DemandeDto, CreateDemandeRequest, UpdateDemandeRequest,
   MatchingDto, CreateMatchingRequest, SendDevisRequest,
   AdminDemandeDto, AdminReparateurDispoDto, AffecterMatchingsRequest
 } from '../models/models';
@@ -38,6 +38,24 @@ export class DemandeService {
   /** DELETE /api/demandes/{id} — annuler */
   cancel(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
+  }
+
+  /** PATCH /api/demandes/{id}/pause — mettre en pause / réactiver */
+  togglePause(id: string): Observable<void> {
+    return this.http.patch<ApiResponse<void>>(`${this.base}/${id}/pause`, {})
+      .pipe(map(() => void 0));
+  }
+
+  /** PUT /api/demandes/{id} — modifier une demande */
+  update(id: string, req: UpdateDemandeRequest): Observable<DemandeDto> {
+    return this.http.put<ApiResponse<DemandeDto>>(`${this.base}/${id}`, req)
+      .pipe(map(r => r.data!));
+  }
+
+  /** POST /api/demandes/photos — uploader des photos (base64 dataURLs) */
+  uploadPhotos(photos: string[]): Observable<string[]> {
+    return this.http.post<ApiResponse<string[]>>(`${this.base}/photos`, { photos })
+      .pipe(map(r => r.data ?? []));
   }
 
   // ---- MATCHINGS ----

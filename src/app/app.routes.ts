@@ -48,6 +48,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/demandes/creer-demande').then(m => m.CreerDemandeComponent)
   },
   {
+    path: 'modifier-demande/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/demandes/modifier-demande').then(m => m.ModifierDemandeComponent)
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
     data: { role: UserRole.ADMIN },
