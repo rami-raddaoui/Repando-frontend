@@ -17,6 +17,7 @@ export class LoginComponent {
   loading = false;
   error = '';
   success = '';
+  isCompteDesactive = false;
 
   loginForm: FormGroup;
   registerForm: FormGroup;
@@ -50,12 +51,14 @@ export class LoginComponent {
     this.mode.set(m);
     this.error = '';
     this.success = '';
+    this.isCompteDesactive = false;
   }
 
   submitLogin(): void {
     if (this.loginForm.invalid) return;
     this.loading = true;
     this.error = '';
+    this.isCompteDesactive = false;
     this.auth.login(this.loginForm.value).subscribe({
       next: (res) => {
         this.loading = false;
@@ -65,7 +68,13 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.message ?? 'Email ou mot de passe incorrect.';
+        const msg: string = err?.message ?? '';
+        if (msg.includes('COMPTE_DESACTIVE')) {
+          this.isCompteDesactive = true;
+          this.error = '';
+        } else {
+          this.error = msg || 'Email ou mot de passe incorrect.';
+        }
       }
     });
   }

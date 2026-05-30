@@ -18,7 +18,7 @@ const PAGE_SIZE = 12;
   styleUrl: './admin.scss'
 })
 export class AdminComponent implements OnInit {
-  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' = 'demandes';
+  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' | 'utilisateurs' = 'demandes';
 
   // ── Stats ────────────────────────────────────────────────────
   stats: any = null;
@@ -48,15 +48,16 @@ export class AdminComponent implements OnInit {
   allReparateurs: any[] = [];
   pendingReparateurs: any[] = [];
   reparateursDispo: AdminReparateurDispoDto[] = [];
-  repFilter: 'all' | 'pending' | 'verified' = 'all';
+  repFilter: 'all' | 'pending' | 'verified' | 'suspended' = 'all';
   repsPage = 1;
   repsSearch = '';
   repsLoading = false;
 
   get filteredReps() {
     let list = this.allReparateurs;
-    if (this.repFilter === 'pending')  list = list.filter(r => !r.isVerified);
-    if (this.repFilter === 'verified') list = list.filter(r => r.isVerified);
+    if (this.repFilter === 'pending')   list = list.filter(r => !r.isVerified && r.isActive);
+    if (this.repFilter === 'verified')  list = list.filter(r => r.isVerified && r.isActive);
+    if (this.repFilter === 'suspended') list = list.filter(r => !r.isActive);
     const q = this.repsSearch.toLowerCase();
     if (q) list = list.filter(r =>
       r.nom.toLowerCase().includes(q) || r.ville?.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
@@ -73,7 +74,7 @@ export class AdminComponent implements OnInit {
   repDetailModal: any = null;
   repDetailLoading = false;
 
-  // ── Détail demande ───────────────────────────────────────────
+  // ── Détail demande (enrichi avec tracking) ───────────────────
   demandeDetail: any = null;
   demandeDetailLoading = false;
 
@@ -96,6 +97,39 @@ export class AdminComponent implements OnInit {
   repondreTarget: any = null;
   repondreText = '';
   repondreLoading = false;
+
+  // ── Utilisateurs ─────────────────────────────────────────────
+  utilisateurs: any[] = [];
+  utilisateursLoading = false;
+  utilisateurFilter: 'all' | 'actif' | 'desactive' = 'all';
+  utilisateurRoleFilter = '';
+  utilisateurSearch = '';
+  utilisateursPage = 1;
+  desactiverModal: any = null;
+  desactiverRaison = '';
+  desactiverLoading = false;
+  desactiverError = '';
+
+  get filteredUtilisateurs() {
+    let list = this.utilisateurs;
+    if (this.utilisateurFilter === 'actif') list = list.filter(u => u.isActive);
+    if (this.utilisateurFilter === 'desactive') list = list.filter(u => !u.isActive);
+    if (this.utilisateurRoleFilter) list = list.filter(u => u.role === this.utilisateurRoleFilter);
+    const q = this.utilisateurSearch.toLowerCase();
+    if (q) list = list.filter(u => u.nom.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+    return list;
+  }
+  get utilisateursPages() { return Math.ceil(this.filteredUtilisateurs.length / PAGE_SIZE); }
+  get pagedUtilisateurs() {
+    const s = (this.utilisateursPage - 1) * PAGE_SIZE;
+    return this.filteredUtilisateurs.slice(s, s + PAGE_SIZE);
+  }
+
+  // ── Relance ──────────────────────────────────────────────────
+  relanceLoadingId: string | null = null;
+  relanceMailLoadingId: string | null = null;
+  relanceSuccess = '';
+  relanceError = '';
 
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
@@ -159,6 +193,15 @@ export class AdminComponent implements OnInit {
       });
   }
 
+  loadUtilisateurs(): void {
+    this.utilisateursLoading = true;
+    this.http.get<any>(`${environment.apiUrl}/admin/users?pageSize=200`)
+      .subscribe({
+        next: r => { this.utilisateurs = r.data?.items ?? []; this.utilisateursLoading = false; },
+        error: () => { this.utilisateursLoading = false; }
+      });
+  }
+
   openRepondre(r: any): void {
     this.repondreTarget = r;
     this.repondreText = r.reponseAdmin ?? '';
@@ -193,14 +236,24 @@ export class AdminComponent implements OnInit {
   }
   closeRepDetail(): void { this.repDetailModal = null; }
 
-  // ── Détail demande ───────────────────────────────────────────
+  // ── Détail demande (enrichi avec tracking) ───────────────────
   openDemandeDetail(id: string): void {
     this.demandeDetail = null;
     this.demandeDetailLoading = true;
-    this.http.get<ApiResponse<any>>(`${environment.apiUrl}/admin/demandes/${id}`)
+    this.relanceSuccess = '';
+    this.relanceError = '';
+    // On utilise le nouvel endpoint enrichi
+    this.http.get<ApiResponse<any>>(`${environment.apiUrl}/admin/demandes/${id}/detail`)
       .subscribe({
         next: r => { this.demandeDetail = r.data; this.demandeDetailLoading = false; },
-        error: () => { this.demandeDetailLoading = false; }
+        error: () => {
+          // fallback sur l'ancien endpoint
+          this.http.get<ApiResponse<any>>(`${environment.apiUrl}/admin/demandes/${id}`)
+            .subscribe({
+              next: r => { this.demandeDetail = r.data; this.demandeDetailLoading = false; },
+              error: () => { this.demandeDetailLoading = false; }
+            });
+        }
       });
   }
   closeDemandeDetail(): void { this.demandeDetail = null; this.chatModal = null; }
@@ -219,6 +272,47 @@ export class AdminComponent implements OnInit {
       });
   }
   closeChat(): void { this.chatModal = null; }
+
+  // ── Relancer réparateur (notif plateforme) ───────────────────
+  relancerReparateur(matchingId: string): void {
+    this.relanceLoadingId = matchingId;
+    this.relanceSuccess = '';
+    this.relanceError = '';
+    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/matchings/${matchingId}/relancer`, {})
+      .subscribe({
+        next: (r: any) => {
+          this.relanceLoadingId = null;
+          this.relanceSuccess = r.message ?? 'Relance envoyée !';
+          // Mettre à jour le matching dans demandeDetail
+          if (this.demandeDetail?.matchings) {
+            const m = this.demandeDetail.matchings.find((x: any) => x.id === matchingId);
+            if (m) { m.lastRelanceAt = new Date().toISOString(); m.nbRelances = (m.nbRelances ?? 0) + 1; }
+          }
+          setTimeout(() => this.relanceSuccess = '', 4000);
+        },
+        error: (e) => { this.relanceLoadingId = null; this.relanceError = e?.error?.error ?? 'Erreur'; }
+      });
+  }
+
+  // ── Relancer par email ───────────────────────────────────────
+  relancerEmail(matchingId: string): void {
+    this.relanceMailLoadingId = matchingId;
+    this.relanceSuccess = '';
+    this.relanceError = '';
+    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/matchings/${matchingId}/relancer-email`, {})
+      .subscribe({
+        next: (r: any) => {
+          this.relanceMailLoadingId = null;
+          this.relanceSuccess = r.message ?? 'Email de relance envoyé !';
+          if (this.demandeDetail?.matchings) {
+            const m = this.demandeDetail.matchings.find((x: any) => x.id === matchingId);
+            if (m) { m.lastRelanceAt = new Date().toISOString(); m.nbRelances = (m.nbRelances ?? 0) + 1; }
+          }
+          setTimeout(() => this.relanceSuccess = '', 4000);
+        },
+        error: (e) => { this.relanceMailLoadingId = null; this.relanceError = e?.error?.error ?? 'Erreur'; }
+      });
+  }
 
   // ── Affectation ──────────────────────────────────────────────
   openAffect(d: AdminDemandeDto): void {
@@ -285,6 +379,51 @@ export class AdminComponent implements OnInit {
       });
   }
 
+  // ── Désactiver/Réactiver compte utilisateur ──────────────────
+  openDesactiver(user: any): void {
+    this.desactiverModal = user;
+    this.desactiverRaison = '';
+    this.desactiverError = '';
+  }
+  closeDesactiver(): void { this.desactiverModal = null; }
+
+  submitDesactiver(): void {
+    if (!this.desactiverModal || !this.desactiverRaison.trim()) {
+      this.desactiverError = 'Veuillez indiquer une raison';
+      return;
+    }
+    this.desactiverLoading = true;
+    this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/admin/users/${this.desactiverModal.id}/desactiver`,
+      { raison: this.desactiverRaison }
+    ).subscribe({
+      next: () => {
+        this.desactiverLoading = false;
+        // Mettre à jour localement
+        const u = this.utilisateurs.find(x => x.id === this.desactiverModal.id);
+        if (u) { u.isActive = false; u.disabledReason = this.desactiverRaison; }
+        const r = this.allReparateurs.find(x => x.userId === this.desactiverModal.id || x.id === this.desactiverModal.id);
+        if (r) r.isActive = false;
+        if (this.repDetailModal?.userId === this.desactiverModal.id) this.repDetailModal.isActive = false;
+        this.closeDesactiver();
+      },
+      error: (e) => { this.desactiverLoading = false; this.desactiverError = e?.error?.error ?? 'Erreur'; }
+    });
+  }
+
+  reactiverUser(user: any): void {
+    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/users/${user.id}/reactiver`, {})
+      .subscribe({
+        next: () => {
+          const u = this.utilisateurs.find(x => x.id === user.id);
+          if (u) { u.isActive = true; u.disabledReason = null; }
+          const r = this.allReparateurs.find(x => x.userId === user.id || x.id === user.id);
+          if (r) r.isActive = true;
+        },
+        error: () => {}
+      });
+  }
+
   // ── Helpers ──────────────────────────────────────────────────
   getAppareilLabel(type: string): { label: string; icon: string } {
     return (this.APPAREIL_LABELS as any)[type] ?? { label: type, icon: '🔧' };
@@ -301,8 +440,8 @@ export class AdminComponent implements OnInit {
 
   getMatchingStatutStyle(statut: string): { label: string; color: string; bg: string } {
     switch (statut) {
-      case 'NOUVEAU':      return { label: 'Nouveau', color: '#1d4ed8', bg: '#dbeafe' };
-      case 'VU':           return { label: 'Vu', color: '#92400e', bg: '#fef3c7' };
+      case 'NOUVEAU':      return { label: 'Notifié (pas encore vu)', color: '#1d4ed8', bg: '#dbeafe' };
+      case 'VU':           return { label: 'Vu (sans réponse)', color: '#92400e', bg: '#fef3c7' };
       case 'ACCEPTE':      return { label: 'Accepté ✅', color: '#15803d', bg: '#dcfce7' };
       case 'DEVIS_ENVOYE': return { label: 'Devis envoyé', color: '#7c3aed', bg: '#ede9fe' };
       case 'CLOTURE':      return { label: 'Clôturé', color: '#64748b', bg: '#f1f5f9' };
@@ -310,6 +449,14 @@ export class AdminComponent implements OnInit {
       case 'ANNULE':       return { label: 'Annulé', color: '#64748b', bg: '#f1f5f9' };
       default:             return { label: statut, color: '#64748b', bg: '#f1f5f9' };
     }
+  }
+
+  canRelancer(statut: string): boolean {
+    return statut === 'NOUVEAU' || statut === 'VU';
+  }
+
+  joursDepuisNotif(notifiedAt: string): number {
+    return Math.floor((Date.now() - new Date(notifiedAt).getTime()) / 86_400_000);
   }
 
   stars(n: number): string[] {

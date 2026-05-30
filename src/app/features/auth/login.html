@@ -38,6 +38,20 @@
       <div class="alert-error">⚠️ {{ error }}</div>
     }
 
+    @if (isCompteDesactive) {
+      <div class="alert-disabled">
+        <div class="alert-disabled__icon">🔒</div>
+        <div class="alert-disabled__body">
+          <strong>Compte temporairement désactivé</strong>
+          <p>
+            Votre compte a été suspendu temporairement par notre équipe.
+            Pour toute question, contactez-nous via
+            <a href="/contact" class="alert-disabled__link">notre page de support</a>.
+          </p>
+        </div>
+      </div>
+    }
+
     <!-- FORMULAIRE CONNEXION -->
     @if (isLogin) {
       <div class="form-block">

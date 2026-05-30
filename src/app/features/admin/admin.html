@@ -44,17 +44,14 @@
       🔧 Réparateurs
       @if (pendingReparateurs.length > 0) { <span class="badge-count">{{ pendingReparateurs.length }}</span> }
     </button>
-    <button class="atab" [class.active]="tab==='reclamations'" (click)="tab='reclamations'; loadReclamations()">
-      🚩 Signalements
-    </button>
+    <button class="atab" [class.active]="tab==='utilisateurs'" (click)="tab='utilisateurs'; loadUtilisateurs()">👥 Utilisateurs</button>
+    <button class="atab" [class.active]="tab==='reclamations'" (click)="tab='reclamations'; loadReclamations()">🚩 Signalements</button>
     <button class="atab" [class.active]="tab==='stats'" (click)="tab='stats'; loadStats()">📊 Stats</button>
   </div>
 
   <!-- ===================== TAB: DEMANDES ===================== -->
   @if (tab === 'demandes') {
     <div class="tab-content">
-
-      <!-- Toolbar -->
       <div class="toolbar">
         <div class="toolbar-left">
           <div class="filter-chips">
@@ -87,7 +84,6 @@
       </div>
 
       @if (loading) { <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div> }
-
       @if (!loading && filteredDemandes.length === 0) {
         <div class="empty-admin"><div style="font-size:48px">📭</div><div class="empty-admin-title">Aucune demande trouvée</div></div>
       }
@@ -114,12 +110,12 @@
             </div>
             <div class="dc-meta">
               <span>📍 {{ d.ville }}{{ d.codePostal ? ' ' + d.codePostal : '' }}</span>
-              <span class="dc-matchings-badge">💬 {{ d.nbMatchings }}</span>
+              <span class="dc-matchings-badge">💬 {{ d.nbMatchings }} réparateur(s)</span>
               <span>📅 {{ d.createdAt | date:'dd/MM/yy' }}</span>
             </div>
             @if (d.description) { <div class="dc-desc">"{{ d.description }}"</div> }
             <div class="dc-footer">
-              <button class="btn-detail" (click)="openDemandeDetail(d.id)">🔍 Détails</button>
+              <button class="btn-detail" (click)="openDemandeDetail(d.id)">🔍 Détails & Tracking</button>
               @if (d.statut === 'OUVERTE') {
                 <button class="btn-affect" (click)="openAffect(d)">⚡ Affecter</button>
               } @else {
@@ -135,14 +131,13 @@
   <!-- ===================== TAB: RÉPARATEURS ===================== -->
   @if (tab === 'reparateurs') {
     <div class="tab-content">
-
-      <!-- Toolbar -->
       <div class="toolbar">
         <div class="toolbar-left">
           <div class="filter-chips">
-            <button class="fchip" [class.active]="repFilter === 'all'"     (click)="repFilter='all'; repsPage=1">Tous ({{ allReparateurs.length }})</button>
-            <button class="fchip fchip--amber" [class.active]="repFilter === 'pending'"  (click)="repFilter='pending'; repsPage=1">⏳ En attente ({{ pendingReparateurs.length }})</button>
-            <button class="fchip fchip--green" [class.active]="repFilter === 'verified'" (click)="repFilter='verified'; repsPage=1">✅ Validés</button>
+            <button class="fchip" [class.active]="repFilter === 'all'"      (click)="repFilter='all'; repsPage=1">Tous ({{ allReparateurs.length }})</button>
+            <button class="fchip fchip--amber" [class.active]="repFilter === 'pending'"   (click)="repFilter='pending'; repsPage=1">⏳ En attente ({{ pendingReparateurs.length }})</button>
+            <button class="fchip fchip--green" [class.active]="repFilter === 'verified'"  (click)="repFilter='verified'; repsPage=1">✅ Validés</button>
+            <button class="fchip fchip--red"   [class.active]="repFilter === 'suspended'" (click)="repFilter='suspended'; repsPage=1">🚫 Suspendus</button>
           </div>
         </div>
         <div class="search-wrap">
@@ -166,22 +161,18 @@
       </div>
 
       @if (repsLoading) { <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div> }
-
       @if (!repsLoading && filteredReps.length === 0) {
         <div class="empty-admin"><div style="font-size:40px">🔧</div><div class="empty-admin-title">Aucun réparateur trouvé</div></div>
       }
 
       <div class="rep-grid">
         @for (r of pagedReps; track r.id) {
-          <div class="rep-card" [class.rep-card--pending]="!r.isVerified" [class.rep-card--verified]="r.isVerified">
-
-            <!-- Status ribbon -->
-            <div class="rep-ribbon" [class.rep-ribbon--pending]="!r.isVerified" [class.rep-ribbon--ok]="r.isVerified">
-              {{ r.isVerified ? '✅ Validé' : '⏳ En attente' }}
+          <div class="rep-card" [class.rep-card--pending]="!r.isVerified && r.isActive" [class.rep-card--verified]="r.isVerified && r.isActive" [class.rep-card--suspended]="!r.isActive">
+            <div class="rep-ribbon" [class.rep-ribbon--pending]="!r.isVerified && r.isActive" [class.rep-ribbon--ok]="r.isVerified && r.isActive" [class.rep-ribbon--suspended]="!r.isActive">
+              {{ !r.isActive ? '🚫 Suspendu' : r.isVerified ? '✅ Validé' : '⏳ En attente' }}
             </div>
-
             <div class="rep-card-top">
-              <div class="rep-avatar" [class.rep-avatar--green]="r.isVerified">
+              <div class="rep-avatar" [class.rep-avatar--green]="r.isVerified && r.isActive" [class.rep-avatar--red]="!r.isActive">
                 {{ r.nom.charAt(0).toUpperCase() }}
               </div>
               <div class="rep-info">
@@ -189,11 +180,8 @@
                 <div class="rep-email">{{ r.email }}</div>
                 <div class="rep-loc">📍 {{ r.ville }}{{ r.codePostal ? ' ' + r.codePostal : '' }}</div>
               </div>
-              @if (r.isFounder) {
-                <span class="founder-pill">⭐ #{{ r.founderNumber }}</span>
-              }
+              @if (r.isFounder) { <span class="founder-pill">⭐ #{{ r.founderNumber }}</span> }
             </div>
-
             @if (r.noteMoyenne > 0) {
               <div class="rep-stars">
                 @for (s of stars(r.noteMoyenne); track $index) {
@@ -203,27 +191,120 @@
                 <span class="rep-avis-cnt">({{ r.nbAvis }} avis)</span>
               </div>
             }
-
             <div class="rep-specs">
               @for (s of (r.specialites ?? []).slice(0, 4); track s) {
                 <span class="spec-tag">{{ getAppareilLabel(s).icon }} {{ getAppareilLabel(s).label }}</span>
               }
             </div>
-
             <div class="rep-stats">
               <span>🔧 {{ r.nbReparations }} réparations</span>
               <span>📅 {{ r.createdAt | date:'dd/MM/yy' }}</span>
             </div>
-
             <div class="rep-actions">
               <button class="btn-rep-detail" (click)="openRepDetail(r.id)">Consulter</button>
-              @if (!r.isVerified) {
+              @if (!r.isVerified && r.isActive) {
                 <button class="btn-valider" (click)="validerReparateur(r.id)">✅ Valider</button>
                 <button class="btn-suspendre" (click)="suspendreReparateur(r.id)">❌ Refuser</button>
               }
             </div>
           </div>
         }
+      </div>
+    </div>
+  }
+
+  <!-- ===================== TAB: UTILISATEURS ===================== -->
+  @if (tab === 'utilisateurs') {
+    <div class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="filter-chips">
+            <button class="fchip" [class.active]="utilisateurFilter==='all'" (click)="utilisateurFilter='all'; utilisateursPage=1">Tous</button>
+            <button class="fchip fchip--green" [class.active]="utilisateurFilter==='actif'" (click)="utilisateurFilter='actif'; utilisateursPage=1">✅ Actifs</button>
+            <button class="fchip fchip--red" [class.active]="utilisateurFilter==='desactive'" (click)="utilisateurFilter='desactive'; utilisateursPage=1">🚫 Désactivés</button>
+            <select class="filter-select" [(ngModel)]="utilisateurRoleFilter" (ngModelChange)="utilisateursPage=1">
+              <option value="">Tous les rôles</option>
+              <option value="CLIENT">Client</option>
+              <option value="REPARATEUR">Réparateur</option>
+            </select>
+          </div>
+        </div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" [(ngModel)]="utilisateurSearch" (ngModelChange)="utilisateursPage=1"
+                 placeholder="Nom, email…" />
+        </div>
+      </div>
+
+      <div class="results-bar">
+        <span>{{ filteredUtilisateurs.length }} utilisateur(s)</span>
+        @if (utilisateursPages > 1) {
+          <div class="pagination">
+            <button class="pg-btn" [disabled]="utilisateursPage === 1" (click)="utilisateursPage = utilisateursPage - 1">‹</button>
+            @for (p of pageRange(utilisateursPages); track p) {
+              <button class="pg-btn" [class.active]="p === utilisateursPage" (click)="utilisateursPage = p">{{ p }}</button>
+            }
+            <button class="pg-btn" [disabled]="utilisateursPage === utilisateursPages" (click)="utilisateursPage = utilisateursPage + 1">›</button>
+          </div>
+        }
+      </div>
+
+      @if (utilisateursLoading) { <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div> }
+
+      <div class="users-table-wrap">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Dernière connexion</th>
+              <th>Inscrit le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of pagedUtilisateurs; track u.id) {
+              <tr [class.user-row--disabled]="!u.isActive">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm" [class.user-avatar-sm--disabled]="!u.isActive">{{ u.nom.charAt(0) }}</div>
+                    <div>
+                      <div class="user-nom">{{ u.nom }}</div>
+                      <div class="user-email">{{ u.email }}</div>
+                      @if (!u.isActive && u.disabledReason) {
+                        <div class="user-disabled-reason">⚠️ {{ u.disabledReason }}</div>
+                      }
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="role-badge" [class.role-badge--client]="u.role==='CLIENT'" [class.role-badge--rep]="u.role==='REPARATEUR'">
+                    {{ u.role === 'CLIENT' ? '👤 Client' : u.role === 'REPARATEUR' ? '🔧 Réparateur' : '🛡️ Admin' }}
+                  </span>
+                </td>
+                <td>
+                  @if (u.isActive) {
+                    <span class="status-pill status-pill--active">✅ Actif</span>
+                  } @else {
+                    <span class="status-pill status-pill--disabled">🚫 Désactivé</span>
+                  }
+                </td>
+                <td class="user-date">{{ u.lastLoginAt ? (u.lastLoginAt | date:'dd/MM/yy HH:mm') : '—' }}</td>
+                <td class="user-date">{{ u.createdAt | date:'dd/MM/yy' }}</td>
+                <td>
+                  <div class="user-actions">
+                    @if (u.isActive) {
+                      <button class="btn-disable-user" (click)="openDesactiver(u)">🚫 Désactiver</button>
+                    } @else {
+                      <button class="btn-enable-user" (click)="reactiverUser(u)">✅ Réactiver</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   }
@@ -238,13 +319,10 @@
           <button class="fchip fchip--green" [class.active]="reclamationFilter==='TRAITEE'" (click)="reclamationFilter='TRAITEE'; loadReclamations()">✅ Traitées</button>
         </div>
       </div>
-
       @if (reclamationsLoading) { <div class="loading-row"><div class="spinner"></div> Chargement…</div> }
-
       @if (!reclamationsLoading && reclamations.length === 0) {
         <div class="empty-admin"><div style="font-size:40px">🕊️</div><div class="empty-admin-title">Aucun signalement</div></div>
       }
-
       <div class="recs-admin-list">
         @for (r of reclamations; track r.id) {
           <div class="rec-admin-card" [class.rec-admin-card--treated]="r.statut==='TRAITEE'">
@@ -279,7 +357,8 @@
   }
 
   <!-- ===================== TAB: STATS ===================== -->
-  @if (tab === 'stats') {    <div class="tab-content">
+  @if (tab === 'stats') {
+    <div class="tab-content">
       @if (stats) {
         <div class="stats-grid">
           <div class="stat-card blue"><div class="sc-icon">📋</div><div class="sc-val">{{ stats.totalDemandes }}</div><div class="sc-lbl">Total demandes</div></div>
@@ -306,8 +385,6 @@
 @if (repDetailModal) {
   <div class="modal-overlay" (click)="closeRepDetail()">
     <div class="modal-wide" (click)="$event.stopPropagation()">
-
-      <!-- Header -->
       <div class="mwd-header">
         <div class="mwd-hero" [class.mwd-hero--verified]="repDetailModal.isVerified" [class.mwd-hero--pending]="!repDetailModal.isVerified">
           <div class="mwd-avatar">{{ repDetailModal.nom.charAt(0).toUpperCase() }}</div>
@@ -321,7 +398,9 @@
               <span>📍 {{ repDetailModal.ville }}{{ repDetailModal.codePostal ? ' ' + repDetailModal.codePostal : '' }}</span>
             </div>
             <div class="mwd-status-row">
-              @if (repDetailModal.isVerified) {
+              @if (!repDetailModal.isActive) {
+                <span class="status-badge status-badge--red">🚫 Compte désactivé</span>
+              } @else if (repDetailModal.isVerified) {
                 <span class="status-badge status-badge--green">✅ Profil validé</span>
               } @else {
                 <span class="status-badge status-badge--amber">⏳ En attente de validation</span>
@@ -337,12 +416,8 @@
           <button class="modal-close-abs" (click)="closeRepDetail()">✕</button>
         </div>
       </div>
-
-      <!-- Body -->
       <div class="mwd-body">
         <div class="mwd-grid">
-
-          <!-- Col 1: Infos pro -->
           <div class="mwd-section">
             <div class="mwd-section-title">📋 Informations professionnelles</div>
             <div class="mwd-info-list">
@@ -352,13 +427,8 @@
               }
               <div class="mwd-info-item"><span class="mwd-info-lbl">Expérience</span><span class="mwd-info-val">{{ repDetailModal.anneesExperience }} ans</span></div>
               <div class="mwd-info-item"><span class="mwd-info-lbl">Rayon</span><span class="mwd-info-val">{{ repDetailModal.rayonInterventionKm }} km</span></div>
-              @if (repDetailModal.adresseAtelier) {
-                <div class="mwd-info-item"><span class="mwd-info-lbl">Atelier</span><span class="mwd-info-val">{{ repDetailModal.adresseAtelier }}</span></div>
-              }
             </div>
           </div>
-
-          <!-- Col 2: Performances -->
           <div class="mwd-section">
             <div class="mwd-section-title">📊 Performances</div>
             <div class="mwd-kpis">
@@ -368,8 +438,6 @@
               <div class="mwd-kpi purple"><div class="mwd-kpi-val">{{ repDetailModal.nbReparations }}</div><div class="mwd-kpi-lbl">Réparations</div></div>
             </div>
           </div>
-
-          <!-- Spécialités -->
           <div class="mwd-section mwd-section--full">
             <div class="mwd-section-title">🔧 Spécialités</div>
             <div class="rep-specs-big">
@@ -378,24 +446,15 @@
               }
             </div>
           </div>
-
-          @if (repDetailModal.bio) {
-            <div class="mwd-section mwd-section--full">
-              <div class="mwd-section-title">💬 Présentation</div>
-              <div class="mwd-bio">{{ repDetailModal.bio }}</div>
-            </div>
-          }
         </div>
       </div>
-
-      <!-- Footer -->
       <div class="mwd-footer">
         <button class="btn-ghost-admin" (click)="closeRepDetail()">Fermer</button>
-        @if (!repDetailModal.isVerified) {
+        @if (!repDetailModal.isVerified && repDetailModal.isActive) {
           <button class="btn-suspendre-lg" (click)="suspendreReparateur(repDetailModal.id)">❌ Refuser</button>
           <button class="btn-valider-lg" (click)="validerReparateur(repDetailModal.id)">✅ Valider le profil</button>
-        } @else {
-          <button class="btn-suspendre-lg" (click)="suspendreReparateur(repDetailModal.id)">🚫 Suspendre</button>
+        } @else if (repDetailModal.isActive) {
+          <button class="btn-suspendre-lg" (click)="suspendreReparateur(repDetailModal.id)">🚫 Suspendre le compte</button>
         }
       </div>
     </div>
@@ -403,7 +462,7 @@
 }
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!--              MODAL: DÉTAIL DEMANDE                            -->
+<!--              MODAL: DÉTAIL DEMANDE (TRACKING ENRICHI)         -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 @if (demandeDetailLoading) {
   <div class="modal-overlay"><div class="modal-loading"><div class="spinner"></div><span>Chargement de la demande…</span></div></div>
@@ -411,8 +470,6 @@
 @if (demandeDetail && !chatModal) {
   <div class="modal-overlay" (click)="closeDemandeDetail()">
     <div class="modal-xl" (click)="$event.stopPropagation()">
-
-      <!-- Header -->
       <div class="mxl-header">
         <div class="mxl-icon">{{ getAppareilLabel(demandeDetail.typeAppareil).icon }}</div>
         <div class="mxl-header-info">
@@ -426,10 +483,7 @@
       </div>
 
       <div class="mxl-body">
-
-        <!-- 2-col grid: client + détails -->
         <div class="mxl-top-grid">
-
           <div class="mxl-section">
             <div class="mxl-section-title">👤 Client</div>
             <div class="mxl-client-card">
@@ -441,30 +495,29 @@
               </div>
             </div>
           </div>
-
           <div class="mxl-section">
-            <div class="mxl-section-title">📋 Détails de la demande</div>
+            <div class="mxl-section-title">📋 Détails</div>
             <div class="mxl-details-grid">
               <div class="mxl-detail"><span class="mxl-dl">Appareil</span><span class="mxl-dv">{{ getAppareilLabel(demandeDetail.typeAppareil).label }}</span></div>
               @if (demandeDetail.marque) { <div class="mxl-detail"><span class="mxl-dl">Marque</span><span class="mxl-dv">{{ demandeDetail.marque }}</span></div> }
-              @if (demandeDetail.modele) { <div class="mxl-detail"><span class="mxl-dl">Modèle</span><span class="mxl-dv">{{ demandeDetail.modele }}</span></div> }
               @if (demandeDetail.typePanne) { <div class="mxl-detail"><span class="mxl-dl">Panne</span><span class="mxl-dv">{{ demandeDetail.typePanne }}</span></div> }
-              <div class="mxl-detail"><span class="mxl-dl">Intervention</span><span class="mxl-dv">{{ demandeDetail.typeIntervention }}</span></div>
               <div class="mxl-detail"><span class="mxl-dl">Localisation</span><span class="mxl-dv">{{ demandeDetail.ville }}{{ demandeDetail.codePostal ? ' ' + demandeDetail.codePostal : '' }}</span></div>
-              @if (demandeDetail.adresse) { <div class="mxl-detail mxl-detail--full"><span class="mxl-dl">Adresse</span><span class="mxl-dv">{{ demandeDetail.adresse }}</span></div> }
             </div>
           </div>
-
         </div>
 
         @if (demandeDetail.description) {
           <div class="mxl-desc">"{{ demandeDetail.description }}"</div>
         }
 
-        <!-- Matchings / Réparateurs -->
+        <!-- Banners relance -->
+        @if (relanceSuccess) { <div class="relance-success-banner">✅ {{ relanceSuccess }}</div> }
+        @if (relanceError) { <div class="relance-error-banner">❌ {{ relanceError }}</div> }
+
+        <!-- TRACKING RÉPARATEURS -->
         <div class="mxl-section" style="margin-top:24px">
           <div class="mxl-section-title">
-            💬 Réparateurs impliqués
+            🔍 Suivi des réparateurs notifiés
             <span class="mxl-count-badge">{{ demandeDetail.matchings?.length ?? 0 }}</span>
           </div>
 
@@ -472,33 +525,96 @@
             <div class="mxl-no-matchings">Aucun réparateur n'a encore été affecté à cette demande.</div>
           }
 
-          <div class="matchings-list">
+          <div class="matchings-tracking-list">
             @for (m of demandeDetail.matchings; track m.id) {
-              <div class="matching-row">
-                <div class="matching-row__left">
-                  <div class="matching-row__avatar">{{ m.reparateurNom.charAt(0) }}</div>
-                  <div class="matching-row__info">
-                    <div class="matching-row__nom">{{ m.reparateurNom }}</div>
-                    <div class="matching-row__meta">
-                      📍 {{ m.ville }} ·
-                      @if (m.noteMoyenne > 0) { ⭐ {{ m.noteMoyenne | number:'1.1-1' }} · }
-                      {{ m.createdAt | date:'dd/MM/yy HH:mm' }}
+              <div class="tracking-row" [class.tracking-row--attente]="m.statut === 'NOUVEAU' || m.statut === 'VU'" [class.tracking-row--active]="m.statut === 'ACCEPTE' || m.statut === 'DEVIS_ENVOYE'" [class.tracking-row--closed]="m.statut === 'REFUSE' || m.statut === 'ANNULE' || m.statut === 'CLOTURE'">
+
+                <!-- Réparateur info -->
+                <div class="tracking-rep">
+                  <div class="tracking-avatar">{{ m.reparateurNom.charAt(0) }}</div>
+                  <div class="tracking-rep-info">
+                    <div class="tracking-rep-nom">{{ m.reparateurNom }}</div>
+                    <div class="tracking-rep-meta">
+                      📍 {{ m.ville }}
+                      @if (m.noteMoyenne > 0) { · ⭐ {{ m.noteMoyenne | number:'1.1-1' }} }
                     </div>
-                    @if (m.devisMontantClient) {
-                      <div class="matching-row__devis">💶 Devis: {{ m.devisMontantClient }}€</div>
-                    }
+                    <div class="tracking-rep-email">{{ m.reparateurEmail }}</div>
                   </div>
                 </div>
-                <div class="matching-row__right">
+
+                <!-- Statut badges tracking -->
+                <div class="tracking-badges">
+                  <!-- Notifié le -->
+                  <div class="tracking-badge tracking-badge--notif">
+                    <span class="tb-icon">📨</span>
+                    <div>
+                      <div class="tb-label">Notifié le</div>
+                      <div class="tb-value">{{ m.notifiedAt | date:'dd/MM/yy HH:mm' }}</div>
+                    </div>
+                  </div>
+                  <!-- A interagi ? -->
+                  <div class="tracking-badge" [class.tracking-badge--yes]="m.hasInteracted" [class.tracking-badge--no]="!m.hasInteracted">
+                    <span class="tb-icon">{{ m.hasInteracted ? '👁️' : '⏳' }}</span>
+                    <div>
+                      <div class="tb-label">A vu/répondu</div>
+                      <div class="tb-value">{{ m.hasInteracted ? 'Oui' : 'Non' }}</div>
+                    </div>
+                  </div>
+                  <!-- A commencé un chat ? -->
+                  <div class="tracking-badge" [class.tracking-badge--yes]="m.hasChat" [class.tracking-badge--no]="!m.hasChat">
+                    <span class="tb-icon">{{ m.hasChat ? '💬' : '🔇' }}</span>
+                    <div>
+                      <div class="tb-label">A chatté</div>
+                      <div class="tb-value">{{ m.hasChat ? 'Oui' : 'Non' }}</div>
+                    </div>
+                  </div>
+                  <!-- En attente depuis X jours -->
+                  @if (m.joursSansReponse !== null && m.joursSansReponse !== undefined) {
+                    <div class="tracking-badge" [class.tracking-badge--urgent]="m.joursSansReponse >= 2">
+                      <span class="tb-icon">⏰</span>
+                      <div>
+                        <div class="tb-label">Sans réponse</div>
+                        <div class="tb-value">{{ m.joursSansReponse }}j</div>
+                      </div>
+                    </div>
+                  }
+                  <!-- Relances -->
+                  @if (m.nbRelances > 0) {
+                    <div class="tracking-badge tracking-badge--relance">
+                      <span class="tb-icon">🔔</span>
+                      <div>
+                        <div class="tb-label">Relancé</div>
+                        <div class="tb-value">{{ m.nbRelances }}x · {{ m.lastRelanceAt | date:'dd/MM HH:mm' }}</div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Statut matching -->
+                <div class="tracking-right">
                   <span class="matching-statut-badge"
                         [style.background]="getMatchingStatutStyle(m.statut).bg"
                         [style.color]="getMatchingStatutStyle(m.statut).color">
                     {{ getMatchingStatutStyle(m.statut).label }}
                   </span>
                   <span class="matching-msg-count">{{ m.nbMessages }} msg</span>
-                  <button class="btn-chat-view" (click)="openChat(m)">
-                    👁️ Voir le chat
-                  </button>
+                  <button class="btn-chat-view" (click)="openChat(m)">👁️ Chat</button>
+
+                  <!-- Boutons relance (seulement si en attente) -->
+                  @if (canRelancer(m.statut)) {
+                    <div class="relance-btns">
+                      <button class="btn-relance-notif"
+                              [disabled]="relanceLoadingId === m.id"
+                              (click)="relancerReparateur(m.id)">
+                        {{ relanceLoadingId === m.id ? '⏳' : '🔔' }} Notifier
+                      </button>
+                      <button class="btn-relance-email"
+                              [disabled]="relanceMailLoadingId === m.id"
+                              (click)="relancerEmail(m.id)">
+                        {{ relanceMailLoadingId === m.id ? '⏳' : '📧' }} Email
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -527,8 +643,6 @@
 @if (chatModal) {
   <div class="modal-overlay chat-overlay" (click)="closeChat()" style="z-index:1100">
     <div class="chat-modal" (click)="$event.stopPropagation()">
-
-      <!-- Chat header -->
       <div class="chat-modal__header">
         <div class="chat-modal__header-icon">💬</div>
         <div>
@@ -545,14 +659,10 @@
         </span>
         <button class="modal-close-abs" (click)="closeChat()">✕</button>
       </div>
-
-      <!-- Chat notice -->
       <div class="chat-notice">
         <span>🛡️</span>
         <span>Vous consultez cette conversation en tant qu'administrateur Repando. Le contenu est en lecture seule.</span>
       </div>
-
-      <!-- Messages -->
       <div class="chat-messages">
         @if (chatModal.messages.length === 0) {
           <div class="chat-empty">Aucun message dans cette conversation.</div>
@@ -560,10 +670,7 @@
         @for (msg of chatModal.messages; track msg.id) {
           <div class="chat-msg" [class.chat-msg--rep]="msg.senderIsReparateur" [class.chat-msg--client]="!msg.senderIsReparateur" [class.chat-msg--system]="msg.type === 'SYSTEME'">
             @if (msg.type === 'SYSTEME') {
-              <div class="chat-system-msg">
-                <span class="chat-system-icon">ℹ️</span>
-                {{ msg.contenu }}
-              </div>
+              <div class="chat-system-msg"><span class="chat-system-icon">ℹ️</span>{{ msg.contenu }}</div>
             } @else {
               <div class="chat-bubble-wrap">
                 <div class="chat-sender-avatar">{{ msg.senderNom.charAt(0) }}</div>
@@ -572,21 +679,14 @@
                     {{ msg.senderNom }}
                     <span class="chat-sender-role">{{ msg.senderIsReparateur ? '🔧 Réparateur' : '👤 Client' }}</span>
                   </div>
-                  @if (msg.type === 'TEXTE') {
-                    <div class="chat-bubble">{{ msg.contenu }}</div>
-                  }
+                  @if (msg.type === 'TEXTE') { <div class="chat-bubble">{{ msg.contenu }}</div> }
                   @if (msg.type === 'PHOTO' && msg.photoUrl) {
-                    <div class="chat-bubble chat-bubble--photo">
-                      <img [src]="msg.photoUrl" alt="photo" class="chat-photo" />
-                    </div>
+                    <div class="chat-bubble chat-bubble--photo"><img [src]="msg.photoUrl" alt="photo" class="chat-photo" /></div>
                   }
                   @if (msg.type === 'DEVIS') {
                     <div class="chat-bubble chat-bubble--devis">
                       <div class="chat-devis-icon">📋</div>
-                      <div>
-                        <div class="chat-devis-title">Devis envoyé</div>
-                        @if (msg.contenu) { <div class="chat-devis-msg">{{ msg.contenu }}</div> }
-                      </div>
+                      <div><div class="chat-devis-title">Devis envoyé</div>@if (msg.contenu) { <div class="chat-devis-msg">{{ msg.contenu }}</div> }</div>
                     </div>
                   }
                   <div class="chat-time">{{ msg.createdAt | date:'dd/MM HH:mm' }}</div>
@@ -596,7 +696,6 @@
           </div>
         }
       </div>
-
       <div class="chat-modal__footer">
         <button class="btn-ghost-admin" (click)="closeChat()">← Retour à la demande</button>
       </div>
@@ -629,6 +728,40 @@
         <button class="btn-cancel" (click)="closeRepondre()">Annuler</button>
         <button class="btn-send" [disabled]="!repondreText.trim() || repondreLoading" (click)="submitRepondre()">
           {{ repondreLoading ? 'Envoi…' : '📬 Envoyer la réponse' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: DÉSACTIVER COMPTE                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (desactiverModal) {
+  <div class="modal-overlay" (click)="closeDesactiver()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">🚫 Désactiver le compte</div>
+          <div class="modal-sub">{{ desactiverModal.nom }} — {{ desactiverModal.email }}</div>
+        </div>
+        <button class="modal-close" (click)="closeDesactiver()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-disable-warning">
+          ⚠️ L'utilisateur ne pourra plus se connecter. Il verra un message lui demandant de contacter le support Repando.
+        </div>
+        <div class="modal-msg-group">
+          <label class="modal-msg-lbl">Raison de la désactivation <span class="required">*</span></label>
+          <textarea class="modal-textarea" [(ngModel)]="desactiverRaison" rows="3"
+                    placeholder="Ex: Comportement inapproprié, signalements multiples, fraude présumée…"></textarea>
+        </div>
+        @if (desactiverError) { <div class="modal-error">{{ desactiverError }}</div> }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDesactiver()">Annuler</button>
+        <button class="btn-disable-confirm" [disabled]="!desactiverRaison.trim() || desactiverLoading" (click)="submitDesactiver()">
+          {{ desactiverLoading ? 'En cours…' : '🚫 Désactiver le compte' }}
         </button>
       </div>
     </div>
