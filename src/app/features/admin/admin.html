@@ -299,6 +299,14 @@
                     } @else {
                       <button class="btn-enable-user" (click)="reactiverUser(u)">✅ Réactiver</button>
                     }
+                    @if (u.role !== 'ADMIN' && u.isActive) {
+                      <button class="btn-impersonate"
+                              [disabled]="impersonateLoadingId === u.id"
+                              (click)="impersonateUser(u.id, u.nom)"
+                              title="Se connecter en tant que cet utilisateur (admin uniquement)">
+                        {{ impersonateLoadingId === u.id ? '⏳' : '🕵️' }} Surveiller
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -681,7 +689,7 @@
                   </div>
                   @if (msg.type === 'TEXTE') { <div class="chat-bubble">{{ msg.contenu }}</div> }
                   @if (msg.type === 'PHOTO' && msg.photoUrl) {
-                    <div class="chat-bubble chat-bubble--photo"><img [src]="msg.photoUrl" alt="photo" class="chat-photo" /></div>
+                    <div class="chat-bubble chat-bubble--photo"><img [src]="msg.photoUrl.startsWith('http') ? msg.photoUrl : staticUrl + msg.photoUrl" alt="photo" class="chat-photo" /></div>
                   }
                   @if (msg.type === 'DEVIS') {
                     <div class="chat-bubble chat-bubble--devis">
@@ -773,10 +781,10 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 @if (affectModal) {
   <div class="modal-overlay" (click)="closeAffect()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-box modal-box--large" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div>
-          <div class="modal-title">⚡ Affecter des réparateurs</div>
+          <div class="modal-title">⚡ Gérer les affectations</div>
           <div class="modal-sub">
             {{ getAppareilLabel(affectModal.typeAppareil).icon }}
             {{ getAppareilLabel(affectModal.typeAppareil).label }} — {{ affectModal.clientNom }} — {{ affectModal.ville }}
@@ -785,6 +793,66 @@
         <button class="modal-close" (click)="closeAffect()">✕</button>
       </div>
       <div class="modal-body">
+
+        <!-- Matchings existants -->
+        @if (affectDetailLoading) {
+          <div class="loading-row"><div class="spinner"></div> Chargement…</div>
+        }
+        @if (!affectDetailLoading && affectExistingMatchings.length > 0) {
+          <div class="affect-section-title">📋 Réparateurs déjà notifiés</div>
+          @if (annulerSuccess) { <div class="relance-success-banner">✅ {{ annulerSuccess }}</div> }
+          @if (annulerError)   { <div class="relance-error-banner">❌ {{ annulerError }}</div> }
+          <div class="affect-existing-list">
+            @for (m of affectExistingMatchings; track m.id) {
+              <div class="affect-existing-row" [class.affect-existing-row--annule]="m.statut === 'ANNULE' || m.statut === 'REFUSE'">
+                <div class="aer-left">
+                  <div class="aer-avatar">{{ m.reparateurNom.charAt(0) }}</div>
+                  <div class="aer-info">
+                    <div class="aer-nom">{{ m.reparateurNom }}</div>
+                    <div class="aer-meta">
+                      📍 {{ m.ville }}
+                      @if (m.noteMoyenne > 0) { · ⭐ {{ m.noteMoyenne | number:'1.1-1' }} }
+                    </div>
+                    <div class="aer-badges">
+                      <span class="tracking-badge tracking-badge--notif" style="display:inline-flex;gap:4px;padding:3px 8px;font-size:11px">
+                        📨 Notifié {{ m.notifiedAt | date:'dd/MM HH:mm' }}
+                      </span>
+                      <span class="tracking-badge" [class.tracking-badge--yes]="m.hasInteracted" [class.tracking-badge--no]="!m.hasInteracted" style="display:inline-flex;gap:4px;padding:3px 8px;font-size:11px">
+                        {{ m.hasInteracted ? '👁️ Vu' : '⏳ Pas vu' }}
+                      </span>
+                      <span class="tracking-badge" [class.tracking-badge--yes]="m.hasChat" [class.tracking-badge--no]="!m.hasChat" style="display:inline-flex;gap:4px;padding:3px 8px;font-size:11px">
+                        {{ m.hasChat ? '💬 A chatté' : '🔇 Pas de chat' }}
+                      </span>
+                      @if (m.joursSansReponse !== null && m.joursSansReponse !== undefined) {
+                        <span class="tracking-badge" [class.tracking-badge--urgent]="m.joursSansReponse >= 2" style="display:inline-flex;gap:4px;padding:3px 8px;font-size:11px">
+                          ⏰ {{ m.joursSansReponse }}j sans réponse
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div class="aer-right">
+                  <span class="matching-statut-badge"
+                        [style.background]="getMatchingStatutStyle(m.statut).bg"
+                        [style.color]="getMatchingStatutStyle(m.statut).color">
+                    {{ getMatchingStatutStyle(m.statut).label }}
+                  </span>
+                  @if (m.statut !== 'ANNULE' && m.statut !== 'REFUSE' && m.statut !== 'CLOTURE') {
+                    <button class="btn-annuler-matching"
+                            [disabled]="annulerLoadingId === m.id"
+                            (click)="annulerMatching(m.id)">
+                      {{ annulerLoadingId === m.id ? '⏳' : '🚫' }} Annuler
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          <div class="affect-separator"></div>
+        }
+
+        <!-- Ajouter de nouveaux réparateurs -->
+        <div class="affect-section-title">➕ Affecter de nouveaux réparateurs</div>
         <div class="modal-section-lbl">
           Sélectionnez 1 à 5 réparateurs
           <span class="sel-count">({{ selectedReps.size }}/5)</span>
@@ -794,21 +862,24 @@
         }
         <div class="rep-select-list">
           @for (r of reparateursDispo; track r.id) {
-            <div class="rep-select-item" [class.selected]="selectedReps.has(r.id)" (click)="toggleRep(r.id)">
-              <div class="rsi-check">{{ selectedReps.has(r.id) ? '✓' : '' }}</div>
-              <div class="rsi-avatar">{{ r.nomAffiche[0] }}</div>
-              <div class="rsi-info">
-                <div class="rsi-nom">{{ r.nomAffiche }}</div>
-                <div class="rsi-meta">📍 {{ r.ville }} · ⭐ {{ r.noteMoyenne | number:'1.1-1' }} · 🔧 {{ r.nbReparations }} rép.</div>
-                <div class="rsi-specs">
-                  @for (s of r.specialites.slice(0,3); track s) { <span class="spec-tag mini">{{ s }}</span> }
+            <!-- Exclure les réparateurs déjà affectés et actifs -->
+            @if (!affectExistingMatchings.find(m => m.reparateurId === r.id && m.statut !== 'ANNULE' && m.statut !== 'REFUSE')) {
+              <div class="rep-select-item" [class.selected]="selectedReps.has(r.id)" (click)="toggleRep(r.id)">
+                <div class="rsi-check">{{ selectedReps.has(r.id) ? '✓' : '' }}</div>
+                <div class="rsi-avatar">{{ r.nomAffiche[0] }}</div>
+                <div class="rsi-info">
+                  <div class="rsi-nom">{{ r.nomAffiche }}</div>
+                  <div class="rsi-meta">📍 {{ r.ville }} · ⭐ {{ r.noteMoyenne | number:'1.1-1' }} · 🔧 {{ r.nbReparations }} rép.</div>
+                  <div class="rsi-specs">
+                    @for (s of r.specialites.slice(0,3); track s) { <span class="spec-tag mini">{{ s }}</span> }
+                  </div>
                 </div>
               </div>
-            </div>
+            }
           }
         </div>
         <div class="modal-msg-group">
-          <label class="modal-msg-lbl">Message (optionnel)</label>
+          <label class="modal-msg-lbl">Message d'accompagnement (optionnel)</label>
           <textarea [(ngModel)]="messageAdmin" rows="3" class="modal-textarea"
                     placeholder="Ex: Client dispo le matin, appareil au 2ème…"></textarea>
         </div>
@@ -816,7 +887,7 @@
         @if (affectSuccess) { <div class="modal-success">{{ affectSuccess }}</div> }
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" (click)="closeAffect()">Annuler</button>
+        <button class="btn-cancel" (click)="closeAffect()">Fermer</button>
         <button class="btn-send" [disabled]="selectedReps.size === 0 || affectLoading" (click)="submitAffect()">
           {{ affectLoading ? 'Envoi…' : '⚡ Notifier ' + selectedReps.size + ' réparateur(s)' }}
         </button>

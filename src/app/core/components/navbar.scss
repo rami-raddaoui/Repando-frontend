@@ -1,4 +1,38 @@
+/* ─── BANDEAU IMPERSONATION ADMIN ───────────────────────────── */
+.impersonate-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  background: linear-gradient(90deg, #1e1b4b, #4f46e5);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+
+  strong { font-weight: 700; }
+}
+
+.impersonate-back-btn {
+  background: rgba(255,255,255,.15);
+  border: 1.5px solid rgba(255,255,255,.4);
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s;
+  white-space: nowrap;
+  &:hover { background: rgba(255,255,255,.3); }
+}
+
 /* ─── MESSENGER BUBBLE ───────────────────────────────────────── */
+
 .msg-bubble-wrap {
   position: relative;
 }

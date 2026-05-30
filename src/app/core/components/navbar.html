@@ -1,4 +1,11 @@
 <nav class="nav">
+  <!-- Bandeau impersonation admin — visible uniquement quand en mode surveillance -->
+  @if (isImpersonating) {
+    <div class="impersonate-banner">
+      <span>🕵️ Mode surveillance admin — vous naviguez en tant que <strong>{{ auth.currentUser()?.prenom }} {{ auth.currentUser()?.nom }}</strong></span>
+      <button class="impersonate-back-btn" (click)="restoreAdminSession()">← Revenir à mon compte Admin</button>
+    </div>
+  }
   <a routerLink="/" class="logo">
     <div class="logo-dot"></div>
     Repair<span>ando</span>

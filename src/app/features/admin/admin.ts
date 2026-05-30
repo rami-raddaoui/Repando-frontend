@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { DemandeService } from '../../core/services/demande';
+import { AuthService } from '../../core/services/auth';
 import { AdminDemandeDto, AdminReparateurDispoDto, StatutDemande, APPAREIL_LABELS, MessageDto } from '../../core/models/models';
 import { environment } from '../../../environments/environment';
 import { map } from 'rxjs/operators';
@@ -84,6 +86,8 @@ export class AdminComponent implements OnInit {
 
   // ── Affectation ──────────────────────────────────────────────
   affectModal: AdminDemandeDto | null = null;
+  affectExistingMatchings: any[] = [];   // matchings déjà existants pour cette demande
+  affectDetailLoading = false;
   selectedReps: Set<string> = new Set();
   messageAdmin = '';
   affectLoading = false;
@@ -131,10 +135,19 @@ export class AdminComponent implements OnInit {
   relanceSuccess = '';
   relanceError = '';
 
+  // ── Annulation matching ──────────────────────────────────────
+  annulerLoadingId: string | null = null;
+  annulerSuccess = '';
+  annulerError = '';
+
+  // ── Impersonation ─────────────────────────────────────────────
+  impersonateLoadingId: string | null = null;
+  readonly staticUrl = environment.staticUrl;
+
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
 
-  constructor(private demandeService: DemandeService, private http: HttpClient) {}
+  constructor(private demandeService: DemandeService, private http: HttpClient, private auth: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadStats();
@@ -317,11 +330,28 @@ export class AdminComponent implements OnInit {
   // ── Affectation ──────────────────────────────────────────────
   openAffect(d: AdminDemandeDto): void {
     this.affectModal = d;
+    this.affectExistingMatchings = [];
     this.selectedReps = new Set();
     this.messageAdmin = '';
     this.affectSuccess = '';
     this.affectError = '';
+    this.annulerSuccess = '';
+    this.annulerError = '';
     this.closeDemandeDetail();
+    // Charger les matchings existants pour cette demande
+    this.affectDetailLoading = true;
+    this.http.get<ApiResponse<any>>(`${environment.apiUrl}/admin/demandes/${d.id}/detail`)
+      .subscribe({
+        next: r => {
+          this.affectExistingMatchings = r.data?.matchings ?? [];
+          this.affectDetailLoading = false;
+          // Pré-sélectionner les réparateurs déjà affectés qui sont encore actifs
+          this.affectExistingMatchings
+            .filter((m: any) => m.statut !== 'ANNULE' && m.statut !== 'REFUSE' && m.statut !== 'CLOTURE')
+            .forEach((m: any) => this.selectedReps.add(m.reparateurId));
+        },
+        error: () => { this.affectDetailLoading = false; }
+      });
   }
   closeAffect(): void { this.affectModal = null; }
 
@@ -421,6 +451,65 @@ export class AdminComponent implements OnInit {
           if (r) r.isActive = true;
         },
         error: () => {}
+      });
+  }
+
+  // ── Annuler un matching (par admin) ─────────────────────────
+  annulerMatching(matchingId: string): void {
+    if (!confirm('Confirmer l\'annulation de ce réparateur ? Il sera notifié et ne pourra plus répondre.')) return;
+    this.annulerLoadingId = matchingId;
+    this.annulerSuccess = '';
+    this.annulerError = '';
+    this.http.post<any>(`${environment.apiUrl}/admin/matchings/${matchingId}/annuler`, {})
+      .subscribe({
+        next: (r) => {
+          this.annulerLoadingId = null;
+          this.annulerSuccess = r.message ?? 'Matching annulé';
+          if (this.demandeDetail?.matchings) {
+            const m = this.demandeDetail.matchings.find((x: any) => x.id === matchingId);
+            if (m) m.statut = 'ANNULE';
+          }
+          // aussi mettre à jour la popup affectation si ouverte
+          if (this.affectModal) {
+            const m = this.affectExistingMatchings.find((x: any) => x.id === matchingId);
+            if (m) m.statut = 'ANNULE';
+          }
+          setTimeout(() => this.annulerSuccess = '', 4000);
+        },
+        error: (e) => { this.annulerLoadingId = null; this.annulerError = e?.error?.error ?? 'Erreur'; }
+      });
+  }
+
+  // ── Impersonation ─────────────────────────────────────────────
+  impersonateUser(userId: string, userNom: string): void {
+    this.impersonateLoadingId = userId;
+    this.http.post<ApiResponse<any>>(`${environment.apiUrl}/admin/users/${userId}/impersonate`, {})
+      .subscribe({
+        next: (r) => {
+          this.impersonateLoadingId = null;
+          if (!r.data?.token) return;
+          // Sauvegarder la session admin pour pouvoir revenir
+          const adminToken = this.auth.getToken();
+          const adminUser  = this.auth.currentUser();
+          if (adminToken && adminUser) {
+            sessionStorage.setItem('repando_admin_token', adminToken);
+            sessionStorage.setItem('repando_admin_user', JSON.stringify(adminUser));
+          }
+          // Stocker la session impersonée
+          this.auth.storeSession({
+            token:    r.data.token,
+            userId:   r.data.userId,
+            email:    r.data.email,
+            prenom:   r.data.prenom,
+            nom:      r.data.nom,
+            role:     r.data.role,
+            avatarUrl: r.data.avatarUrl
+          });
+          // Rediriger selon le rôle
+          if (r.data.role === 'REPARATEUR') this.router.navigate(['/dashboard-reparateur']);
+          else this.router.navigate(['/dashboard']);
+        },
+        error: () => { this.impersonateLoadingId = null; }
       });
   }
 

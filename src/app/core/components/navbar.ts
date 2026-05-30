@@ -121,7 +121,28 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  get isImpersonating(): boolean {
+    return !!sessionStorage.getItem('repando_admin_token');
+  }
+
+  restoreAdminSession(): void {
+    const adminToken = sessionStorage.getItem('repando_admin_token');
+    const adminUserRaw = sessionStorage.getItem('repando_admin_user');
+    if (!adminToken || !adminUserRaw) return;
+    try {
+      const adminUser = JSON.parse(adminUserRaw);
+      this.msgService.disconnectGlobalHub();
+      this.auth.storeSession(adminUser);
+      sessionStorage.removeItem('repando_admin_token');
+      sessionStorage.removeItem('repando_admin_user');
+      this.router.navigate(['/admin']);
+    } catch {}
+  }
+
   logout(): void {
+    // Si on est en mode impersonation, nettoyer aussi la session admin sauvegardée
+    sessionStorage.removeItem('repando_admin_token');
+    sessionStorage.removeItem('repando_admin_user');
     this.msgService.disconnectGlobalHub();
     this.auth.logout();
   }

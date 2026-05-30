@@ -655,4 +655,50 @@
 /* ─── STATUS BADGE RED ─────────────────────────────────────────── */
 .status-badge--red { background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600; }
 
+/* ─── MODAL LARGE ──────────────────────────────────────────────── */
+.modal-box--large {
+  max-width: 780px !important;
+  width: 95vw;
+}
+
+/* ─── AFFECT ENRICHI ───────────────────────────────────────────── */
+.affect-section-title {
+  font-size: 13px; font-weight: 700; color: #374151;
+  margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em;
+}
+.affect-separator {
+  border: none; border-top: 1.5px solid #e2e8f0; margin: 18px 0;
+}
+.affect-existing-list { display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+.affect-existing-row {
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:#fff; border:1.5px solid #e2e8f0; border-radius:12px; padding:10px 14px;
+  &--annule { opacity:.55; background:#f8fafc; }
+}
+.aer-left  { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+.aer-avatar {
+  width:34px; height:34px; border-radius:50%; background:#6366f1; color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;
+}
+.aer-nom  { font-weight:600; font-size:13.5px; }
+.aer-meta { font-size:12px; color:#64748b; }
+.aer-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+.aer-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.btn-annuler-matching {
+  padding:5px 10px; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer;
+  background:#fef2f2; color:#dc2626; border:1.5px solid #fca5a5;
+  transition:all .18s;
+  &:hover:not(:disabled) { background:#dc2626; color:#fff; }
+  &:disabled { opacity:.5; cursor:not-allowed; }
+}
+
+/* ─── BTN IMPERSONATE ──────────────────────────────────────────── */
+.btn-impersonate {
+  padding:5px 12px; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer;
+  background:#1e1b4b; color:#fff; border:none;
+  transition:all .18s;
+  &:hover:not(:disabled) { background:#4f46e5; }
+  &:disabled { opacity:.5; cursor:not-allowed; }
+}
+
 
