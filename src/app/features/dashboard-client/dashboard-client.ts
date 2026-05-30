@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth';
 import { DemandeService } from '../../core/services/demande';
@@ -19,6 +19,10 @@ export class DashboardClientComponent implements OnInit {
   loading = false;
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
+
+  // Cancel confirmation popup
+  showCancelModal = false;
+  cancelTargetId: string | null = null;
 
   get demandesActives() {
     return this.demandes.filter(d => d.statut === StatutDemande.OUVERTE || d.statut === StatutDemande.EN_PAUSE);
@@ -41,6 +45,7 @@ export class DashboardClientComponent implements OnInit {
   constructor(
     public auth: AuthService,
     private demandeService: DemandeService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -59,8 +64,21 @@ export class DashboardClientComponent implements OnInit {
     });
   }
 
-  cancel(id: string): void {
-    if (!confirm('Confirmer l\'annulation ?')) return;
+  openCancelModal(id: string): void {
+    this.cancelTargetId = id;
+    this.showCancelModal = true;
+  }
+
+  closeCancelModal(): void {
+    this.showCancelModal = false;
+    this.cancelTargetId = null;
+  }
+
+  confirmCancel(): void {
+    if (!this.cancelTargetId) return;
+    const id = this.cancelTargetId;
+    this.showCancelModal = false;
+    this.cancelTargetId = null;
     this.demandeService.cancel(id).subscribe(() => this.loadData());
   }
 
@@ -73,6 +91,15 @@ export class DashboardClientComponent implements OnInit {
     this.demandeService.togglePause(d.id).subscribe(() => this.loadData());
   }
 
+  goToMessagerie(demandeId: string): void {
+    const matching = this.matchings.find(m => m.demandeId === demandeId);
+    if (matching) {
+      this.router.navigate(['/messagerie', matching.id]);
+    } else {
+      this.router.navigate(['/messagerie']);
+    }
+  }
+
   accepterDevis(matchingId: string): void {
     this.demandeService.acceptDevis(matchingId).subscribe(() => this.loadData());
   }
@@ -81,5 +108,3 @@ export class DashboardClientComponent implements OnInit {
     this.demandeService.refuserDevis(matchingId).subscribe(() => this.loadData());
   }
 }
-
-

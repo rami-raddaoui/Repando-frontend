@@ -209,7 +209,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
 
   getClosedReason(statut: string): string {
     switch (statut) {
-      case 'ANNULE': return '❌ Cette conversation est clôturée.';
+      case 'ANNULE': return '❌ La demande a été annulée. Cette conversation est définitivement clôturée — il n\'est plus possible d\'envoyer des messages.';
       case 'REFUSE': return '❌ Cette conversation est clôturée.';
       case 'CLOTURE': return '✅ Réparation clôturée.';
       default: return '🔒 Cette conversation est fermée.';

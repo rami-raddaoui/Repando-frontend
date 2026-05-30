@@ -57,14 +57,14 @@
             <div class="pause-notice">⏸️ Demande en pause — aucun nouveau réparateur ne recevra votre annonce. Les chats existants restent actifs.</div>
           }
           <div class="rc-actions">
-            <a routerLink="/messagerie" class="btn-secondary btn-sm">💬 Messagerie</a>
+            <button class="btn-secondary btn-sm" (click)="goToMessagerie(d.id)">💬 Messagerie</button>
             <a [routerLink]="['/modifier-demande', d.id]" class="btn-secondary btn-sm">✏️ Modifier</a>
             @if (d.statut === StatutDemande.EN_PAUSE) {
               <button class="btn-secondary btn-sm" style="color:#10b981;border-color:#10b981" (click)="togglePause(d)">▶️ Réactiver</button>
             } @else {
               <button class="btn-secondary btn-sm" style="color:#f59e0b;border-color:#f59e0b" (click)="togglePause(d)">⏸️ Mettre en pause</button>
             }
-            <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="cancel(d.id)">Annuler</button>
+            <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="openCancelModal(d.id)">Annuler</button>
           </div>
         </div>
       </div>
@@ -116,3 +116,20 @@
     </div>
   }
 </div>
+
+<!-- ── Popup confirmation annulation ─────────────────────────────── -->
+@if (showCancelModal) {
+  <div class="modal-overlay" (click)="closeCancelModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">⚠️</div>
+      <h3 class="modal-title">Annuler cette demande ?</h3>
+      <p class="modal-desc">
+        Cette action est <strong>irréversible</strong>. Votre demande sera définitivement annulée et toutes les conversations ouvertes avec des réparateurs seront clôturées. Vous ne pourrez pas la réactiver.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeCancelModal()">Non, garder ma demande</button>
+        <button class="btn-danger" (click)="confirmCancel()">Oui, annuler définitivement</button>
+      </div>
+    </div>
+  </div>
+}

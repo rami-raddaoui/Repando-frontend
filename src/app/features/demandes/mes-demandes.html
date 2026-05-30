@@ -12,11 +12,14 @@
     </div>
   }
   @for (d of demandes; track d.id) {
-    <div class="res-card">
+    <div class="res-card" [class.paused]="d.statut === StatutDemande.EN_PAUSE">
       <div class="rc-status">
         @if (d.statut === StatutDemande.OUVERTE) {
           <div class="rc-status-icon confirmed">📅</div>
           <div class="rc-status-label confirmed">Ouverte</div>
+        } @else if (d.statut === StatutDemande.EN_PAUSE) {
+          <div class="rc-status-icon pending">⏸️</div>
+          <div class="rc-status-label" style="color:#f59e0b">En pause</div>
         } @else if (d.statut === StatutDemande.TRAITEE) {
           <div class="rc-status-icon done">✅</div>
           <div class="rc-status-label done">Traitee</div>
@@ -31,13 +34,49 @@
           @if (d.adresse) { <div class="rc-detail">📍 <strong>{{ d.adresse }}</strong></div> }
           <div class="rc-detail">📅 <strong>{{ d.createdAt | date:'dd MMM yyyy' }}</strong></div>
         </div>
-        @if (d.statut === StatutDemande.OUVERTE) {
+        @if (d.statut === StatutDemande.EN_PAUSE) {
+          <div class="pause-notice">⏸️ Demande en pause — aucun nouveau réparateur ne recevra votre annonce. Les chats existants restent actifs.</div>
+        }
+        @if (d.statut === StatutDemande.ANNULEE) {
+          <div style="margin-top:8px;font-size:13px;color:var(--red);font-weight:500">
+            🔒 Cette demande est annulée et clôturée définitivement.
+          </div>
+        }
+        @if (d.statut === StatutDemande.OUVERTE || d.statut === StatutDemande.EN_PAUSE) {
           <div class="rc-actions">
-            <a routerLink="/messagerie" class="btn-secondary btn-sm">💬 Messagerie</a>
-            <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="cancel(d.id)">Annuler</button>
+            <button class="btn-secondary btn-sm" (click)="goToMessagerie(d.id)">💬 Messagerie</button>
+            <a [routerLink]="['/modifier-demande', d.id]" class="btn-secondary btn-sm">✏️ Modifier</a>
+            @if (d.statut === StatutDemande.EN_PAUSE) {
+              <button class="btn-secondary btn-sm" style="color:#10b981;border-color:#10b981" (click)="togglePause(d)">▶️ Réactiver</button>
+            } @else {
+              <button class="btn-secondary btn-sm" style="color:#f59e0b;border-color:#f59e0b" (click)="togglePause(d)">⏸️ Mettre en pause</button>
+            }
+            <button class="btn-secondary btn-sm" style="color:var(--red);border-color:var(--red)" (click)="openCancelModal(d.id)">Annuler</button>
+          </div>
+        }
+        @if (d.statut === StatutDemande.TRAITEE) {
+          <div class="rc-actions">
+            <button class="btn-secondary btn-sm" (click)="goToMessagerie(d.id)">💬 Messagerie</button>
           </div>
         }
       </div>
     </div>
   }
 </div>
+
+<!-- ── Popup confirmation annulation ─────────────────────────────── -->
+@if (showCancelModal) {
+  <div class="modal-overlay" (click)="closeCancelModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">⚠️</div>
+      <h3 class="modal-title">Annuler cette demande ?</h3>
+      <p class="modal-desc">
+        Cette action est <strong>irréversible</strong>. Votre demande sera définitivement annulée et toutes les conversations ouvertes avec des réparateurs seront clôturées. Vous ne pourrez pas la réactiver.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeCancelModal()">Non, garder ma demande</button>
+        <button class="btn-danger" (click)="confirmCancel()">Oui, annuler définitivement</button>
+      </div>
+    </div>
+  </div>
+}
