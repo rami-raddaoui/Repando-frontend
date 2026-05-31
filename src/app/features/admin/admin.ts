@@ -20,7 +20,7 @@ const PAGE_SIZE = 12;
   styleUrl: './admin.scss'
 })
 export class AdminComponent implements OnInit {
-  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' | 'utilisateurs' = 'demandes';
+  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' | 'utilisateurs' | 'parametres' = 'demandes';
 
   // ── Stats ────────────────────────────────────────────────────
   stats: any = null;
@@ -142,6 +142,13 @@ export class AdminComponent implements OnInit {
 
   // ── Impersonation ─────────────────────────────────────────────
   impersonateLoadingId: string | null = null;
+
+  // ── Paramètres admin ──────────────────────────────────────────
+  settings: { id: string; key: string; value: boolean; description: string; updatedAt: string }[] = [];
+  settingsLoading = false;
+  settingsSaving: Set<string> = new Set();
+  settingsSuccess = '';
+
   readonly staticUrl = environment.staticUrl;
 
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
@@ -212,6 +219,31 @@ export class AdminComponent implements OnInit {
       .subscribe({
         next: r => { this.utilisateurs = r.data?.items ?? []; this.utilisateursLoading = false; this.cdr.detectChanges(); },
         error: () => { this.utilisateursLoading = false; this.cdr.detectChanges(); }
+      });
+  }
+
+  loadSettings(): void {
+    this.settingsLoading = true;
+    this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/admin/settings`)
+      .subscribe({
+        next: r => { this.settings = r.data ?? []; this.settingsLoading = false; },
+        error: () => { this.settingsLoading = false; }
+      });
+  }
+
+  toggleSetting(key: string, newValue: boolean): void {
+    this.settingsSaving.add(key);
+    this.settingsSuccess = '';
+    this.http.patch<ApiResponse<void>>(`${environment.apiUrl}/admin/settings/${key}`, newValue)
+      .subscribe({
+        next: () => {
+          this.settingsSaving.delete(key);
+          const s = this.settings.find(x => x.key === key);
+          if (s) s.value = newValue;
+          this.settingsSuccess = 'Paramètre mis à jour ✓';
+          setTimeout(() => this.settingsSuccess = '', 3000);
+        },
+        error: () => { this.settingsSaving.delete(key); }
       });
   }
 

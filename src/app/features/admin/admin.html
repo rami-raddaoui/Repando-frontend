@@ -47,6 +47,7 @@
     <button class="atab" [class.active]="tab==='utilisateurs'" (click)="tab='utilisateurs'; loadUtilisateurs()">👥 Utilisateurs</button>
     <button class="atab" [class.active]="tab==='reclamations'" (click)="tab='reclamations'; loadReclamations()">🚩 Signalements</button>
     <button class="atab" [class.active]="tab==='stats'" (click)="tab='stats'; loadStats()">📊 Stats</button>
+    <button class="atab" [class.active]="tab==='parametres'" (click)="tab='parametres'; loadSettings()">⚙️ Paramètres</button>
   </div>
 
   <!-- ===================== TAB: DEMANDES ===================== -->
@@ -380,6 +381,48 @@
         </div>
       } @else {
         <div class="loading-row"><div class="spinner"></div> Chargement…</div>
+      }
+    </div>
+  }
+
+  <!-- ===================== TAB: PARAMÈTRES ===================== -->
+  @if (tab === 'parametres') {
+    <div class="tab-content">
+      <div class="section-title">⚙️ Paramètres de notification</div>
+      <p class="section-desc">Activez ou désactivez les emails automatiques envoyés à l'équipe admin.</p>
+
+      @if (settingsSuccess) {
+        <div class="modal-success" style="margin-bottom:16px;">{{ settingsSuccess }}</div>
+      }
+
+      @if (settingsLoading) {
+        <div class="empty-state">Chargement…</div>
+      } @else if (settings.length === 0) {
+        <div class="empty-state">Aucun paramètre disponible.</div>
+      } @else {
+        <div class="settings-list">
+          @for (s of settings; track s.key) {
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">
+                  @if (s.key === 'notify_new_reparateur') { 🔧 }
+                  @if (s.key === 'notify_new_demande') { 📋 }
+                  {{ s.key === 'notify_new_reparateur' ? 'Nouveau réparateur inscrit' :
+                     s.key === 'notify_new_demande'    ? 'Nouvelle demande client' :
+                     s.key }}
+                </div>
+                <div class="setting-desc">{{ s.description }}</div>
+                <div class="setting-updated">Dernière modif : {{ s.updatedAt | date:'dd/MM/yyyy HH:mm' }}</div>
+              </div>
+              <label class="toggle-switch" [title]="s.value ? 'Désactiver' : 'Activer'">
+                <input type="checkbox" [checked]="s.value"
+                       [disabled]="settingsSaving.has(s.key)"
+                       (change)="toggleSetting(s.key, !s.value)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          }
+        </div>
       }
     </div>
   }
@@ -917,3 +960,7 @@
     </div>
   </div>
 }
+
+
+
+
