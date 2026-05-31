@@ -130,12 +130,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   getNotifIcon(type: string): string {
     switch (type) {
-      case 'NEW_MESSAGE':     return '💬';
-      case 'PRISE_EN_CHARGE': return '🔧';
-      case 'CONFIRMED':       return '✅';
-      case 'CONV_CLOSED':     return '🔒';
-      case 'MISSION_ACCEPTEE':return '🎉';
-      default:                return '🔔';
+      case 'NEW_MESSAGE':          return '💬';
+      case 'PRISE_EN_CHARGE':      return '🔧';
+      case 'CONFIRMED':            return '✅';
+      case 'CONV_CLOSED':          return '🔒';
+      case 'MISSION_ACCEPTEE':     return '🎉';
+      case 'ALERTE_RELANCE_ADMIN': return '⚠️';
+      default:                     return '🔔';
     }
   }
 

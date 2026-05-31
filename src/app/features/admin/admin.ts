@@ -331,7 +331,7 @@ export class AdminComponent implements OnInit {
   openAffect(d: AdminDemandeDto): void {
     this.affectModal = d;
     this.affectExistingMatchings = [];
-    this.selectedReps = new Set();
+    this.selectedReps = new Set();   // toujours vide — l'admin choisit lui-même
     this.messageAdmin = '';
     this.affectSuccess = '';
     this.affectError = '';
@@ -345,10 +345,7 @@ export class AdminComponent implements OnInit {
         next: r => {
           this.affectExistingMatchings = r.data?.matchings ?? [];
           this.affectDetailLoading = false;
-          // Pré-sélectionner les réparateurs déjà affectés qui sont encore actifs
-          this.affectExistingMatchings
-            .filter((m: any) => m.statut !== 'ANNULE' && m.statut !== 'REFUSE' && m.statut !== 'CLOTURE')
-            .forEach((m: any) => this.selectedReps.add(m.reparateurId));
+          // ⚠️ Ne PAS pré-sélectionner : l'admin décide lui-même qui notifier
         },
         error: () => { this.affectDetailLoading = false; }
       });
@@ -546,6 +543,27 @@ export class AdminComponent implements OnInit {
 
   joursDepuisNotif(notifiedAt: string): number {
     return Math.floor((Date.now() - new Date(notifiedAt).getTime()) / 86_400_000);
+  }
+
+  /** Retourne "il y a Xh" ou "il y a Xj" depuis une date */
+  tempsDepuis(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffH = Math.floor(diffMs / 3_600_000);
+    const diffJ = Math.floor(diffMs / 86_400_000);
+    if (diffH < 1) return 'à l\'instant';
+    if (diffH < 24) return `il y a ${diffH}h`;
+    return `il y a ${diffJ}j`;
+  }
+
+  /** Vrai si le matching attend depuis ≥24h sans aucune relance récente */
+  needsRelance(m: any): boolean {
+    if (m.statut !== 'NOUVEAU' && m.statut !== 'VU') return false;
+    const seuil24h = Date.now() - 86_400_000;
+    const notifTime = new Date(m.notifiedAt).getTime();
+    const lastRelanceTime = m.lastRelanceAt ? new Date(m.lastRelanceAt).getTime() : 0;
+    const lastAction = Math.max(notifTime, lastRelanceTime);
+    return lastAction < seuil24h;
   }
 
   stars(n: number): string[] {

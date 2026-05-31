@@ -806,11 +806,16 @@
           @if (annulerError)   { <div class="relance-error-banner">❌ {{ annulerError }}</div> }
           <div class="affect-existing-list">
             @for (m of affectExistingMatchings; track m.id) {
-              <div class="affect-existing-row" [class.affect-existing-row--annule]="m.statut === 'ANNULE' || m.statut === 'REFUSE'">
+              <div class="affect-existing-row" [class.affect-existing-row--annule]="m.statut === 'ANNULE' || m.statut === 'REFUSE'" [class.affect-existing-row--urgent]="needsRelance(m)">
                 <div class="aer-left">
                   <div class="aer-avatar">{{ m.reparateurNom.charAt(0) }}</div>
                   <div class="aer-info">
-                    <div class="aer-nom">{{ m.reparateurNom }}</div>
+                    <div class="aer-nom">
+                      {{ m.reparateurNom }}
+                      @if (needsRelance(m)) {
+                        <span class="aer-alert-badge">⚠️ Relance recommandée</span>
+                      }
+                    </div>
                     <div class="aer-meta">
                       📍 {{ m.ville }}
                       @if (m.noteMoyenne > 0) { · ⭐ {{ m.noteMoyenne | number:'1.1-1' }} }
@@ -826,10 +831,21 @@
                         {{ m.hasChat ? '💬 A chatté' : '🔇 Pas de chat' }}
                       </span>
                       @if (m.joursSansReponse !== null && m.joursSansReponse !== undefined) {
-                        <span class="tracking-badge" [class.tracking-badge--urgent]="m.joursSansReponse >= 2" style="display:inline-flex;gap:4px;padding:3px 8px;font-size:11px">
+                        <span class="tracking-badge" [class.tracking-badge--urgent]="m.joursSansReponse >= 1" style="display:inline-flex;gap:4px;padding:3px 8px;font-size:11px">
                           ⏰ {{ m.joursSansReponse }}j sans réponse
                         </span>
                       }
+                    </div>
+                    <!-- Suivi relances -->
+                    <div class="aer-relance-row">
+                      <span class="aer-relance-item" [class.aer-relance-item--done]="m.nbRelances > 0">
+                        🔔 {{ m.nbRelances }} notif{{ m.nbRelances > 1 ? 's' : '' }} plateforme
+                        @if (m.lastRelanceAt) { <span class="aer-relance-when">· {{ tempsDepuis(m.lastRelanceAt) }}</span> }
+                      </span>
+                      <span class="aer-relance-item" [class.aer-relance-item--done]="m.nbEmailsRelance > 0">
+                        📧 {{ m.nbEmailsRelance || 0 }} email{{ (m.nbEmailsRelance || 0) > 1 ? 's' : '' }}
+                        @if (m.lastEmailRelanceAt) { <span class="aer-relance-when">· {{ tempsDepuis(m.lastEmailRelanceAt) }}</span> }
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -856,8 +872,12 @@
         <!-- Ajouter de nouveaux réparateurs -->
         <div class="affect-section-title">➕ Affecter de nouveaux réparateurs</div>
         <div class="modal-section-lbl">
-          Sélectionnez 1 à 5 réparateurs
-          <span class="sel-count">({{ selectedReps.size }}/5)</span>
+          Sélectionnez les réparateurs à notifier
+          @if (selectedReps.size > 0) {
+            <span class="sel-count">({{ selectedReps.size }}/5 sélectionné{{ selectedReps.size > 1 ? 's' : '' }})</span>
+          } @else {
+            <span class="sel-count sel-count--empty">Aucun sélectionné</span>
+          }
         </div>
         @if (reparateursDispo.length === 0) {
           <div class="no-reps">Aucun réparateur disponible.</div>
