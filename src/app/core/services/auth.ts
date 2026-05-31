@@ -47,8 +47,15 @@ export class AuthService {
     );
   }
 
-  register(payload: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<ApiResponse<AuthResponse>>(
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/auth/reset-password`, { token, newPassword });
+  }
+
+  register(payload: RegisterRequest): Observable<AuthResponse> {    return this.http.post<ApiResponse<AuthResponse>>(
       `${environment.apiUrl}/auth/register`, payload
     ).pipe(
       map(res => {

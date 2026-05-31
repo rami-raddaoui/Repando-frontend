@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './login.scss'
 })
 export class LoginComponent {
-  mode = signal<'login' | 'register' | 'choose-role'>('login');
+  mode = signal<'login' | 'register' | 'choose-role' | 'forgot-password'>('login');
   loading = false;
   error = '';
   success = '';
@@ -21,6 +21,7 @@ export class LoginComponent {
 
   loginForm: FormGroup;
   registerForm: FormGroup;
+  forgotForm: FormGroup;
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
@@ -36,6 +37,10 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordMatchValidator });
+
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+    });
   }
 
   passwordMatchValidator(g: FormGroup) {
@@ -43,11 +48,12 @@ export class LoginComponent {
       ? null : { mismatch: true };
   }
 
-  get isLogin() { return this.mode() === 'login'; }
-  get isRegister() { return this.mode() === 'register'; }
-  get isChooseRole() { return this.mode() === 'choose-role'; }
+  get isLogin()         { return this.mode() === 'login'; }
+  get isRegister()      { return this.mode() === 'register'; }
+  get isChooseRole()    { return this.mode() === 'choose-role'; }
+  get isForgotPassword(){ return this.mode() === 'forgot-password'; }
 
-  switchMode(m: 'login' | 'register' | 'choose-role') {
+  switchMode(m: 'login' | 'register' | 'choose-role' | 'forgot-password') {
     this.mode.set(m);
     this.error = '';
     this.success = '';
@@ -92,6 +98,26 @@ export class LoginComponent {
       error: (err) => {
         this.loading = false;
         this.error = err?.message ?? 'Erreur lors de l\'inscription.';
+      }
+    });
+  }
+
+  submitForgotPassword(): void {
+    if (this.forgotForm.invalid) return;
+    this.loading = true;
+    this.error = '';
+    this.success = '';
+    this.auth.forgotPassword(this.forgotForm.value.email).subscribe({
+      next: () => {
+        this.loading = false;
+        this.success =
+          '📬 Si un compte existe pour cet email, vous recevrez un lien de réinitialisation dans quelques minutes. Pensez à vérifier vos spams.';
+      },
+      error: () => {
+        // Même message pour ne pas révéler si l'email existe
+        this.loading = false;
+        this.success =
+          '📬 Si un compte existe pour cet email, vous recevrez un lien de réinitialisation dans quelques minutes. Pensez à vérifier vos spams.';
       }
     });
   }

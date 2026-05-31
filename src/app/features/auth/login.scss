@@ -390,3 +390,24 @@
   .auth-right { padding: 28px 20px; }
 }
 
+/* Mot de passe oublié — lien cliquable */
+.forgot {
+  cursor: pointer;
+  color: #3b82f6;
+  font-size: 12px;
+  text-decoration: underline;
+  &:hover { color: #2563eb; }
+}
+
+/* Alert succès */
+.alert-success {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: 14px;
+  color: #166534;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+

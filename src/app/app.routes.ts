@@ -6,6 +6,7 @@ import { UserRole } from './core/models/models';
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/home/home').then(m => m.HomeComponent) },
   { path: 'connexion', loadComponent: () => import('./features/auth/login').then(m => m.LoginComponent) },
+  { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password').then(m => m.ResetPasswordComponent) },
   { path: 'recherche', loadComponent: () => import('./features/search/search').then(m => m.SearchComponent) },
   { path: 'contact', loadComponent: () => import('./features/contact/contact').then(m => m.ContactComponent) },
   {

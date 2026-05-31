@@ -52,6 +52,37 @@
       </div>
     }
 
+    <!-- FORMULAIRE MOT DE PASSE OUBLIÉ -->
+    @if (isForgotPassword) {
+      <div class="form-block">
+        <div class="form-header">
+          <h2>Mot de passe oublié 🔑</h2>
+          <p>Saisissez votre email. Nous vous enverrons un lien sécurisé pour réinitialiser votre mot de passe.</p>
+        </div>
+
+        @if (success) {
+          <div class="alert-success">
+            {{ success }}
+          </div>
+        } @else {
+          <form [formGroup]="forgotForm" (ngSubmit)="submitForgotPassword()">
+            <div class="fg">
+              <label>Adresse email</label>
+              <input type="email" formControlName="email" placeholder="votre@email.com" autocomplete="email"/>
+            </div>
+            <button type="submit" class="btn-submit" [disabled]="loading || forgotForm.invalid">
+              @if (loading) { <span class="spin">⏳</span> Envoi en cours... }
+              @else { Envoyer le lien de réinitialisation → }
+            </button>
+          </form>
+        }
+
+        <p class="switch-hint">
+          <button class="link-btn" (click)="switchMode('login')">← Retour à la connexion</button>
+        </p>
+      </div>
+    }
+
     <!-- FORMULAIRE CONNEXION -->
     @if (isLogin) {
       <div class="form-block">
@@ -67,7 +98,7 @@
           <div class="fg">
             <label>Mot de passe</label>
             <input type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password"/>
-            <span class="forgot">Mot de passe oublié ?</span>
+            <span class="forgot" (click)="switchMode('forgot-password')">Mot de passe oublié ?</span>
           </div>
           <button type="submit" class="btn-submit" [disabled]="loading || loginForm.invalid">
             @if (loading) { <span class="spin">⏳</span> Connexion... }
