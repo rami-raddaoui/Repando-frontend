@@ -202,14 +202,9 @@ export class DashboardReparateurComponent implements OnInit {
         this.actionLoading = null;
         this.closeDetail();
         this.loadMatchings();
-        // Afficher la popup de bienvenue seulement la première fois
-        const alreadySeen = localStorage.getItem(this.WELCOME_KEY);
-        if (!alreadySeen) {
-          this.welcomeMatchingId = matchingId;
-          this.showWelcomePopup = true;
-        } else {
-          this.router.navigate(['/messagerie', matchingId]);
-        }
+        // Afficher la popup de bienvenue à chaque fois
+        this.welcomeMatchingId = matchingId;
+        this.showWelcomePopup = true;
       },
       error: (e) => {
         this.actionLoading = null;
@@ -220,7 +215,6 @@ export class DashboardReparateurComponent implements OnInit {
   }
 
   dismissWelcomePopup(): void {
-    localStorage.setItem(this.WELCOME_KEY, '1');
     this.showWelcomePopup = false;
     if (this.welcomeMatchingId) {
       this.router.navigate(['/messagerie', this.welcomeMatchingId]);
