@@ -195,7 +195,9 @@ export class MessagerieService {
     // Bloquer uniquement pour l'admin pur (non impersonifié)
     if (!this.auth.isLoggedIn()) return;
     if (this.auth.isAdmin() && !this.auth.isImpersonating()) return;
-    this.http.get<ApiResponse<MatchingDto[]>>(`${environment.apiUrl}/matchings`)
+    // X-Silent : pas de toast d'erreur pour ce polling silencieux
+    this.http.get<ApiResponse<MatchingDto[]>>(`${environment.apiUrl}/matchings`,
+      { headers: { 'X-Silent': '1' } })
       .pipe(map(r => r.data ?? []))
       .subscribe({ next: m => this.setRecentConvs(m), error: () => {} });
   }
@@ -328,7 +330,8 @@ export class MessagerieService {
 
   getUnreadCount(): Observable<number> {
     return this.http.get<ApiResponse<number>>(
-      `${environment.apiUrl}/messages/unread-count`
+      `${environment.apiUrl}/messages/unread-count`,
+      { headers: { 'X-Silent': '1' } }
     ).pipe(map(r => r.data ?? 0));
   }
 

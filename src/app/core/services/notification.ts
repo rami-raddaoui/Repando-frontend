@@ -20,7 +20,8 @@ export class NotificationService {
 
   getAll(): Observable<NotificationDto[]> {
     return this.http.get<ApiResponse<NotificationDto[]>>(
-      `${environment.apiUrl}/notifications`
+      `${environment.apiUrl}/notifications`,
+      { headers: { 'X-Silent': '1' } }
     ).pipe(map(r => r.data ?? []));
   }
 
