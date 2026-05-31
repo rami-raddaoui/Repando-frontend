@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth';
@@ -45,6 +45,11 @@ export class DashboardReparateurComponent implements OnInit {
   lightboxIndex = 0;
   readonly staticUrl = environment.staticUrl;
 
+  // ── Welcome popup (première ouverture messagerie) ─────────────
+  showWelcomePopup = false;
+  welcomeMatchingId: string | null = null;
+  private readonly WELCOME_KEY = 'repando_welcome_chat_reparateur_seen';
+
   // ── Decline popup ─────────────────────────────────────────────
   declineTarget: MatchingDto | null = null;
   showDeclineModal = false;
@@ -70,6 +75,7 @@ export class DashboardReparateurComponent implements OnInit {
     public auth: AuthService,
     private demandeService: DemandeService,
     private reparateurService: ReparateurService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -194,10 +200,16 @@ export class DashboardReparateurComponent implements OnInit {
     this.demandeService.accepterMission(matchingId).subscribe({
       next: () => {
         this.actionLoading = null;
-        this.actionSuccess = 'Mission acceptée ! La conversation est ouverte.';
         this.closeDetail();
         this.loadMatchings();
-        setTimeout(() => this.actionSuccess = '', 4000);
+        // Afficher la popup de bienvenue seulement la première fois
+        const alreadySeen = localStorage.getItem(this.WELCOME_KEY);
+        if (!alreadySeen) {
+          this.welcomeMatchingId = matchingId;
+          this.showWelcomePopup = true;
+        } else {
+          this.router.navigate(['/messagerie', matchingId]);
+        }
       },
       error: (e) => {
         this.actionLoading = null;
@@ -205,6 +217,15 @@ export class DashboardReparateurComponent implements OnInit {
         setTimeout(() => this.actionError = '', 4000);
       }
     });
+  }
+
+  dismissWelcomePopup(): void {
+    localStorage.setItem(this.WELCOME_KEY, '1');
+    this.showWelcomePopup = false;
+    if (this.welcomeMatchingId) {
+      this.router.navigate(['/messagerie', this.welcomeMatchingId]);
+    }
+    this.welcomeMatchingId = null;
   }
 
   getStatutLabel(statut: string): { label: string; color: string; bg: string } {

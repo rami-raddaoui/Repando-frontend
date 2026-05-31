@@ -945,3 +945,156 @@
   border-radius: 20px; backdrop-filter: blur(4px);
 }
 
+// ─── WELCOME POPUP (première discussion) ──────────────────────────────────────
+.welcome-overlay {
+  align-items: flex-start;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.welcome-popup {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 32px 80px rgba(15,23,42,.28);
+  width: 100%;
+  max-width: 520px;
+  margin: auto;
+  padding: 32px 28px 28px;
+  animation: panelIn .3s cubic-bezier(.34,1.56,.64,1);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  &__icon-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__icon {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 8px 24px rgba(59,130,246,.35);
+  }
+
+  &__icon-ring {
+    position: absolute; inset: -6px;
+    border-radius: 22px;
+    border: 2px solid rgba(59,130,246,.25);
+    animation: pendingPulse 2s ease-in-out infinite;
+  }
+
+  &__badge {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(34,197,94,.3);
+    letter-spacing: .2px;
+  }
+
+  &__title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+
+  &__intro {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.65;
+    margin: 0 0 20px;
+  }
+
+  &__cta {
+    width: 100%;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Satoshi','Inter',sans-serif;
+    transition: opacity .15s, transform .15s;
+    box-shadow: 0 6px 20px rgba(59,130,246,.35);
+    letter-spacing: .1px;
+    &:hover { opacity: .92; transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
+  }
+}
+
+.welcome-block {
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  border: 1.5px solid transparent;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  &__emoji { font-size: 18px; }
+  &__role {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+  &__list {
+    margin: 0;
+    padding: 0 0 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    li {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #334155;
+    }
+  }
+
+  &--blue {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    .welcome-block__role { color: #1d4ed8; }
+  }
+  &--green {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    .welcome-block__role { color: #15803d; }
+  }
+}
+
+.welcome-repando-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 4px;
+
+  &__icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  span:last-child {
+    font-size: 13px;
+    color: rgba(255,255,255,.85);
+    line-height: 1.6;
+    strong { color: #fff; }
+  }
+}
