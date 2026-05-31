@@ -229,7 +229,9 @@
         </div>
         <div class="detail-modal__header-info">
           <h2 class="detail-modal__title">{{ getAppareilLabel(selectedMission.demandeAppareil).label }}</h2>
-          <div class="detail-modal__sub">Réf. #{{ selectedMission.id.substring(0,8).toUpperCase() }}</div>
+          <div class="detail-modal__sub">
+            Réf. #{{ selectedMission.id.substring(0,8).toUpperCase() }} · {{ selectedMission.createdAt | date:'dd MMM yyyy' }}
+          </div>
         </div>
         <span class="mc-badge" [style.background]="getStatutLabel(selectedMission.statut).bg"
               [style.color]="getStatutLabel(selectedMission.statut).color">
@@ -238,55 +240,164 @@
         <button class="modal-close" (click)="closeDetail()">✕</button>
       </div>
 
+      <!-- Tabs navigation -->
+      @if (!demandeLoading && selectedDemande) {
+        <div class="dm-tabs">
+          <button class="dm-tab" [class.dm-tab--active]="detailTab === 'apercu'" (click)="detailTab = 'apercu'">
+            📋 Aperçu
+          </button>
+          <button class="dm-tab" [class.dm-tab--active]="detailTab === 'details'" (click)="detailTab = 'details'">
+            📸 Description & Photos
+            @if (selectedDemande.photoUrls?.length) {
+              <span class="dm-tab__badge">{{ selectedDemande.photoUrls.length }}</span>
+            }
+          </button>
+        </div>
+      }
+
       <!-- Body -->
       <div class="detail-modal__body">
 
-        <div class="detail-grid">
-          <div class="detail-item">
-            <div class="detail-item__label">📅 Date de la demande</div>
-            <div class="detail-item__value">{{ selectedMission.createdAt | date:'dd MMMM yyyy à HH:mm' }}</div>
+        <!-- LOADING -->
+        @if (demandeLoading) {
+          <div class="dm-loading">
+            <div class="dm-loading__spinner"></div>
+            <span>Chargement des détails…</span>
           </div>
-          <div class="detail-item">
-            <div class="detail-item__label">🔧 Appareil</div>
-            <div class="detail-item__value">{{ getAppareilLabel(selectedMission.demandeAppareil).label }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-item__label">💬 Messages échangés</div>
-            <div class="detail-item__value">{{ selectedMission.nbMessages }} message{{ selectedMission.nbMessages !== 1 ? 's' : '' }}</div>
-          </div>
-          @if (selectedMission.devisMontantClient) {
-            <div class="detail-item">
-              <div class="detail-item__label">💶 Montant devis</div>
-              <div class="detail-item__value" style="color:var(--green);font-weight:800">{{ selectedMission.devisMontantClient }}€</div>
+        }
+
+        <!-- ══ ONGLET APERÇU ══ -->
+        @if (!demandeLoading && detailTab === 'apercu') {
+
+          @if (selectedDemande) {
+            <!-- Info cards -->
+            <div class="dm-cards">
+
+              <div class="dm-card dm-card--blue">
+                <div class="dm-card__icon">📍</div>
+                <div class="dm-card__label">Localisation</div>
+                <div class="dm-card__val">
+                  {{ selectedDemande.ville }}@if (selectedDemande.codePostal) { <span class="dm-card__cp">{{ selectedDemande.codePostal }}</span> }
+                </div>
+              </div>
+
+              <div class="dm-card dm-card--green">
+                <div class="dm-card__icon">{{ selectedDemande.typeIntervention === 'DOMICILE' ? '🏠' : '🏪' }}</div>
+                <div class="dm-card__label">Intervention</div>
+                <div class="dm-card__val">{{ selectedDemande.typeIntervention === 'DOMICILE' ? 'À domicile' : 'En atelier' }}</div>
+              </div>
+
+              @if (selectedDemande.typePanne) {
+                <div class="dm-card dm-card--amber">
+                  <div class="dm-card__icon">⚠️</div>
+                  <div class="dm-card__label">Panne signalée</div>
+                  <div class="dm-card__val">{{ getPanneLabel(selectedDemande.typePanne) }}</div>
+                </div>
+              }
+
+              @if (selectedDemande.marque || selectedDemande.modele) {
+                <div class="dm-card dm-card--purple">
+                  <div class="dm-card__icon">🏷️</div>
+                  <div class="dm-card__label">Marque / Modèle</div>
+                  <div class="dm-card__val">{{ selectedDemande.marque ?? '' }}@if (selectedDemande.marque && selectedDemande.modele) { · }{{ selectedDemande.modele ?? '' }}</div>
+                </div>
+              }
+
             </div>
           }
-        </div>
 
-        <!-- Info box -->
-        <div class="detail-info-box">
-          <div class="detail-info-box__icon">💡</div>
-          <div>
-            <div class="detail-info-box__title">Comment ça marche ?</div>
-            <div class="detail-info-box__text">
-              En acceptant cette mission, vous ouvrez une conversation directe avec le client afin d’échanger sur les détails de l’intervention, poser vos questions et, si vous êtes en accord, convenir d’un rendez-vous. Vous pourrez ensuite lui envoyer votre devis.
-              Aucun engagement définitif à ce stade : vous restez libre de refuser la mission si les conditions ne vous conviennent pas (distance, disponibilité, type de réparation, budget, pièces nécessaires, etc.).
+          <!-- Info box "Comment ça marche ?" -->
+          <div class="detail-info-box">
+            <div class="detail-info-box__icon">💡</div>
+            <div>
+              <div class="detail-info-box__title">Comment ça marche ?</div>
+              <div class="detail-info-box__text">
+                En acceptant cette mission, vous ouvrez une conversation directe avec le client afin d'échanger sur les détails de l'intervention, poser vos questions et, si vous êtes en accord, convenir d'un rendez-vous. Vous pourrez ensuite lui envoyer votre devis.
+                Aucun engagement définitif à ce stade : vous restez libre de refuser la mission si les conditions ne vous conviennent pas.
+              </div>
             </div>
           </div>
-        </div>
+        }
+
+        <!-- ══ ONGLET DESCRIPTION & PHOTOS ══ -->
+        @if (!demandeLoading && detailTab === 'details' && selectedDemande) {
+
+          <!-- Description -->
+          @if (selectedDemande.description) {
+            <div class="dm-desc-card">
+              <div class="dm-desc-card__header">
+                <span class="dm-desc-card__icon">📝</span>
+                <span class="dm-desc-card__title">Description du problème</span>
+              </div>
+              <div class="dm-desc-card__text">{{ selectedDemande.description }}</div>
+            </div>
+          } @else {
+            <div class="dm-empty-desc">
+              <span>📭</span>
+              <span>Aucune description fournie par le client.</span>
+            </div>
+          }
+
+          <!-- Photos -->
+          @if (selectedDemande.photoUrls && selectedDemande.photoUrls.length > 0) {
+            <div class="dm-photo-section">
+              <div class="dm-photo-section__header">
+                <span class="dm-photo-section__title">📸 Photos</span>
+                <span class="dm-photo-section__count">{{ selectedDemande.photoUrls.length }} photo{{ selectedDemande.photoUrls.length > 1 ? 's' : '' }}</span>
+              </div>
+              <div class="dm-photo-masonry">
+                @for (url of selectedDemande.photoUrls; track url; let i = $index) {
+                  <div class="dm-photo-tile" (click)="openLightbox(resolvePhotoUrl(url), i)">
+                    <img [src]="resolvePhotoUrl(url)" alt="Photo panne {{ i + 1 }}" loading="lazy" />
+                    <div class="dm-photo-tile__overlay">
+                      <span>🔍 Agrandir</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="dm-empty-desc" style="margin-top:12px">
+              <span>🖼️</span>
+              <span>Aucune photo fournie par le client.</span>
+            </div>
+          }
+        }
+
       </div>
 
       <!-- Footer -->
       <div class="detail-modal__footer">
         <button class="btn-decline-outline" (click)="openDeclineModal(selectedMission)">
-          ✕ Décliner cette mission
+          ✕ Décliner
         </button>
+        @if (!demandeLoading && selectedDemande && detailTab === 'apercu' && (selectedDemande.description || selectedDemande.photoUrls?.length)) {
+          <button class="btn-see-details" (click)="detailTab = 'details'">
+            📸 Voir description & photos
+          </button>
+        }
         <button class="btn-accept-lg" [disabled]="actionLoading === selectedMission.id"
                 (click)="accepterMission(selectedMission.id)">
           @if (actionLoading === selectedMission.id) { ⏳ En cours… }
-          @else { 💬 Démarrer la discussion avec le client }
+          @else { 💬 Démarrer la discussion }
         </button>
       </div>
     </div>
+  </div>
+}
+
+<!-- Lightbox photos -->
+@if (lightboxUrl) {
+  <div class="lightbox-overlay" (click)="closeLightbox()">
+    <button class="lightbox-close" (click)="closeLightbox()">✕</button>
+    @if (selectedDemande && selectedDemande.photoUrls.length > 1) {
+      <button class="lightbox-nav lightbox-nav--prev" (click)="$event.stopPropagation(); prevPhoto()">‹</button>
+    }
+    <img class="lightbox-img" [src]="lightboxUrl" alt="Photo agrandie" (click)="$event.stopPropagation()" />
+    @if (selectedDemande && selectedDemande.photoUrls.length > 1) {
+      <button class="lightbox-nav lightbox-nav--next" (click)="$event.stopPropagation(); nextPhoto()">›</button>
+      <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ selectedDemande.photoUrls.length }}</div>
+    }
   </div>
 }
 

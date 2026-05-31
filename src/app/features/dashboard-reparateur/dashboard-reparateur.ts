@@ -5,7 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth';
 import { DemandeService } from '../../core/services/demande';
 import { ReparateurService } from '../../core/services/reparateur';
-import { MatchingDto, APPAREIL_LABELS, StatutMatching } from '../../core/models/models';
+import { MatchingDto, DemandeDto, APPAREIL_LABELS, StatutMatching } from '../../core/models/models';
+import { environment } from '../../../environments/environment';
 
 export const DECLINE_REASONS = [
   { id: 'zone',      label: 'Pas dans ma zone d\'intervention', icon: '📍' },
@@ -36,7 +37,13 @@ export class DashboardReparateurComponent implements OnInit {
 
   // ── Detail modal ──────────────────────────────────────────────
   selectedMission: MatchingDto | null = null;
+  selectedDemande: DemandeDto | null = null;
+  demandeLoading = false;
   showDetailModal = false;
+  detailTab: 'apercu' | 'details' = 'apercu';
+  lightboxUrl: string | null = null;
+  lightboxIndex = 0;
+  readonly staticUrl = environment.staticUrl;
 
   // ── Decline popup ─────────────────────────────────────────────
   declineTarget: MatchingDto | null = null;
@@ -88,16 +95,57 @@ export class DashboardReparateurComponent implements OnInit {
   // ── Detail modal ──────────────────────────────────────────────
   openDetail(m: MatchingDto): void {
     this.selectedMission = m;
+    this.selectedDemande = null;
+    this.detailTab = 'apercu';
     this.showDetailModal = true;
-    // Mark as seen if NOUVEAU
     if (m.statut === 'NOUVEAU') {
       this.demandeService.marquerVu(m.id).subscribe();
     }
+    this.demandeLoading = true;
+    this.demandeService.getDemandeByMatching(m.id).subscribe({
+      next: d => { this.selectedDemande = d; this.demandeLoading = false; },
+      error: (err) => {
+        console.error('[openDetail] getDemandeByMatching failed', err?.status, err?.error);
+        this.demandeLoading = false;
+      }
+    });
   }
 
   closeDetail(): void {
     this.showDetailModal = false;
     this.selectedMission = null;
+    this.selectedDemande = null;
+    this.lightboxUrl = null;
+    this.detailTab = 'apercu';
+  }
+
+  openLightbox(url: string, index = 0): void { this.lightboxUrl = url; this.lightboxIndex = index; }
+  closeLightbox(): void { this.lightboxUrl = null; }
+
+  prevPhoto(): void {
+    if (!this.selectedDemande?.photoUrls) return;
+    this.lightboxIndex = (this.lightboxIndex - 1 + this.selectedDemande.photoUrls.length) % this.selectedDemande.photoUrls.length;
+    this.lightboxUrl = this.resolvePhotoUrl(this.selectedDemande.photoUrls[this.lightboxIndex]);
+  }
+  nextPhoto(): void {
+    if (!this.selectedDemande?.photoUrls) return;
+    this.lightboxIndex = (this.lightboxIndex + 1) % this.selectedDemande.photoUrls.length;
+    this.lightboxUrl = this.resolvePhotoUrl(this.selectedDemande.photoUrls[this.lightboxIndex]);
+  }
+
+  resolvePhotoUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return `${this.staticUrl}${url}`;
+  }
+
+  getPanneLabel(panne: string): string {
+    const map: Record<string, string> = {
+      NE_DEMARRE_PLUS: 'Ne démarre plus', FUITE_EAU: "Fuite d'eau",
+      BRUIT_ANORMAL: 'Bruit anormal', CODE_ERREUR: 'Code erreur',
+      NE_CHAUFFE_PLUS: 'Ne chauffe plus', AUTRE: 'Autre'
+    };
+    return map[panne] ?? panne;
   }
 
   // ── Decline popup ─────────────────────────────────────────────
@@ -172,3 +220,4 @@ export class DashboardReparateurComponent implements OnInit {
     }
   }
 }
+

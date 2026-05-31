@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService, Toast } from '../../services/toast';
+import { ToastService, Toast } from '../services/toast';
 
 @Component({
   selector: 'app-toast-container',

@@ -185,6 +185,7 @@ export interface DemandeDto {
   photoUrls: string[];
   adresse?: string;
   ville: string;
+  codePostal?: string;
   typeIntervention: TypeIntervention;
   statut: StatutDemande;
   nbMatchings: number;

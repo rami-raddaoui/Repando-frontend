@@ -29,6 +29,12 @@ export class DemandeService {
       .pipe(map(r => r.data ?? []));
   }
 
+  /** GET /api/matchings/{matchingId}/demande — détails demande accessibles au réparateur */
+  getDemandeByMatching(matchingId: string): Observable<DemandeDto> {
+    return this.http.get<ApiResponse<DemandeDto>>(`${this.matchingsBase}/${matchingId}/demande`)
+      .pipe(map(r => r.data!));
+  }
+
   /** GET /api/demandes/{id} */
   getById(id: string): Observable<DemandeDto> {
     return this.http.get<ApiResponse<DemandeDto>>(`${this.base}/${id}`)
