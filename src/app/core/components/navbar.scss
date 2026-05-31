@@ -426,3 +426,107 @@ $banner-height: 37px;
   flex-shrink: 0;
   margin-top: 4px;
 }
+
+/* ─── HAMBURGER MENU (mobile) ────────────────────────────── */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background .15s;
+  z-index: 301;
+
+  span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #0f172a;
+    border-radius: 2px;
+    transition: transform .25s, opacity .25s;
+  }
+
+  &:hover { background: rgba(0,0,0,.06); }
+}
+
+/* Croix quand ouvert */
+.nav--open .nav-hamburger {
+  span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  span:nth-child(2) { opacity: 0; }
+  span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+}
+
+/* ─── RESPONSIVE NAVBAR ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-hamburger { display: flex; }
+
+  .nav-links {
+    display: none;
+    position: fixed;
+    top: 64px; left: 0; right: 0;
+    background: rgba(255,255,255,.97);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #e2e8f0;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 0 20px;
+    z-index: 299;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+
+    &--open { display: flex; }
+
+    /* Tous les liens/boutons en pleine largeur */
+    .nav-link,
+    .btn-ghost,
+    .btn-nav {
+      display: block;
+      padding: 13px 24px;
+      font-size: 15px;
+      border-radius: 0;
+      border: none;
+      text-align: left;
+      background: none;
+      width: 100%;
+
+      &:hover { background: #f8fafc; }
+    }
+
+    /* Messages + notifs : en ligne dans le menu mobile */
+    .msg-bubble-wrap,
+    .notif-wrap {
+      padding: 0 24px;
+    }
+
+    /* Dropdown messages/notifs : pleine largeur sur mobile */
+    .msg-bubble-dropdown,
+    .notif-dropdown {
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      min-width: unset;
+      max-width: unset;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+    }
+
+    /* Avatar dropdown pleine largeur */
+    .user-avatar-wrap { padding: 4px 24px; }
+    .user-dropdown {
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      min-width: unset;
+      border-radius: 0;
+    }
+
+    .user-avatar-btn {
+      width: 100%;
+      border-radius: 12px;
+      justify-content: flex-start;
+    }
+  }
+}
+

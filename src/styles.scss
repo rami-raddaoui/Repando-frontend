@@ -316,11 +316,47 @@ label { font-size: 13px; font-weight: 600; color: var(--dark-mid); margin-bottom
   .msgr-layout { grid-template-columns: 1fr; }
   .res-card { grid-template-columns: 1fr; }
   .savings-hero { grid-template-columns: 1fr; }
-  .panne-grid, .type-intervention { flex-direction: column; }
+  .panne-grid { grid-template-columns: repeat(2,1fr); }
+  .type-intervention { flex-direction: column; }
   .form-row { grid-template-columns: 1fr; }
   .profil-header-card { flex-direction: column; }
-  .client-layout { padding: 80px 20px 20px; }
-  .page-container { padding: 80px 20px 20px; }
+  .client-layout { padding: 80px 16px 16px; }
+  .page-container { padding: 80px 16px 16px; }
+  .profil-layout { padding: 80px 16px 16px; }
   .grid-3 { grid-template-columns: 1fr; }
-  .final-cta-inner h2 { font-size: 36px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .final-cta-inner h2 { font-size: 32px; letter-spacing: -1px; }
+  .section-title { font-size: 28px; }
+  .section { padding: 48px 0; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+  .stats-inner-v2 { grid-template-columns: repeat(3,1fr); gap: 0; }
+  .appareil-grid { grid-template-columns: repeat(3,1fr); }
+  .rch-price-col { min-width: unset; padding: 16px; border-left: none; border-top: 1px solid var(--border); }
+  .rep-card-h-inner { grid-template-columns: 1fr; }
+  .hero-h1 { font-size: clamp(36px,8vw,52px); letter-spacing: -1.5px; }
+  .hero-sub { font-size: 16px; }
+  .hero-ctas { flex-direction: column; gap: 10px; .btn-hero-primary, .btn-hero-secondary { width: 100%; justify-content: center; } }
+  .savings-pills { gap: 8px; }
+  .tabs { width: 100%; .tab { flex: 1; text-align: center; padding: 9px 12px; font-size: 13px; } }
+  .page-header { flex-direction: column; align-items: flex-start; }
+}
+
+// TABLETTE (769px–1024px)
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container { padding: 0 24px; }
+  .hero-content { grid-template-columns: 1fr 380px; gap: 48px; }
+  .stats-inner-v2 { grid-template-columns: repeat(5,1fr); }
+  .steps-v2 { grid-template-columns: repeat(2,1fr); gap: 32px; }
+  .steps-v2::after { display: none; }
+  .reviews-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+  .results-layout { grid-template-columns: 240px 1fr; }
+  .client-layout { padding: 88px 24px 24px; }
+  .page-container { padding: 88px 24px 24px; }
+  .profil-layout { padding: 88px 24px 24px; }
+  .section-title { font-size: 34px; }
+  .final-cta-inner h2 { font-size: 44px; }
+  .hero-h1 { font-size: clamp(40px,4.5vw,60px); }
+  .rch-price-col { min-width: 180px; }
 }

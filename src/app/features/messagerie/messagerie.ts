@@ -72,6 +72,8 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   showReclamations = false;
   reclamations: ReclamationDto[] = [];
   reclamationsLoading = false;
+  // Mobile : indique si une conversation est sélectionnée (pour switcher sidebar↔chat)
+  mobileConvSelected = false;
   readonly panneLabels: Record<string, { label: string; icon: string }> = {
     NE_DEMARRE_PLUS: { label: 'Ne demarre plus', icon: 'lightning' },
     FUITE_EAU:       { label: "Fuite d'eau",     icon: 'droplet'   },
@@ -248,10 +250,18 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     };
     return map[statut] ?? { label: statut, color: '#94a3b8' };
   }
-  openConversation(matchingId: string): void {
-    if (this.activeMatchingId === matchingId) return;
+  /** Mobile : retour à la liste des conversations */
+  backToList(): void {
+    this.mobileConvSelected = false;
+    this.messagerieService.disconnectHub();
+    this.activeMatchingId = null;
+    this.activeMatching = null;
+  }
+
+  openConversation(matchingId: string): void {    if (this.activeMatchingId === matchingId) return;
     this.messagerieService.disconnectHub();
     this.activeMatchingId = matchingId;
+    this.mobileConvSelected = true; // ← affiche le chat sur mobile, cache la sidebar
     this.photoUploadCount = 0;
     this.photoPreviews = [];
     this.showPhotoMenu = false;

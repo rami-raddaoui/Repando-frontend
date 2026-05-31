@@ -511,9 +511,82 @@
 
 /* ─── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .msgr-layout { grid-template-columns: 1fr; }
-  .msgr-sidebar { display: none; }
+  .msgr-layout {
+    grid-template-columns: 1fr;
+    // Par défaut: sidebar visible, chat caché
+    .msgr-sidebar  { display: flex; }
+    .msgr-chat-win { display: none; }
+
+    // Quand une conversation est sélectionnée
+    &.msgr-conv-selected {
+      .msgr-sidebar  { display: none; }
+      .msgr-chat-win { display: flex; }
+    }
+  }
+
+  // Bouton retour à la liste (visible uniquement mobile)
+  .msgr-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 6px 0;
+    flex-shrink: 0;
+  }
+
+  .msgr-context-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .msgr-context-bar__right {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .msgr-context-bar__link,
+  .msgr-context-bar__all {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .msgr-pec-cta__body {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .msgr-pec-cta__btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .msgr-messages-area {
+    padding: 12px 14px;
+  }
+
+  .msgr-msg-col { max-width: 82%; }
+
+  .msgr-input-bar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .msgr-quick-actions {
+    padding: 6px 12px 2px;
+    gap: 6px;
+  }
+
+  .msgr-quick-chip__value { max-width: 120px; }
 }
+
+// Sur PC/tablette : bouton retour caché
+.msgr-back-btn { display: none; }
 
 /* ─── Coordonnees message bubbles ────────────────────────────── */
 .msgr-coord-bubble {

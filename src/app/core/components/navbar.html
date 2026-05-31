@@ -6,12 +6,18 @@
   </div>
 }
 
-<nav class="nav" [class.nav--with-banner]="isImpersonating">
+<nav class="nav" [class.nav--with-banner]="isImpersonating" [class.nav--open]="mobileMenuOpen">
   <a routerLink="/" class="logo">
     <div class="logo-dot"></div>
     Repair<span>ando</span>
   </a>
-  <div class="nav-links">
+
+  <!-- Hamburger mobile -->
+  <button class="nav-hamburger" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="nav-links" [class.nav-links--open]="mobileMenuOpen" (click)="closeMobileMenu()">
     <a routerLink="/contact" class="nav-link">Nous contacter</a>
 
     @if (!auth.isReparateur()) {

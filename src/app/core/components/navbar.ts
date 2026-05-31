@@ -19,6 +19,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   showConvBubble = false;
   showNotifPanel = false;
   showUserMenu = false;
+  mobileMenuOpen = false;
   recentConvs: MatchingDto[] = [];
   unreadCount = 0;
   notifications: AppNotification[] = [];
@@ -91,6 +92,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.showUserMenu = false;
   }
 
+  toggleMobileMenu(): void { this.mobileMenuOpen = !this.mobileMenuOpen; }
+  closeMobileMenu(): void  { this.mobileMenuOpen = false; }
+
   get lastLoginLabel(): string {
     const u = this.auth.currentUser();
     if (!(u as any)?.lastLoginAt) return '';
@@ -121,6 +125,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.showConvBubble = false;
       this.showNotifPanel = false;
       this.showUserMenu = false;
+      this.mobileMenuOpen = false;
     }
   }
 

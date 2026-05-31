@@ -1,4 +1,4 @@
-﻿<div class="msgr-layout">
+﻿<div class="msgr-layout" [class.msgr-conv-selected]="mobileConvSelected">
 
   <!-- ═══ SIDEBAR ═══════════════════════════════════════════════ -->
   <aside class="msgr-sidebar">
@@ -82,6 +82,10 @@
 
       <!-- Chat header -->
       <div class="msgr-header">
+        <!-- Bouton retour visible uniquement sur mobile -->
+        <button class="msgr-back-btn" (click)="backToList()" aria-label="Retour à la liste">
+          ← <span>Retour</span>
+        </button>
         <div class="msgr-header-avatar">
           {{ activeMatching?.reparateurNom?.substring(0,2)?.toUpperCase() ?? '??' }}
         </div>
