@@ -18,8 +18,13 @@
 
   @if (!loadingInit && form) {
 
-    @if (hasActiveChats) {
-      <div style="max-width:720px;margin:24px auto;padding:0 16px">
+    @if (error) {
+      <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
+
+      @if (hasActiveChats) {
         <div class="cd-alert-info">
           <span style="font-size:20px">💬</span>
           <div>
@@ -28,16 +33,7 @@
             <em>⚠️ S'il s'agit d'une nouvelle panne ou d'un appareil différent, veuillez <a routerLink="/creer-demande">créer une nouvelle demande</a>. Les modifications servent à apporter des précisions à une même demande.</em>
           </div>
         </div>
-      </div>
-    }
-
-    @if (error) {
-      <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
-    }
-
-    <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
-
-      <!-- SECTION 1 : Appareil -->
+      }
       <div class="cd-card">
         <div class="cd-card-header">
           <div class="cd-card-num">1</div>
