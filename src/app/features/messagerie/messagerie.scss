@@ -1071,3 +1071,110 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+
+// ─── WELCOME POPUP CLIENT ─────────────────────────────────────────────────────
+.msgr-welcome-overlay {
+  position: fixed; inset: 0; z-index: 1200;
+  background: rgba(15,23,42,.6);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: msgr-fade-in .2s ease;
+}
+@keyframes msgr-fade-in { from { opacity:0; } to { opacity:1; } }
+
+.msgr-welcome-popup {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 32px 80px rgba(15,23,42,.28);
+  width: 100%; max-width: 480px;
+  padding: 28px 26px 24px;
+  animation: msgr-slide-up .3s cubic-bezier(.34,1.56,.64,1);
+
+  &__header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+  }
+
+  &__icon-wrap { position: relative; flex-shrink: 0; }
+
+  &__icon {
+    width: 54px; height: 54px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(34,197,94,.35);
+  }
+
+  &__icon-ring {
+    position: absolute; inset: -5px; border-radius: 20px;
+    border: 2px solid rgba(34,197,94,.25);
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+
+  &__badge {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff; font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(59,130,246,.3);
+  }
+
+  &__title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 20px; font-weight: 900; color: #0f172a;
+    margin: 0 0 6px; letter-spacing: -.2px;
+  }
+
+  &__intro {
+    font-size: 13px; color: #64748b; line-height: 1.6; margin: 0 0 18px;
+  }
+
+  &__cta {
+    width: 100%; margin-top: 18px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; border: none;
+    padding: 15px 24px; border-radius: 14px;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'Satoshi','Inter',sans-serif;
+    transition: opacity .15s, transform .15s;
+    box-shadow: 0 6px 20px rgba(34,197,94,.35);
+    &:hover { opacity: .92; transform: translateY(-1px); }
+  }
+}
+@keyframes pulse-ring {
+  0%,100% { opacity:.3; transform:scale(1); }
+  50% { opacity:.7; transform:scale(1.04); }
+}
+@keyframes msgr-slide-up {
+  from { opacity:0; transform: translateY(20px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+.msgr-welcome-block {
+  background: #f0fdf4; border: 1.5px solid #bbf7d0;
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+
+  &__header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  &__emoji { font-size: 16px; }
+  &__role {
+    font-size: 11px; font-weight: 800; color: #15803d;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  &__list {
+    margin: 0; padding: 0 0 0 16px;
+    display: flex; flex-direction: column; gap: 5px;
+    li { font-size: 13px; color: #334155; line-height: 1.5; }
+  }
+}
+
+.msgr-welcome-repando-note {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  border-radius: 12px; padding: 13px 15px; margin-top: 2px;
+  font-size: 13px; color: rgba(255,255,255,.85); line-height: 1.55;
+  strong { color: #fff; }
+  > span:first-child { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+}
+

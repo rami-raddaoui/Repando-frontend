@@ -624,3 +624,52 @@
   </div>
 }
 
+<!-- POPUP: BIENVENUE DANS LA CONVERSATION (client, 1ère fois) -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- POPUP: BIENVENUE DANS LA CONVERSATION (client, 1ère fois) -->
+@if (showWelcomePopup) {
+  <div class="msgr-welcome-overlay" (click)="dismissWelcomePopup()">
+    <div class="msgr-welcome-popup" (click)="$event.stopPropagation()">
+
+      <div class="msgr-welcome-popup__header">
+        <div class="msgr-welcome-popup__icon-wrap">
+          <div class="msgr-welcome-popup__icon">💬</div>
+          <div class="msgr-welcome-popup__icon-ring"></div>
+        </div>
+        <div class="msgr-welcome-popup__badge">Conversation ouverte ✓</div>
+      </div>
+
+      <h2 class="msgr-welcome-popup__title">Votre réparateur est disponible !</h2>
+      <p class="msgr-welcome-popup__intro">
+        Un réparateur vient d'accepter de discuter avec vous. Profitez de cet échange pour
+        clarifier tous les détails avant de vous engager.
+      </p>
+
+      <div class="msgr-welcome-block">
+        <div class="msgr-welcome-block__header">
+          <span class="msgr-welcome-block__emoji">✅</span>
+          <span class="msgr-welcome-block__role">Ce que vous devez clarifier avant d'accepter</span>
+        </div>
+        <ul class="msgr-welcome-block__list">
+          <li>Le coût du devis et s'il est déductible de la facture finale si vous acceptez la réparation.</li>
+          <li>La garantie proposée après réparation (durée, conditions).</li>
+          <li>Les délais d'intervention et de retour de votre appareil.</li>
+          <li>Tout autre point nécessaire pour éviter toute ambiguïté avant de conclure.</li>
+        </ul>
+      </div>
+
+      <div class="msgr-welcome-repando-note">
+        <span>🛡️</span>
+        <span>
+          <strong>Gardez tous vos échanges sur la plateforme Repando.</strong>
+          Cela vous protège et permet à notre équipe d'assurer le suivi si nécessaire.
+        </span>
+      </div>
+
+      <button class="msgr-welcome-popup__cta" (click)="dismissWelcomePopup()">
+        C'est compris — démarrer l'échange →
+      </button>
+
+    </div>
+  </div>
+}

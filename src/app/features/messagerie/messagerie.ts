@@ -68,6 +68,9 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   actionLoading = false;
   actionSuccess = '';
   actionError = '';
+  // Welcome popup (1ère ouverture messagerie pour le client)
+  showWelcomePopup = false;
+  private readonly WELCOME_KEY_CLIENT = 'repando_welcome_chat_client_seen';
   // Reclamations
   showReclamations = false;
   reclamations: ReclamationDto[] = [];
@@ -274,6 +277,11 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.loading = true;
     this.actionSuccess = '';
     this.actionError = '';
+    // Popup bienvenue client (1ère fois uniquement)
+    const role = this.auth.currentUser()?.role;
+    if (role === 'CLIENT' && !localStorage.getItem(this.WELCOME_KEY_CLIENT)) {
+      this.showWelcomePopup = true;
+    }
     // Connect hub first so we don't miss any incoming messages while loading
     this.messagerieService.connectHub(matchingId);
     this.messagerieService.getMessages(matchingId).subscribe({
@@ -445,6 +453,11 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   }
   isConvClosed(statut: string): boolean {
     return ['ANNULE', 'REFUSE', 'EXPIRE', 'CLOTURE'].includes(statut);
+  }
+
+  dismissWelcomePopup(): void {
+    localStorage.setItem(this.WELCOME_KEY_CLIENT, '1');
+    this.showWelcomePopup = false;
   }
   getClosedReason(statut: string): string {
     switch (statut) {
