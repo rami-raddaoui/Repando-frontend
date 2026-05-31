@@ -3,6 +3,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { MessagerieService, ReclamationDto } from '../../core/services/messagerie';
 import { DemandeService } from '../../core/services/demande';
 import { AuthService } from '../../core/services/auth';
@@ -79,6 +81,8 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     AUTRE:           { label: 'Autre',             icon: 'question'  },
   };
   private subs: Subscription[] = [];
+  private readonly destroy$ = new Subject<void>();
+  private timers: ReturnType<typeof setTimeout>[] = [];
   private shouldScrollDown = false;
   constructor(
     private route: ActivatedRoute,
@@ -93,14 +97,14 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.demandeIdFilter = this.route.snapshot.queryParamMap.get('demandeId');
     // Load user profile for phone + email
     this.userEmail = this.auth.currentUser()?.email ?? '';
-    this.auth.me().subscribe({
+    this.auth.me().pipe(takeUntil(this.destroy$)).subscribe({
       next: u => {
         this.userTelephone.set(u.telephone ?? null);
         this.userEmail = u.email;
       },
       error: () => {}
     });
-    this.demandeService.getMyMatchings().subscribe({
+    this.demandeService.getMyMatchings().pipe(takeUntil(this.destroy$)).subscribe({
       next: m => {
         this.matchings = m;
         this.messagerieService.setRecentConvs(m);
@@ -113,7 +117,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
             this.openConversation(dm[0].id);
             this.demandeAppareilFilter = dm[0].demandeAppareil;
           }
-          this.demandeService.getById(this.demandeIdFilter).subscribe({
+          this.demandeService.getById(this.demandeIdFilter).pipe(takeUntil(this.destroy$)).subscribe({
             next: d => { this.demandeDetail = d; },
             error: () => {}
           });
@@ -164,13 +168,15 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   ngAfterViewChecked(): void {
     if (this.shouldScrollDown && !this.loading) {
       this.shouldScrollDown = false;
-      // Use setTimeout to avoid ExpressionChangedAfterItHasBeenChecked errors
-      setTimeout(() => this.scrollToBottom(), 0);
+      this.timers.push(setTimeout(() => this.scrollToBottom(), 0));
     }
   }
   ngOnDestroy(): void {
     this.messagerieService.disconnectHub();
     this.subs.forEach(s => s.unsubscribe());
+    this.timers.forEach(t => clearTimeout(t));
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   loadMatchings(): void {
     this.demandeService.getMyMatchings().subscribe({
@@ -299,7 +305,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.newMessage = text;
         if (e?.error?.error) {
           this.actionError = e.error.error;
-          setTimeout(() => this.actionError = '', 5000);
+          this.timers.push(setTimeout(() => this.actionError = '', 5000));
         }
       }
     });
@@ -453,7 +459,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
             m.id === this.activeMatchingId ? { ...m, awaitingClientConfirm: true } : m
           );
         }
-        setTimeout(() => this.actionSuccess = '', 5000);
+        this.timers.push(setTimeout(() => this.actionSuccess = '', 5000));
       },
       error: (e) => { this.actionLoading = false; this.actionError = e?.error?.error ?? 'Erreur'; }
     });
@@ -496,7 +502,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       next: () => {
         this.signalLoading = false;
         this.signalSuccess = 'Signalement enregistre.';
-        setTimeout(() => this.closeSignal(), 3000);
+        this.timers.push(setTimeout(() => this.closeSignal(), 3000));
       },
       error: () => { this.signalLoading = false; this.signalError = 'Erreur lors de envoi.'; }
     });

@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../core/services/auth';
 import { DemandeService } from '../../core/services/demande';
 import { DemandeDto, MatchingDto, StatutDemande, StatutMatching, APPAREIL_LABELS, TypePanne } from '../../core/models/models';
 import { environment } from '../../../environments/environment';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard-client',
@@ -13,7 +15,8 @@ import { environment } from '../../../environments/environment';
   templateUrl: './dashboard-client.html',
   styleUrl: './dashboard-client.scss'
 })
-export class DashboardClientComponent implements OnInit {
+export class DashboardClientComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
   tab: 'en-cours' | 'historique' | 'messages' = 'en-cours';
   demandes: DemandeDto[] = [];
   matchings: MatchingDto[] = [];
@@ -34,7 +37,7 @@ export class DashboardClientComponent implements OnInit {
     const d = this.pauseTargetDemande;
     const isPaused = d.statut === StatutDemande.EN_PAUSE;
     this.closePauseModal();
-    this.demandeService.togglePause(d.id).subscribe(() => {
+    this.demandeService.togglePause(d.id).pipe(takeUntil(this.destroy$)).subscribe(() => {
       d.statut = isPaused ? StatutDemande.OUVERTE : StatutDemande.EN_PAUSE;
       if (this.detailDemande?.id === d.id) this.detailDemande.statut = d.statut;
     });
@@ -86,13 +89,18 @@ export class DashboardClientComponent implements OnInit {
 
   ngOnInit(): void { this.loadData(); }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadData(): void {
     this.loading = true;
-    this.demandeService.getMesDemandes().subscribe({
+    this.demandeService.getMesDemandes().pipe(takeUntil(this.destroy$)).subscribe({
       next: d => { this.demandes = d; this.loading = false; },
       error: () => this.loading = false
     });
-    this.demandeService.getMyMatchings().subscribe({
+    this.demandeService.getMyMatchings().pipe(takeUntil(this.destroy$)).subscribe({
       next: m => this.matchings = m,
       error: () => {}
     });
@@ -105,7 +113,7 @@ export class DashboardClientComponent implements OnInit {
     const id = this.cancelTargetId;
     this.showCancelModal = false;
     this.cancelTargetId = null;
-    this.demandeService.cancel(id).subscribe(() => {
+    this.demandeService.cancel(id).pipe(takeUntil(this.destroy$)).subscribe(() => {
       // Mise à jour locale optimiste
       const d = this.demandes.find(x => x.id === id);
       if (d) d.statut = StatutDemande.ANNULEE;
@@ -117,7 +125,7 @@ export class DashboardClientComponent implements OnInit {
     const id = this.cancelTargetId;
     this.showCancelModal = false;
     this.cancelTargetId = null;
-    this.demandeService.togglePause(id).subscribe(() => {
+    this.demandeService.togglePause(id).pipe(takeUntil(this.destroy$)).subscribe(() => {
       const d = this.demandes.find(x => x.id === id);
       if (d) d.statut = StatutDemande.EN_PAUSE;
     });
@@ -170,14 +178,14 @@ export class DashboardClientComponent implements OnInit {
   }
 
   accepterDevis(matchingId: string): void {
-    this.demandeService.acceptDevis(matchingId).subscribe(() => {
+    this.demandeService.acceptDevis(matchingId).pipe(takeUntil(this.destroy$)).subscribe(() => {
       const m = this.matchings.find(x => x.id === matchingId);
       if (m) m.statut = StatutMatching.ACCEPTE;
     });
   }
 
   refuserDevis(matchingId: string): void {
-    this.demandeService.refuserDevis(matchingId).subscribe(() => {
+    this.demandeService.refuserDevis(matchingId).pipe(takeUntil(this.destroy$)).subscribe(() => {
       const m = this.matchings.find(x => x.id === matchingId);
       if (m) m.statut = StatutMatching.REFUSE;
     });
