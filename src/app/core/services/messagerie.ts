@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, interval, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, Subject, Subscription, interval } from 'rxjs';
+import { map, debounceTime, throttleTime } from 'rxjs/operators';
 import * as signalR from '@microsoft/signalr';
 import { ApiResponse, MessageDto, MatchingDto, SendMessageRequest, TypeMessage } from '../models/models';
 import { environment } from '../../../environments/environment';
@@ -65,7 +65,21 @@ export class MessagerieService {
   // ── Polling subscription ──────────────────────────────────
   private pollSub?: Subscription;
 
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  // ── Anti-rafale : refreshConvs ne peut s'exécuter qu'une fois par 2s max ──
+  private _refreshTrigger$ = new Subject<void>();
+  private _refreshSub?: Subscription;
+
+  // ── Typing debounce : évite de spammer SignalR à chaque keystroke ──────────
+  private _typingSubject$ = new Subject<string>();
+  private _typingSub?: Subscription;
+
+  constructor(private http: HttpClient, private auth: AuthService) {
+    // refreshConvs : throttle 2s — si plusieurs events arrivent en rafale,
+    // une seule requête HTTP part toutes les 2s
+    this._refreshSub = this._refreshTrigger$
+      .pipe(throttleTime(2000, undefined, { leading: true, trailing: true }))
+      .subscribe(() => this._doRefreshConvs());
+  }
 
   // ═══════════════════════════════════════════════════════════
   // GLOBAL HUB — connect once at login, stay alive globally
@@ -184,6 +198,8 @@ export class MessagerieService {
 
   disconnectGlobalHub(): void {
     this.pollSub?.unsubscribe();
+    this._refreshSub?.unsubscribe();
+    this._typingSub?.unsubscribe();
     this.globalHub?.stop();
     this.globalHub = undefined;
     this._globalConnected = false;
@@ -191,8 +207,12 @@ export class MessagerieService {
 
   /** Force-refresh unread counts and recent convs from API */
   refreshConvs(): void {
-    // En mode impersonation le rôle est CLIENT/REPARATEUR, pas ADMIN — on peut rafraîchir
-    // Bloquer uniquement pour l'admin pur (non impersonifié)
+    // Déclenche via Subject → throttle 2s anti-rafale
+    this._refreshTrigger$.next();
+  }
+
+  /** Implémentation réelle du refresh (appelée par le throttle) */
+  private _doRefreshConvs(): void {
     if (!this.auth.isLoggedIn()) return;
     if (this.auth.isAdmin() && !this.auth.isImpersonating()) return;
     // X-Silent : pas de toast d'erreur pour ce polling silencieux
@@ -270,11 +290,30 @@ export class MessagerieService {
     });
 
     this.hub.start()
-      .then(() => this.hub!.invoke('JoinMatching', matchingId))
+      .then(() => {
+        this.hub!.invoke('JoinMatching', matchingId);
+
+        // Debounce typing : on n'envoie au hub qu'après 300ms de silence
+        // pour ne pas spammer SignalR à chaque keystroke
+        this._typingSub = this._typingSubject$
+          .pipe(debounceTime(300))
+          .subscribe(mId => {
+            if (this.hub?.state === signalR.HubConnectionState.Connected) {
+              this.hub.invoke('Typing', mId).catch(() => {});
+            }
+          });
+      })
       .catch(console.error);
   }
 
+  /** Appeler depuis le composant sur chaque keystroke — le debounce gère la fréquence */
+  notifyTyping(matchingId: string): void {
+    this._typingSubject$.next(matchingId);
+  }
+
   disconnectHub(): void {
+    this._typingSub?.unsubscribe();
+    this._typingSub = undefined;
     this.hub?.stop();
     this._messages$.next([]);
     this.hub = undefined;
