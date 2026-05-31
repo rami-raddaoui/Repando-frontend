@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -147,7 +147,7 @@ export class AdminComponent implements OnInit {
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
 
-  constructor(private demandeService: DemandeService, private http: HttpClient, private auth: AuthService, private router: Router) {}
+  constructor(private demandeService: DemandeService, private http: HttpClient, private auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadStats();
@@ -210,8 +210,8 @@ export class AdminComponent implements OnInit {
     this.utilisateursLoading = true;
     this.http.get<any>(`${environment.apiUrl}/admin/users?pageSize=200`)
       .subscribe({
-        next: r => { this.utilisateurs = r.data?.items ?? []; this.utilisateursLoading = false; },
-        error: () => { this.utilisateursLoading = false; }
+        next: r => { this.utilisateurs = r.data?.items ?? []; this.utilisateursLoading = false; this.cdr.detectChanges(); },
+        error: () => { this.utilisateursLoading = false; this.cdr.detectChanges(); }
       });
   }
 

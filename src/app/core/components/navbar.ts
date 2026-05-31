@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, Renderer2 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth';
@@ -32,7 +32,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     public msgService: MessagerieService,
     private demandeService: DemandeService,
     private elRef: ElementRef,
-    private router: Router
+    private router: Router,
+    private renderer: Renderer2
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +48,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.msgService.connectGlobalHub();
     }
 
+    // Sync body class for impersonation banner offset
+    if (this.isImpersonating) {
+      this.renderer.addClass(document.body, 'has-impersonate-banner');
+    } else {
+      this.renderer.removeClass(document.body, 'has-impersonate-banner');
+    }
+
     this.subs.push(
       this.msgService.recentConvs$.subscribe(c => this.recentConvs = c),
       this.msgService.unreadCount$.subscribe(n => this.unreadCount = n),
@@ -57,6 +65,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
+    this.renderer.removeClass(document.body, 'has-impersonate-banner');
   }
 
   toggleBubble(): void {

@@ -109,12 +109,12 @@
       }
 
       <!-- Messages area -->
-      <div class="msgr-messages-area">
+      <div class="msgr-messages-area" #messagesArea>
         @if (loading) {
           <div class="msgr-loading">
             <div class="msgr-spinner"></div><span>Chargement des messages…</span>
           </div>
-        }
+        } @else {
 
         @for (msg of messages; track msg.id) {
           @if (msg.type === TypeMessage.SYSTEME) {
@@ -193,6 +193,7 @@
             </div>
           }
         }
+        } <!-- end @else loading -->
         <div #messagesEnd></div>
       </div>
 

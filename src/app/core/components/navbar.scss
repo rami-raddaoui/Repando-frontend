@@ -1,8 +1,13 @@
 /* ─── BANDEAU IMPERSONATION ADMIN ───────────────────────────── */
+
+/* Hauteur de la bannière : utilisée pour décaler la navbar */
+$banner-height: 37px;
+
 .impersonate-banner {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 9999;
+  height: $banner-height;
   background: linear-gradient(90deg, #1e1b4b, #4f46e5);
   color: #fff;
   display: flex;

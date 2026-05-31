@@ -22,7 +22,22 @@ h1,h2,h3,h4 { font-family: 'Bricolage Grotesque',sans-serif; line-height: 1.1; l
 a { text-decoration: none; color: inherit; }
 
 // NAV
+$banner-h: 37px;
+.nav--with-banner { top: $banner-h !important; }
 .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 64px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid rgba(255,255,255,0.8); box-shadow: 0 1px 0 var(--border); }
+
+// Quand la bannière admin est active, décaler les layouts
+body.has-impersonate-banner {
+  .client-layout, .page-container, .profil-layout { padding-top: calc(88px + #{$banner-h}); }
+  .msgr-layout { margin-top: calc(64px + #{$banner-h}); height: calc(100vh - 64px - #{$banner-h}); }
+}
+
+// When impersonation banner (37px) is active, shift page content down
+body.has-impersonate-banner {
+  .client-layout, .page-container, .profil-layout { padding-top: calc(88px + 37px); }
+  .msgr-layout { margin-top: calc(64px + 37px); height: calc(100vh - 64px - 37px); }
+  .admin-wrap { padding-top: calc(64px + 37px + 24px); }
+}
 .logo { font-family: 'Bricolage Grotesque',sans-serif; font-weight: 800; font-size: 22px; color: var(--blue); letter-spacing: -0.5px; display: flex; align-items: center; gap: 6px; }
 .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
 .logo span { color: var(--dark); }

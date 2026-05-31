@@ -249,8 +249,9 @@
         }
       </div>
 
-      @if (utilisateursLoading) { <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div> }
-
+      @if (utilisateursLoading) {
+        <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div>
+      } @else {
       <div class="users-table-wrap">
         <table class="users-table">
           <thead>
@@ -314,6 +315,7 @@
           </tbody>
         </table>
       </div>
+      } <!-- end @else loading -->
     </div>
   }
 

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, signal, HostListener } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, signal, HostListener, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -17,6 +17,7 @@ import { environment } from '../../../environments/environment';
 })
 export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesEnd') messagesEnd!: ElementRef;
+  @ViewChild('messagesArea') messagesArea!: ElementRef;
   @ViewChild('galleryInput') galleryInput!: ElementRef<HTMLInputElement>;
   @ViewChild('cameraInput') cameraInput!: ElementRef<HTMLInputElement>;
   matchings: MatchingDto[] = [];
@@ -85,6 +86,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     public auth: AuthService,
     public messagerieService: MessagerieService,
     private demandeService: DemandeService,
+    private cdr: ChangeDetectorRef,
   ) {}
   ngOnInit(): void {
     const matchingIdFromUrl = this.route.snapshot.paramMap.get('matchingId');
@@ -160,9 +162,10 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     );
   }
   ngAfterViewChecked(): void {
-    if (this.shouldScrollDown) {
-      this.scrollToBottom();
+    if (this.shouldScrollDown && !this.loading) {
       this.shouldScrollDown = false;
+      // Use setTimeout to avoid ExpressionChangedAfterItHasBeenChecked errors
+      setTimeout(() => this.scrollToBottom(), 0);
     }
   }
   ngOnDestroy(): void {
@@ -269,6 +272,7 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.messagerieService.setMessages(merged);
         this.photoUploadCount = merged.filter(m => m.type === TypeMessage.PHOTO).length;
         this.loading = false;
+        this.cdr.detectChanges();
         this.shouldScrollDown = true;
       },
       error: () => { this.loading = false; }
@@ -508,6 +512,12 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   }
   closeReclamations(): void { this.showReclamations = false; }
   private scrollToBottom(): void {
-    this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
+    try {
+      if (this.messagesArea?.nativeElement) {
+        this.messagesArea.nativeElement.scrollTop = this.messagesArea.nativeElement.scrollHeight;
+      } else {
+        this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch {}
   }
 }
