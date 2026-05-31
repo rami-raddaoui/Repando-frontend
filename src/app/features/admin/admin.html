@@ -139,6 +139,7 @@
             <button class="fchip fchip--amber" [class.active]="repFilter === 'pending'"   (click)="repFilter='pending'; repsPage=1">⏳ En attente ({{ pendingReparateurs.length }})</button>
             <button class="fchip fchip--green" [class.active]="repFilter === 'verified'"  (click)="repFilter='verified'; repsPage=1">✅ Validés</button>
             <button class="fchip fchip--red"   [class.active]="repFilter === 'suspended'" (click)="repFilter='suspended'; repsPage=1">🚫 Suspendus</button>
+            <button class="fchip" style="border-color:#94a3b8" [class.active]="repFilter === 'incomplet'" (click)="repFilter='incomplet'; repsPage=1">⚠️ Profil incomplet</button>
           </div>
         </div>
         <div class="search-wrap">
@@ -167,23 +168,40 @@
       }
 
       <div class="rep-grid">
-        @for (r of pagedReps; track r.id) {
-          <div class="rep-card" [class.rep-card--pending]="!r.isVerified && r.isActive" [class.rep-card--verified]="r.isVerified && r.isActive" [class.rep-card--suspended]="!r.isActive">
-            <div class="rep-ribbon" [class.rep-ribbon--pending]="!r.isVerified && r.isActive" [class.rep-ribbon--ok]="r.isVerified && r.isActive" [class.rep-ribbon--suspended]="!r.isActive">
-              {{ !r.isActive ? '🚫 Suspendu' : r.isVerified ? '✅ Validé' : '⏳ En attente' }}
+        @for (r of pagedReps; track r.email) {
+          <div class="rep-card"
+               [class.rep-card--pending]="r.profilComplet && !r.isVerified && r.isActive"
+               [class.rep-card--verified]="r.profilComplet && r.isVerified && r.isActive"
+               [class.rep-card--suspended]="r.profilComplet && !r.isActive"
+               [style.border-color]="!r.profilComplet ? '#f59e0b' : ''">
+            <div class="rep-ribbon"
+                 [class.rep-ribbon--pending]="r.profilComplet && !r.isVerified && r.isActive"
+                 [class.rep-ribbon--ok]="r.profilComplet && r.isVerified && r.isActive"
+                 [class.rep-ribbon--suspended]="r.profilComplet && !r.isActive"
+                 [style.background]="!r.profilComplet ? '#f59e0b' : ''"
+                 [style.color]="!r.profilComplet ? '#fff' : ''">
+              {{ !r.profilComplet ? '⚠️ Profil incomplet' : (!r.isActive ? '🚫 Suspendu' : r.isVerified ? '✅ Validé' : '⏳ En attente') }}
             </div>
             <div class="rep-card-top">
-              <div class="rep-avatar" [class.rep-avatar--green]="r.isVerified && r.isActive" [class.rep-avatar--red]="!r.isActive">
+              <div class="rep-avatar"
+                   [class.rep-avatar--green]="r.profilComplet && r.isVerified && r.isActive"
+                   [class.rep-avatar--red]="r.profilComplet && !r.isActive"
+                   [style.background]="!r.profilComplet ? '#fef3c7' : ''"
+                   [style.color]="!r.profilComplet ? '#92400e' : ''">
                 {{ r.nom.charAt(0).toUpperCase() }}
               </div>
               <div class="rep-info">
                 <div class="rep-nom">{{ r.nom }}</div>
                 <div class="rep-email">{{ r.email }}</div>
-                <div class="rep-loc">📍 {{ r.ville }}{{ r.codePostal ? ' ' + r.codePostal : '' }}</div>
+                @if (r.profilComplet) {
+                  <div class="rep-loc">📍 {{ r.ville }}{{ r.codePostal ? ' ' + r.codePostal : '' }}</div>
+                } @else {
+                  <div class="rep-loc" style="color:#f59e0b;">N'a pas complété son profil réparateur</div>
+                }
               </div>
               @if (r.isFounder) { <span class="founder-pill">⭐ #{{ r.founderNumber }}</span> }
             </div>
-            @if (r.noteMoyenne > 0) {
+            @if (r.profilComplet && r.noteMoyenne > 0) {
               <div class="rep-stars">
                 @for (s of stars(r.noteMoyenne); track $index) {
                   <span [class.star-full]="s==='★'" [class.star-empty]="s==='☆'">{{ s }}</span>
@@ -192,20 +210,30 @@
                 <span class="rep-avis-cnt">({{ r.nbAvis }} avis)</span>
               </div>
             }
-            <div class="rep-specs">
-              @for (s of (r.specialites ?? []).slice(0, 4); track s) {
-                <span class="spec-tag">{{ getAppareilLabel(s).icon }} {{ getAppareilLabel(s).label }}</span>
-              }
-            </div>
-            <div class="rep-stats">
-              <span>🔧 {{ r.nbReparations }} réparations</span>
-              <span>📅 {{ r.createdAt | date:'dd/MM/yy' }}</span>
-            </div>
+            @if (r.profilComplet) {
+              <div class="rep-specs">
+                @for (s of (r.specialites ?? []).slice(0, 4); track s) {
+                  <span class="spec-tag">{{ getAppareilLabel(s).icon }} {{ getAppareilLabel(s).label }}</span>
+                }
+              </div>
+              <div class="rep-stats">
+                <span>🔧 {{ r.nbReparations }} réparations</span>
+                <span>📅 {{ r.createdAt | date:'dd/MM/yy' }}</span>
+              </div>
+            } @else {
+              <div class="rep-stats">
+                <span style="color:#94a3b8;">Inscrit le {{ r.createdAt | date:'dd/MM/yy' }}</span>
+              </div>
+            }
             <div class="rep-actions">
-              <button class="btn-rep-detail" (click)="openRepDetail(r.id)">Consulter</button>
-              @if (!r.isVerified && r.isActive) {
-                <button class="btn-valider" (click)="validerReparateur(r.id)">✅ Valider</button>
-                <button class="btn-suspendre" (click)="suspendreReparateur(r.id)">❌ Refuser</button>
+              @if (r.profilComplet) {
+                <button class="btn-rep-detail" (click)="openRepDetail(r.id)">Consulter</button>
+                @if (!r.isVerified && r.isActive) {
+                  <button class="btn-valider" (click)="validerReparateur(r.id)">✅ Valider</button>
+                  <button class="btn-suspendre" (click)="suspendreReparateur(r.id)">❌ Refuser</button>
+                }
+              } @else {
+                <span style="font-size:12px;color:#94a3b8;">Aucune action disponible — profil non complété</span>
               }
             </div>
           </div>

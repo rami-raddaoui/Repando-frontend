@@ -50,16 +50,17 @@ export class AdminComponent implements OnInit {
   allReparateurs: any[] = [];
   pendingReparateurs: any[] = [];
   reparateursDispo: AdminReparateurDispoDto[] = [];
-  repFilter: 'all' | 'pending' | 'verified' | 'suspended' = 'all';
+  repFilter: 'all' | 'pending' | 'verified' | 'suspended' | 'incomplet' = 'all';
   repsPage = 1;
   repsSearch = '';
   repsLoading = false;
 
   get filteredReps() {
     let list = this.allReparateurs;
-    if (this.repFilter === 'pending')   list = list.filter(r => !r.isVerified && r.isActive);
-    if (this.repFilter === 'verified')  list = list.filter(r => r.isVerified && r.isActive);
-    if (this.repFilter === 'suspended') list = list.filter(r => !r.isActive);
+    if (this.repFilter === 'pending')   list = list.filter(r => r.profilComplet && !r.isVerified && r.isActive);
+    if (this.repFilter === 'verified')  list = list.filter(r => r.profilComplet && r.isVerified && r.isActive);
+    if (this.repFilter === 'suspended') list = list.filter(r => r.profilComplet && !r.isActive);
+    if (this.repFilter === 'incomplet') list = list.filter(r => !r.profilComplet);
     const q = this.repsSearch.toLowerCase();
     if (q) list = list.filter(r =>
       r.nom.toLowerCase().includes(q) || r.ville?.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
