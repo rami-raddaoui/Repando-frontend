@@ -3,7 +3,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth';
 import { resolveStaticUrl } from '../../core/services/auth';
@@ -37,7 +36,7 @@ interface RepProfile {
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './profil.html',
   styleUrl: './profil.scss'
 })
@@ -53,6 +52,7 @@ export class ProfilComponent implements OnInit {
     prenom: '',
     nom: '',
     telephone: '',
+    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   };
@@ -164,13 +164,19 @@ export class ProfilComponent implements OnInit {
       return;
     }
     if (this.showPasswordChange) {
-      if (this.form.newPassword && this.form.newPassword !== this.form.confirmPassword) {
-        this.saveError = 'Les mots de passe ne correspondent pas';
-        return;
-      }
-      if (this.form.newPassword && this.form.newPassword.length < 6) {
-        this.saveError = 'Mot de passe trop court (min 6 caractères)';
-        return;
+      if (this.form.newPassword) {
+        if (!this.form.currentPassword) {
+          this.saveError = 'Veuillez saisir votre mot de passe actuel';
+          return;
+        }
+        if (this.form.newPassword.length < 8) {
+          this.saveError = 'Le nouveau mot de passe doit contenir au moins 8 caractères';
+          return;
+        }
+        if (this.form.newPassword !== this.form.confirmPassword) {
+          this.saveError = 'Les mots de passe ne correspondent pas';
+          return;
+        }
       }
     }
 
@@ -180,7 +186,8 @@ export class ProfilComponent implements OnInit {
       prenom: this.form.prenom.trim(),
       nom: this.form.nom.trim(),
       telephone: this.form.telephone.trim() || undefined,
-      newPassword: this.showPasswordChange && this.form.newPassword ? this.form.newPassword : undefined
+      newPassword: this.showPasswordChange && this.form.newPassword ? this.form.newPassword : undefined,
+      currentPassword: this.showPasswordChange && this.form.currentPassword ? this.form.currentPassword : undefined,
     };
 
     this.auth.updateProfile(payload).subscribe({
@@ -188,6 +195,7 @@ export class ProfilComponent implements OnInit {
         this.saveLoading = false;
         this.user = u;
         this.saveSuccess = '✅ Profil mis à jour !';
+        this.form.currentPassword = '';
         this.form.newPassword = '';
         this.form.confirmPassword = '';
         this.showPasswordChange = false;

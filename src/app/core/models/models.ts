@@ -82,6 +82,7 @@ export interface UpdateProfileRequest {
   nom: string;
   telephone?: string;
   newPassword?: string;
+  currentPassword?: string;  // requis si newPassword est renseigné
 }
 
 export interface UpdateReparateurProfileRequest {

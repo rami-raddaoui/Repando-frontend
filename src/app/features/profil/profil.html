@@ -191,13 +191,18 @@
     @if (activeTab === 'securite') {
       <div class="profil-card">
         <h3 class="profil-card-title">Sécurité & Mot de passe</h3>
-        <p class="profil-card-note">Choisissez un mot de passe fort d'au moins 6 caractères.</p>
+        <p class="profil-card-note">Choisissez un mot de passe fort d'au moins 8 caractères.</p>
 
         <div class="profil-form-grid">
+          <div class="profil-field" style="grid-column: 1 / -1">
+            <label class="profil-label">Mot de passe actuel <span style="color:var(--red)">*</span></label>
+            <input class="profil-input" type="password" [(ngModel)]="form.currentPassword"
+                   placeholder="Votre mot de passe actuel" autocomplete="current-password" />
+          </div>
           <div class="profil-field">
             <label class="profil-label">Nouveau mot de passe</label>
             <input class="profil-input" type="password" [(ngModel)]="form.newPassword"
-                   placeholder="Nouveau mot de passe" autocomplete="new-password" />
+                   placeholder="8 caractères minimum" autocomplete="new-password" />
           </div>
           <div class="profil-field">
             <label class="profil-label">Confirmer le mot de passe</label>
@@ -207,7 +212,9 @@
         </div>
 
         <div class="profil-form-actions">
-          <button class="profil-btn-save" (click)="showPasswordChange=true; saveProfile()" [disabled]="saveLoading || !form.newPassword">
+          <button class="profil-btn-save"
+                  (click)="showPasswordChange=true; saveProfile()"
+                  [disabled]="saveLoading || !form.newPassword || !form.currentPassword">
             @if (saveLoading) { ⏳ … } @else { 🔑 Mettre à jour le mot de passe }
           </button>
         </div>
