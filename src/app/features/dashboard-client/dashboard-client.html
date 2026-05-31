@@ -306,15 +306,36 @@
 <!-- ── Popup confirmation annulation ─────────────────────────────── -->
 @if (showCancelModal) {
   <div class="modal-overlay" (click)="closeCancelModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-box modal-box--cancel" (click)="$event.stopPropagation()">
+
+      <!-- Header danger -->
       <div class="modal-icon">⚠️</div>
       <h3 class="modal-title">Annuler cette demande ?</h3>
       <p class="modal-desc">
-        Cette action est <strong>irréversible</strong>. Votre demande sera définitivement annulée et toutes les conversations ouvertes avec des réparateurs seront clôturées. Vous ne pourrez pas la réactiver.
+        Cette action est <strong>irréversible</strong>. Votre demande sera définitivement annulée et toutes les conversations ouvertes avec des réparateurs seront clôturées.
       </p>
-      <div class="modal-actions">
-        <button class="btn-secondary" (click)="closeCancelModal()">Non, garder ma demande</button>
-        <button class="btn-danger" (click)="confirmCancel()">Oui, annuler définitivement</button>
+
+      <!-- ── Suggestion pause ────────────────────────────────── -->
+      <div class="modal-pause-suggestion">
+        <div class="modal-pause-suggestion__header">
+          <span class="modal-pause-suggestion__icon">⏸️</span>
+          <div>
+            <div class="modal-pause-suggestion__title">Pas encore décidé·e ?</div>
+            <div class="modal-pause-suggestion__sub">Mettez votre demande en pause temporairement</div>
+          </div>
+        </div>
+        <p class="modal-pause-suggestion__desc">
+          En pause, votre demande reste sauvegardée et les conversations sont conservées — aucun nouveau réparateur ne sera notifié. Vous pouvez la réactiver à tout moment.
+        </p>
+        <button class="btn-pause-cta" (click)="pauseInsteadOfCancel()">
+          ⏸️ Mettre en pause plutôt
+        </button>
+      </div>
+
+      <!-- Actions finales -->
+      <div class="modal-actions modal-actions--cancel">
+        <button class="btn-secondary" (click)="closeCancelModal()">Garder ma demande</button>
+        <button class="btn-danger" (click)="confirmCancel()">Annuler définitivement</button>
       </div>
     </div>
   </div>

@@ -90,6 +90,13 @@ export class DashboardClientComponent implements OnInit {
     this.cancelTargetId = null;
     this.demandeService.cancel(id).subscribe(() => this.loadData());
   }
+  pauseInsteadOfCancel(): void {
+    if (!this.cancelTargetId) return;
+    const id = this.cancelTargetId;
+    this.showCancelModal = false;
+    this.cancelTargetId = null;
+    this.demandeService.togglePause(id).subscribe(() => this.loadData());
+  }
 
   openDetail(d: DemandeDto): void { this.detailDemande = d; this.showDetailModal = true; }
   closeDetail(): void { this.showDetailModal = false; this.detailDemande = null; this.detailLightboxUrl = null; }

@@ -165,6 +165,11 @@
   width: 100%;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0,0,0,.18);
+
+  &--cancel {
+    max-width: 480px;
+    padding: 32px 28px 24px;
+  }
 }
 
 .modal-icon {
@@ -183,8 +188,7 @@
   font-size: 14px;
   color: #555;
   line-height: 1.6;
-  margin-bottom: 24px;
-
+  margin-bottom: 20px;
   strong { color: #dc2626; }
 }
 
@@ -193,6 +197,73 @@
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+  &--cancel { margin-top: 20px; }
+}
+
+/* ── Suggestion pause dans la popup d'annulation ────────────── */
+.modal-pause-suggestion {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #fcd34d;
+  border-radius: 16px;
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 4px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  &__icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(245,158,11,.3));
+  }
+  &__title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #92400e;
+    line-height: 1.2;
+  }
+  &__sub {
+    font-size: 12px;
+    color: #b45309;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  &__desc {
+    font-size: 13px;
+    color: #78350f;
+    line-height: 1.55;
+    margin: 0 0 14px;
+  }
+}
+
+.btn-pause-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Satoshi', 'Inter', sans-serif;
+  transition: all .2s;
+  width: 100%;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(245,158,11,.35);
+
+  &:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(245,158,11,.45);
+  }
+  &:active { transform: none; }
 }
 
 .btn-danger {
