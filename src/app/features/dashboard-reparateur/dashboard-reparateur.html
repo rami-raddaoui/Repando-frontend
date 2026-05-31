@@ -102,6 +102,28 @@
         <div class="empty-sub">L'équipe Repando vous notifiera dès qu'une demande de réparation vous est proposée.</div>
       </div>
     }
+
+    @if (nouvellesMissions.length > 0) {
+      <!-- Banner d'information -->
+      <div class="missions-disclaimer">
+        <div class="missions-disclaimer__left">
+          <div class="missions-disclaimer__shield">🛡️</div>
+          <div>
+            <div class="missions-disclaimer__title">Aucun engagement avant votre accord</div>
+            <div class="missions-disclaimer__text">
+              Démarrer une discussion ne vous engage pas à prendre en charge la réparation.
+              Vous échangez d'abord avec le client pour évaluer la faisabilité, clarifier les détails
+              et convenir des conditions — puis vous décidez librement d'accepter ou non.
+            </div>
+          </div>
+        </div>
+        <div class="missions-disclaimer__chips">
+          <span class="md-chip md-chip--green">✓ Discussion sans engagement</span>
+          <span class="md-chip md-chip--blue">✓ Refus possible à tout moment</span>
+          <span class="md-chip md-chip--purple">✓ Devis uniquement si accord mutuel</span>
+        </div>
+      </div>
+    }
     @for (m of nouvellesMissions; track m.id) {
       <div class="mission-card new" [class.mission-card--fresh]="m.statut === 'NOUVEAU'">
 
