@@ -23,6 +23,23 @@ export class DashboardClientComponent implements OnInit {
   readonly StatutMatching = StatutMatching;
   readonly staticUrl = environment.staticUrl;
 
+  // Pause / Réactivation confirmation popup
+  showPauseModal = false;
+  pauseTargetDemande: DemandeDto | null = null;
+
+  openPauseModal(d: DemandeDto): void { this.pauseTargetDemande = d; this.showPauseModal = true; }
+  closePauseModal(): void { this.showPauseModal = false; this.pauseTargetDemande = null; }
+  confirmPause(): void {
+    if (!this.pauseTargetDemande) return;
+    const d = this.pauseTargetDemande;
+    const isPaused = d.statut === StatutDemande.EN_PAUSE;
+    this.closePauseModal();
+    this.demandeService.togglePause(d.id).subscribe(() => {
+      d.statut = isPaused ? StatutDemande.OUVERTE : StatutDemande.EN_PAUSE;
+      if (this.detailDemande?.id === d.id) this.detailDemande.statut = d.statut;
+    });
+  }
+
   // Cancel confirmation popup
   showCancelModal = false;
   cancelTargetId: string | null = null;
@@ -88,14 +105,22 @@ export class DashboardClientComponent implements OnInit {
     const id = this.cancelTargetId;
     this.showCancelModal = false;
     this.cancelTargetId = null;
-    this.demandeService.cancel(id).subscribe(() => this.loadData());
+    this.demandeService.cancel(id).subscribe(() => {
+      // Mise à jour locale optimiste
+      const d = this.demandes.find(x => x.id === id);
+      if (d) d.statut = StatutDemande.ANNULEE;
+    });
   }
+
   pauseInsteadOfCancel(): void {
     if (!this.cancelTargetId) return;
     const id = this.cancelTargetId;
     this.showCancelModal = false;
     this.cancelTargetId = null;
-    this.demandeService.togglePause(id).subscribe(() => this.loadData());
+    this.demandeService.togglePause(id).subscribe(() => {
+      const d = this.demandes.find(x => x.id === id);
+      if (d) d.statut = StatutDemande.EN_PAUSE;
+    });
   }
 
   openDetail(d: DemandeDto): void { this.detailDemande = d; this.showDetailModal = true; }
@@ -130,12 +155,7 @@ export class DashboardClientComponent implements OnInit {
   }
 
   togglePause(d: DemandeDto): void {
-    const isPaused = d.statut === StatutDemande.EN_PAUSE;
-    const msg = isPaused
-      ? 'Réactiver cette demande ?'
-      : 'Mettre en pause cette demande ?';
-    if (!confirm(msg)) return;
-    this.demandeService.togglePause(d.id).subscribe(() => this.loadData());
+    this.openPauseModal(d);
   }
 
   goToMessagerie(demandeId: string): void {
@@ -150,10 +170,16 @@ export class DashboardClientComponent implements OnInit {
   }
 
   accepterDevis(matchingId: string): void {
-    this.demandeService.acceptDevis(matchingId).subscribe(() => this.loadData());
+    this.demandeService.acceptDevis(matchingId).subscribe(() => {
+      const m = this.matchings.find(x => x.id === matchingId);
+      if (m) m.statut = StatutMatching.ACCEPTE;
+    });
   }
 
   refuserDevis(matchingId: string): void {
-    this.demandeService.refuserDevis(matchingId).subscribe(() => this.loadData());
+    this.demandeService.refuserDevis(matchingId).subscribe(() => {
+      const m = this.matchings.find(x => x.id === matchingId);
+      if (m) m.statut = StatutMatching.REFUSE;
+    });
   }
 }

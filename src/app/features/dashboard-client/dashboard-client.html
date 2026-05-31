@@ -303,6 +303,74 @@
   </div>
 }
 
+<!-- ── Popup confirmation pause / réactivation ────────────────── -->
+@if (showPauseModal && pauseTargetDemande) {
+  <div class="modal-overlay" (click)="closePauseModal()">
+    <div class="modal-box modal-box--pause" (click)="$event.stopPropagation()">
+
+      @if (pauseTargetDemande.statut === StatutDemande.EN_PAUSE) {
+        <!-- ── RÉACTIVER ── -->
+        <div class="modal-icon">▶️</div>
+        <h3 class="modal-title">Réactiver cette demande ?</h3>
+        <p class="modal-desc">
+          Votre demande sera de nouveau <strong style="color:#10b981">visible et active</strong>.
+          Les réparateurs pourront à nouveau la voir et vous proposer leurs services.
+        </p>
+
+        <div class="modal-reactive-card">
+          <div class="modal-reactive-card__header">
+            <span class="modal-reactive-card__icon">🟢</span>
+            <div>
+              <div class="modal-reactive-card__title">Ce qui va changer</div>
+              <div class="modal-reactive-card__sub">Retour à l'état actif immédiatement</div>
+            </div>
+          </div>
+          <ul class="modal-reactive-card__list">
+            <li>✅ Votre demande redevient visible sur la plateforme</li>
+            <li>✅ Les conversations existantes restent intactes</li>
+            <li>✅ De nouveaux réparateurs pourront vous contacter</li>
+          </ul>
+        </div>
+
+        <div class="modal-actions modal-actions--pause">
+          <button class="btn-secondary" (click)="closePauseModal()">Annuler</button>
+          <button class="btn-reactive" (click)="confirmPause()">▶️ Réactiver ma demande</button>
+        </div>
+
+      } @else {
+        <!-- ── METTRE EN PAUSE ── -->
+        <div class="modal-icon">⏸️</div>
+        <h3 class="modal-title">Mettre en pause ?</h3>
+        <p class="modal-desc">
+          Votre demande sera <strong>suspendue temporairement</strong>.
+          Aucun nouveau réparateur ne sera notifié, mais vous pouvez la réactiver à tout moment.
+        </p>
+
+        <div class="modal-pause-card">
+          <div class="modal-pause-card__header">
+            <span class="modal-pause-card__icon">⏸️</span>
+            <div>
+              <div class="modal-pause-card__title">Pendant la pause</div>
+              <div class="modal-pause-card__sub">Vos conversations restent actives</div>
+            </div>
+          </div>
+          <ul class="modal-pause-card__list">
+            <li>⏸️ Aucun nouveau réparateur ne verra votre annonce</li>
+            <li>💬 Vos chats en cours restent ouverts et accessibles</li>
+            <li>🔄 Réactivation possible à tout moment en un clic</li>
+          </ul>
+        </div>
+
+        <div class="modal-actions modal-actions--pause">
+          <button class="btn-secondary" (click)="closePauseModal()">Annuler</button>
+          <button class="btn-pause-confirm" (click)="confirmPause()">⏸️ Mettre en pause</button>
+        </div>
+      }
+
+    </div>
+  </div>
+}
+
 <!-- ── Popup confirmation annulation ─────────────────────────────── -->
 @if (showCancelModal) {
   <div class="modal-overlay" (click)="closeCancelModal()">

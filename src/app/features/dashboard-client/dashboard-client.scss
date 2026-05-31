@@ -491,6 +491,174 @@
   opacity: 0.9;
 }
 
+/* ── Popup Pause / Réactivation ─────────────────────── */
+.modal-box--pause {
+  max-width: 460px;
+  padding: 32px 28px 28px;
+}
+
+.modal-actions--pause {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+/* Carte "pendant la pause" (amber) */
+.modal-pause-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #fcd34d;
+  border-radius: 16px;
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 4px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(245,158,11,.3));
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #92400e;
+    line-height: 1.2;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: #b45309;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    li {
+      font-size: 13px;
+      color: #78350f;
+      line-height: 1.45;
+    }
+  }
+}
+
+/* Carte "réactiver" (vert) */
+.modal-reactive-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1.5px solid #86efac;
+  border-radius: 16px;
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 4px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(16,185,129,.3));
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #14532d;
+    line-height: 1.2;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: #15803d;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    li {
+      font-size: 13px;
+      color: #166534;
+      line-height: 1.45;
+    }
+  }
+}
+
+/* Bouton confirmer pause (amber) */
+.btn-pause-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Satoshi', 'Inter', sans-serif;
+  transition: all .2s;
+  box-shadow: 0 4px 12px rgba(245,158,11,.35);
+
+  &:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(245,158,11,.45);
+  }
+  &:active { transform: none; }
+}
+
+/* Bouton réactiver (vert) */
+.btn-reactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Satoshi', 'Inter', sans-serif;
+  transition: all .2s;
+  box-shadow: 0 4px 12px rgba(16,185,129,.35);
+
+  &:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16,185,129,.45);
+  }
+  &:active { transform: none; }
+}
+
 .pause-notice {
   font-size: 12px;
   color: #92400e;
