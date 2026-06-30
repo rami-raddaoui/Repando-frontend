@@ -54,6 +54,78 @@
     </div>
   }
 
+  <!-- BANNER: RC PRO MANQUANTE -->
+  @if (dashboard && rcProStatut === 'MANQUANTE') {
+    <div class="rcpro-banner rcpro-banner--missing">
+      <div class="rcpro-banner__glow"></div>
+      <div class="rcpro-banner__inner">
+        <div class="rcpro-banner__icon-wrap">
+          <div class="rcpro-banner__icon">🛡️</div>
+        </div>
+        <div class="rcpro-banner__content">
+          <div class="rcpro-banner__title">Attestation RC Pro manquante</div>
+          <div class="rcpro-banner__text">
+            Les réparateurs avec une <strong>RC Pro à jour</strong> inspirent davantage confiance et reçoivent
+            <strong>3× plus de missions</strong>. Importez votre attestation pour booster votre visibilité.
+          </div>
+          <div class="rcpro-banner__chips">
+            <span class="rcpro-chip rcpro-chip--amber">📈 3× plus de missions</span>
+            <span class="rcpro-chip rcpro-chip--green">✓ Badge RC Pro affiché</span>
+            <span class="rcpro-chip rcpro-chip--blue">✓ Confiance client renforcée</span>
+          </div>
+          @if (rcProError) {
+            <div class="rcpro-error">{{ rcProError }}</div>
+          }
+          @if (rcProSuccess) {
+            <div class="rcpro-success">{{ rcProSuccess }}</div>
+          }
+        </div>
+        <div class="rcpro-banner__action">
+          <label class="btn-rcpro-upload" [class.btn-rcpro-upload--loading]="rcProUploading">
+            @if (rcProUploading) {
+              <span class="rcpro-spinner"></span> Envoi en cours…
+            } @else {
+              📎 Importer mon attestation
+            }
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onRcProFileChange($event)" hidden [disabled]="rcProUploading" />
+          </label>
+          <div class="rcpro-hint">PDF, JPG ou PNG · Max 10 Mo</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- BANNER: RC PRO EN VÉRIFICATION -->
+  @if (dashboard && rcProStatut === 'EN_VERIFICATION') {
+    <div class="rcpro-banner rcpro-banner--pending">
+      <div class="rcpro-banner__inner">
+        <div class="rcpro-banner__icon-wrap">
+          <div class="rcpro-banner__icon rcpro-banner__icon--pending">⏳</div>
+          <div class="rcpro-banner__pulse"></div>
+        </div>
+        <div class="rcpro-banner__content">
+          <div class="rcpro-banner__title">Attestation en cours de vérification</div>
+          <div class="rcpro-banner__text">
+            L'équipe Repando examine votre attestation RC Pro. Vous serez notifié par e-mail dès la validation.
+            Votre badge RC Pro sera activé automatiquement.
+          </div>
+          <div class="rcpro-banner__chips">
+            <span class="rcpro-chip rcpro-chip--amber">🔍 Vérification en cours</span>
+            <span class="rcpro-chip rcpro-chip--blue">📋 Document transmis</span>
+            <span class="rcpro-chip rcpro-chip--green">✉️ Notification par e-mail</span>
+          </div>
+        </div>
+        <div class="rcpro-banner__status">
+          <div class="rcpro-status-badge">
+            <div class="rcpro-dot-anim"></div>
+            En attente de validation
+          </div>
+          <div class="rcpro-eta">Délai moyen : 24–48h</div>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- STATS -->
   @if (dashboard) {
     <div class="grid-3" style="margin-bottom:24px">

@@ -718,6 +718,251 @@
   50% { opacity: .4; transform: scale(.6); }
 }
 
+// ─── RC PRO BANNER ───────────────────────────────────────────────────────────
+.rcpro-banner {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+
+  &--missing {
+    background: linear-gradient(135deg, #1c1917 0%, #78350f 50%, #d97706 100%);
+    box-shadow: 0 8px 40px rgba(217,119,6,.25);
+  }
+
+  &--pending {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1d4ed8 100%);
+    box-shadow: 0 8px 40px rgba(29,78,216,.25);
+  }
+
+  &__glow {
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(251,191,36,.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  &__inner {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px 28px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      padding: 20px 18px;
+    }
+  }
+
+  &__icon-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__icon {
+    width: 58px; height: 58px;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    backdrop-filter: blur(10px);
+
+    &--pending {
+      // icône dans la version pending = plus petite animation
+    }
+  }
+
+  &__pulse {
+    position: absolute;
+    inset: -6px;
+    border-radius: 20px;
+    border: 2px solid rgba(96,165,250,.4);
+    animation: pendingPulse 2s ease-in-out infinite;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+
+  &__text {
+    font-size: 13px;
+    line-height: 1.65;
+    color: rgba(255,255,255,.78);
+    max-width: 520px;
+    margin-bottom: 12px;
+
+    strong { color: #fff; }
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  &__action {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+
+    @media (max-width: 768px) {
+      align-items: flex-start;
+    }
+  }
+
+  &__status {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+
+    @media (max-width: 768px) {
+      align-items: flex-start;
+    }
+  }
+}
+
+.rcpro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+
+  &--amber {
+    background: rgba(245,158,11,.2);
+    color: #fcd34d;
+    border: 1px solid rgba(245,158,11,.3);
+  }
+  &--green {
+    background: rgba(52,211,153,.18);
+    color: #6ee7b7;
+    border: 1px solid rgba(52,211,153,.25);
+  }
+  &--blue {
+    background: rgba(96,165,250,.18);
+    color: #93c5fd;
+    border: 1px solid rgba(96,165,250,.25);
+  }
+}
+
+.btn-rcpro-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #1c1917;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 11px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Satoshi','Inter',sans-serif;
+  transition: opacity .15s, transform .15s;
+  box-shadow: 0 4px 16px rgba(217,119,6,.4);
+  white-space: nowrap;
+  letter-spacing: .1px;
+  border: none;
+
+  &:hover { opacity: .92; transform: translateY(-1px); }
+
+  &--loading {
+    opacity: .7;
+    cursor: default;
+    pointer-events: none;
+    transform: none;
+  }
+}
+
+.rcpro-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(28,25,23,.3);
+  border-top-color: #1c1917;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+.rcpro-hint {
+  font-size: 11px;
+  color: rgba(255,255,255,.45);
+  text-align: center;
+}
+
+.rcpro-error {
+  margin-top: 8px;
+  background: rgba(239,68,68,.18);
+  border: 1px solid rgba(239,68,68,.3);
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 400px;
+}
+
+.rcpro-success {
+  margin-top: 8px;
+  background: rgba(34,197,94,.18);
+  border: 1px solid rgba(34,197,94,.3);
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 400px;
+}
+
+.rcpro-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(96,165,250,.15);
+  border: 1px solid rgba(96,165,250,.3);
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 40px;
+  white-space: nowrap;
+}
+
+.rcpro-dot-anim {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #60a5fa;
+  animation: pendingDot 1.4s ease-in-out infinite;
+}
+
+.rcpro-eta {
+  font-size: 11px;
+  color: rgba(255,255,255,.45);
+  font-style: italic;
+}
+
 // ─── VALIDATED BANNER ────────────────────────────────────────────────────────
 .validated-banner {
   display: flex;

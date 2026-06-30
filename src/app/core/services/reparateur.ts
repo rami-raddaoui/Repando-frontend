@@ -58,4 +58,11 @@ export class ReparateurService {
   updateDispo(estDisponible: boolean): Observable<void> {
     return this.http.patch<void>(`${this.base}/disponibilite`, estDisponible);
   }
+
+  /** POST /api/reparateurs/rc-pro — upload attestation RC Pro (base64 DataUrl) */
+  uploadRcPro(dataUrl: string): Observable<{ success: boolean; message?: string }> {
+    return this.http.post<{ success: boolean; message?: string }>(
+      `${this.base}/rc-pro`, { dataUrl }
+    );
+  }
 }

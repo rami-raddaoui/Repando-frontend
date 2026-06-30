@@ -59,6 +59,17 @@ export class DashboardReparateurComponent implements OnInit {
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutMatching = StatutMatching;
 
+  // ── RC Pro ────────────────────────────────────────────────
+  get rcProStatut(): string {
+    return this.dashboard?.reparateur?.rcProStatut ?? 'MANQUANTE';
+  }
+  get hasRcPro(): boolean {
+    return this.rcProStatut === 'VALIDEE' || this.rcProStatut === 'EN_VERIFICATION';
+  }
+  rcProUploading = false;
+  rcProError = '';
+  rcProSuccess = '';
+
   get nouvellesMissions() {
     return this.matchings.filter(m => m.statut === 'NOUVEAU' || m.statut === 'VU');
   }
@@ -220,6 +231,51 @@ export class DashboardReparateurComponent implements OnInit {
       this.router.navigate(['/messagerie', this.welcomeMatchingId]);
     }
     this.welcomeMatchingId = null;
+  }
+
+  // ── RC Pro upload ─────────────────────────────────────────
+  onRcProFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+
+    const maxSize = 10 * 1024 * 1024; // 10 Mo
+    if (file.size > maxSize) {
+      this.rcProError = 'Fichier trop volumineux (max 10 Mo)';
+      return;
+    }
+    const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowed.includes(file.type)) {
+      this.rcProError = 'Format non supporté (PDF, JPG ou PNG)';
+      return;
+    }
+
+    this.rcProUploading = true;
+    this.rcProError = '';
+    this.rcProSuccess = '';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      this.reparateurService.uploadRcPro(dataUrl).subscribe({
+        next: (res) => {
+          this.rcProUploading = false;
+          this.rcProSuccess = res.message ?? 'Attestation envoyée avec succès';
+          // Rafraîchir le dashboard pour mettre à jour le statut
+          this.reparateurService.getDashboard().subscribe({
+            next: d => { this.dashboard = d; },
+            error: () => {}
+          });
+          setTimeout(() => this.rcProSuccess = '', 6000);
+        },
+        error: (e) => {
+          this.rcProUploading = false;
+          this.rcProError = e?.error?.error ?? 'Erreur lors de l\'upload';
+          setTimeout(() => this.rcProError = '', 6000);
+        }
+      });
+    };
+    reader.readAsDataURL(file);
   }
 
   getStatutLabel(statut: string): { label: string; color: string; bg: string } {
