@@ -20,7 +20,7 @@ const PAGE_SIZE = 12;
   styleUrl: './admin.scss'
 })
 export class AdminComponent implements OnInit {
-  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' | 'utilisateurs' | 'parametres' = 'demandes';
+  tab: 'demandes' | 'reparateurs' | 'stats' | 'reclamations' | 'utilisateurs' | 'parametres' | 'resiliations' = 'demandes';
 
   // ── Stats ────────────────────────────────────────────────────
   stats: any = null;
@@ -144,11 +144,23 @@ export class AdminComponent implements OnInit {
   // ── Impersonation ─────────────────────────────────────────────
   impersonateLoadingId: string | null = null;
 
-  // ── Paramètres admin ──────────────────────────────────────────
+  // ── Paramètres admin ──────────────────────────────────────
   settings: { id: string; key: string; value: boolean; description: string; updatedAt: string }[] = [];
   settingsLoading = false;
   settingsSaving: Set<string> = new Set();
   settingsSuccess = '';
+
+  // ── Résiliations ──────────────────────────────────────────
+  resiliations: any[] = [];
+  resiliationsLoading = false;
+  resiliationFilter = '';
+  resiliationTraiterLoading: string | null = null;
+  resiliationSuccess = '';
+
+  get filteredResiliations() {
+    if (!this.resiliationFilter) return this.resiliations;
+    return this.resiliations.filter(r => r.statut === this.resiliationFilter);
+  }
 
   readonly staticUrl = environment.staticUrl;
 
@@ -230,6 +242,27 @@ export class AdminComponent implements OnInit {
         next: r => { this.settings = r.data ?? []; this.settingsLoading = false; },
         error: () => { this.settingsLoading = false; }
       });
+  }
+
+  loadResiliations(): void {
+    this.resiliationsLoading = true;
+    this.http.get<any>(`${environment.apiUrl}/resiliation/admin`).subscribe({
+      next: r => { this.resiliations = r.data ?? []; this.resiliationsLoading = false; },
+      error: () => { this.resiliationsLoading = false; }
+    });
+  }
+
+  traiterResiliation(id: string): void {
+    this.resiliationTraiterLoading = id;
+    this.http.post<any>(`${environment.apiUrl}/resiliation/${id}/traiter`, {}).subscribe({
+      next: () => {
+        this.resiliationTraiterLoading = null;
+        this.resiliationSuccess = '✅ Demande marquée traitée';
+        this.loadResiliations();
+        setTimeout(() => this.resiliationSuccess = '', 4000);
+      },
+      error: () => { this.resiliationTraiterLoading = null; }
+    });
   }
 
   toggleSetting(key: string, newValue: boolean): void {

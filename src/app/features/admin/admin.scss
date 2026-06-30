@@ -805,3 +805,90 @@
 
   input:disabled + .toggle-slider { opacity: .5; cursor: not-allowed; }
 }
+
+// ─── RC PRO BADGE (liste réparateurs) ────────────────────────────────────────
+.rep-rcpro-row {
+  margin-top: 8px;
+}
+.rcpro-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
+  border-radius: 20px; white-space: nowrap;
+
+  &--ok      { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  &--pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  &--missing { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  &--refused { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+}
+
+// ─── RÉSILIATIONS ADMIN ──────────────────────────────────────────────────────
+.resil-admin-list {
+  display: flex; flex-direction: column; gap: 12px; margin-top: 8px;
+}
+
+.resil-admin-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  transition: box-shadow .15s;
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+
+  &.resil-card--pending { border-left: 4px solid #f59e0b; }
+  &.resil-card--retracted { border-left: 4px solid #64748b; opacity: .75; }
+  &.resil-card--done { border-left: 4px solid #22c55e; opacity: .7; }
+}
+
+.rac-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 12px;
+  @media (max-width: 600px) { flex-direction: column; }
+}
+.rac-user {
+  display: flex; align-items: center; gap: 12px;
+}
+.rac-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff; font-weight: 700; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rac-user-nom  { font-weight: 700; font-size: 15px; color: #0f172a; }
+.rac-user-email{ font-size: 12px; color: #64748b; }
+.rac-user-role { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .4px; }
+
+.rac-meta-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+  @media (max-width: 600px) { align-items: flex-start; }
+}
+.rac-statut-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 30px;
+  &.rac-statut--pending   { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  &.rac-statut--retracted { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+  &.rac-statut--done      { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+}
+.rac-date { font-size: 11px; color: #94a3b8; }
+
+.rac-body { display: flex; flex-direction: column; gap: 6px; }
+.rac-raison-row, .rac-comment-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
+.rac-retract-block { background: #f0fdf4; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #15803d; }
+.rac-label { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .4px; flex-shrink: 0; }
+.rac-value { font-size: 14px; color: #334155; }
+
+.rac-footer { margin-top: 14px; display: flex; justify-content: flex-end; }
+
+.btn-traiter-resil {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff; border: none;
+  padding: 9px 20px; border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Satoshi','Inter',sans-serif;
+  transition: opacity .15s;
+  box-shadow: 0 3px 10px rgba(34,197,94,.3);
+  &:hover { opacity: .9; }
+  &:disabled { opacity: .55; cursor: default; box-shadow: none; }
+}
+

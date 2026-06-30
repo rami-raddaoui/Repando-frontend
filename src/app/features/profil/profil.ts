@@ -82,21 +82,6 @@ export class ProfilComponent implements OnInit {
 
   constructor(public auth: AuthService, private http: HttpClient) {}
 
-  ngOnInit(): void {
-    this.auth.me().subscribe({
-      next: u => {
-        this.user = { ...u, avatarUrl: resolveStaticUrl(u.avatarUrl) };
-        this.form.prenom = u.prenom;
-        this.form.nom = u.nom;
-        this.form.telephone = u.telephone ?? '';
-        this.loading = false;
-
-        if (this.auth.isReparateur()) this.loadRepProfile();
-      },
-      error: () => { this.loading = false; }
-    });
-  }
-
   private loadRepProfile(): void {
     this.http.get<any>(`${environment.apiUrl}/reparateurs/me`).subscribe({
       next: r => {
@@ -264,6 +249,107 @@ export class ProfilComponent implements OnInit {
       case UserRole.ADMIN: return '🛡️ Admin';
       default: return '';
     }
+  }
+
+  // ── Résiliation ───────────────────────────────────────────
+  readonly RESILIATION_RAISONS = [
+    'Je n\'utilise plus le service',
+    'J\'ai trouvé une autre solution',
+    'Le service ne correspond pas à mes attentes',
+    'Problème technique non résolu',
+    'Raison personnelle / professionnelle',
+    'Autre raison',
+  ];
+
+  showResiliationModal = false;
+  resiliationRaison = '';
+  resiliationCommentaire = '';
+  resiliationLoading = false;
+  resiliationSuccess = '';
+  resiliationError = '';
+  demandeResiliationActive: any = null;
+
+  // Rétractation
+  showRetractModal = false;
+  retractCommentaire = '';
+  retractLoading = false;
+  retractError = '';
+
+  ngOnInit(): void {
+    this.auth.me().subscribe({
+      next: u => {
+        this.user = { ...u, avatarUrl: resolveStaticUrl(u.avatarUrl) };
+        this.form.prenom = u.prenom;
+        this.form.nom = u.nom;
+        this.form.telephone = u.telephone ?? '';
+        this.loading = false;
+        if (this.auth.isReparateur()) this.loadRepProfile();
+        this.loadResiliation();
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  private loadResiliation(): void {
+    this.http.get<any>(`${environment.apiUrl}/resiliation/me`).subscribe({
+      next: r => { this.demandeResiliationActive = r.data ?? null; },
+      error: () => {}
+    });
+  }
+
+  openResiliationModal(): void {
+    this.resiliationRaison = '';
+    this.resiliationCommentaire = '';
+    this.resiliationError = '';
+    this.showResiliationModal = true;
+  }
+
+  submitResiliation(): void {
+    if (!this.resiliationRaison) { this.resiliationError = 'Veuillez choisir une raison'; return; }
+    this.resiliationLoading = true;
+    this.resiliationError = '';
+    this.http.post<any>(`${environment.apiUrl}/resiliation`, {
+      raison: this.resiliationRaison,
+      commentaire: this.resiliationCommentaire || null
+    }).subscribe({
+      next: () => {
+        this.resiliationLoading = false;
+        this.showResiliationModal = false;
+        this.resiliationSuccess = '✅ Votre demande a été enregistrée. L\'équipe Repando la traitera dans les meilleurs délais.';
+        this.loadResiliation();
+        setTimeout(() => this.resiliationSuccess = '', 8000);
+      },
+      error: (e) => {
+        this.resiliationLoading = false;
+        this.resiliationError = e?.error?.error ?? 'Erreur lors de l\'envoi';
+      }
+    });
+  }
+
+  openRetractModal(): void {
+    this.retractCommentaire = '';
+    this.retractError = '';
+    this.showRetractModal = true;
+  }
+
+  submitRetract(): void {
+    this.retractLoading = true;
+    this.retractError = '';
+    this.http.post<any>(`${environment.apiUrl}/resiliation/retracter`, {
+      commentaire: this.retractCommentaire || null
+    }).subscribe({
+      next: () => {
+        this.retractLoading = false;
+        this.showRetractModal = false;
+        this.demandeResiliationActive = null;
+        this.resiliationSuccess = '↩️ Votre demande de résiliation a été annulée.';
+        setTimeout(() => this.resiliationSuccess = '', 6000);
+      },
+      error: (e) => {
+        this.retractLoading = false;
+        this.retractError = e?.error?.error ?? 'Erreur';
+      }
+    });
   }
 }
 

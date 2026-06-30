@@ -46,6 +46,12 @@
     </button>
     <button class="atab" [class.active]="tab==='utilisateurs'" (click)="tab='utilisateurs'; loadUtilisateurs()">👥 Utilisateurs</button>
     <button class="atab" [class.active]="tab==='reclamations'" (click)="tab='reclamations'; loadReclamations()">🚩 Signalements</button>
+    <button class="atab" [class.active]="tab==='resiliations'" (click)="tab='resiliations'; loadResiliations()">
+      🗑️ Résiliations
+      @if (filteredResiliations && filteredResiliations.length > 0 && !resiliationFilter) {
+        <span class="badge-count">{{ resiliations.length }}</span>
+      }
+    </button>
     <button class="atab" [class.active]="tab==='stats'" (click)="tab='stats'; loadStats()">📊 Stats</button>
     <button class="atab" [class.active]="tab==='parametres'" (click)="tab='parametres'; loadSettings()">⚙️ Paramètres</button>
   </div>
@@ -220,6 +226,20 @@
                 <span>🔧 {{ r.nbReparations }} réparations</span>
                 <span>📅 {{ r.createdAt | date:'dd/MM/yy' }}</span>
               </div>
+              <!-- RC Pro badge -->
+              @if (r.rcProStatut) {
+                <div class="rep-rcpro-row">
+                  @if (r.rcProStatut === 'VALIDEE') {
+                    <span class="rcpro-badge rcpro-badge--ok">🛡️ RC Pro validée</span>
+                  } @else if (r.rcProStatut === 'EN_VERIFICATION') {
+                    <span class="rcpro-badge rcpro-badge--pending">⏳ RC Pro en vérification</span>
+                  } @else if (r.rcProStatut === 'MANQUANTE') {
+                    <span class="rcpro-badge rcpro-badge--missing">⚠️ RC Pro manquante</span>
+                  } @else if (r.rcProStatut === 'REFUSEE') {
+                    <span class="rcpro-badge rcpro-badge--refused">❌ RC Pro refusée</span>
+                  }
+                </div>
+              }
             } @else {
               <div class="rep-stats">
                 <span style="color:#94a3b8;">Inscrit le {{ r.createdAt | date:'dd/MM/yy' }}</span>
@@ -389,6 +409,81 @@
                 {{ r.reponseAdmin ? '✏️ Modifier la réponse' : '💬 Répondre' }}
               </button>
             </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===================== TAB: RÉSILIATIONS ===================== -->
+  @if (tab === 'resiliations') {
+    <div class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="filter-chips">
+            <button class="fchip" [class.active]="resiliationFilter===''" (click)="resiliationFilter=''; loadResiliations()">Toutes</button>
+            <button class="fchip fchip--amber" [class.active]="resiliationFilter==='EN_ATTENTE'" (click)="resiliationFilter='EN_ATTENTE'; loadResiliations()">⏳ En attente</button>
+            <button class="fchip fchip--green" [class.active]="resiliationFilter==='RETRACTEE'" (click)="resiliationFilter='RETRACTEE'; loadResiliations()">↩️ Rétractées</button>
+            <button class="fchip fchip--red" [class.active]="resiliationFilter==='TRAITEE'" (click)="resiliationFilter='TRAITEE'; loadResiliations()">✅ Traitées</button>
+          </div>
+        </div>
+      </div>
+
+      @if (resiliationSuccess) {
+        <div class="modal-success" style="margin-bottom:12px">{{ resiliationSuccess }}</div>
+      }
+
+      @if (resiliationsLoading) {
+        <div class="loading-row"><div class="spinner"></div><span>Chargement…</span></div>
+      }
+      @if (!resiliationsLoading && filteredResiliations.length === 0) {
+        <div class="empty-admin"><div style="font-size:40px">🗑️</div><div class="empty-admin-title">Aucune demande de résiliation</div></div>
+      }
+
+      <div class="resil-admin-list">
+        @for (r of filteredResiliations; track r.id) {
+          <div class="resil-admin-card" [class.resil-card--pending]="r.statut==='EN_ATTENTE'" [class.resil-card--retracted]="r.statut==='RETRACTEE'" [class.resil-card--done]="r.statut==='TRAITEE'">
+            <div class="rac-header">
+              <div class="rac-user">
+                <div class="rac-avatar">{{ r.userNom?.charAt(0)?.toUpperCase() }}</div>
+                <div>
+                  <div class="rac-user-nom">{{ r.userNom }}</div>
+                  <div class="rac-user-email">{{ r.userEmail }}</div>
+                  <div class="rac-user-role">{{ r.userRole }}</div>
+                </div>
+              </div>
+              <div class="rac-meta-right">
+                <span class="rac-statut-badge"
+                      [class.rac-statut--pending]="r.statut==='EN_ATTENTE'"
+                      [class.rac-statut--retracted]="r.statut==='RETRACTEE'"
+                      [class.rac-statut--done]="r.statut==='TRAITEE'">
+                  {{ r.statut === 'EN_ATTENTE' ? '⏳ En attente' : r.statut === 'RETRACTEE' ? '↩️ Rétractée' : '✅ Traitée' }}
+                </span>
+                <span class="rac-date">📅 {{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+            <div class="rac-body">
+              <div class="rac-raison-row"><span class="rac-label">Raison :</span> <span class="rac-value">{{ r.raison }}</span></div>
+              @if (r.commentaire) {
+                <div class="rac-comment-row"><span class="rac-label">Commentaire :</span> <em class="rac-value">{{ r.commentaire }}</em></div>
+              }
+              @if (r.statut === 'RETRACTEE') {
+                <div class="rac-retract-block">
+                  <span class="rac-label">↩️ Rétractée le {{ r.retracteeAt | date:'dd/MM/yyyy' }}</span>
+                  @if (r.commentaireRetractation) {
+                    <em class="rac-value"> — "{{ r.commentaireRetractation }}"</em>
+                  }
+                </div>
+              }
+            </div>
+            @if (r.statut === 'EN_ATTENTE') {
+              <div class="rac-footer">
+                <button class="btn-traiter-resil" [disabled]="resiliationTraiterLoading === r.id"
+                        (click)="traiterResiliation(r.id)">
+                  @if (resiliationTraiterLoading === r.id) { ⏳ … } @else { ✅ Marquer traitée }
+                </button>
+              </div>
+            }
           </div>
         }
       </div>

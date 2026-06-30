@@ -222,5 +222,119 @@
     }
 
   }
+
+  <!-- ═══ ZONE RÉSILIATION ═══ -->
+  @if (user) {
+    <div class="profil-resiliation-zone">
+
+      <!-- Feedback résiliation -->
+      @if (resiliationSuccess) {
+        <div class="profil-banner profil-banner--success">{{ resiliationSuccess }}</div>
+      }
+
+      <!-- Si demande active -->
+      @if (demandeResiliationActive) {
+        <div class="resiliation-active-card">
+          <div class="rac-icon">⚠️</div>
+          <div class="rac-content">
+            <div class="rac-title">Demande de résiliation en attente</div>
+            <div class="rac-raison">Raison : <strong>{{ demandeResiliationActive.raison }}</strong></div>
+            @if (demandeResiliationActive.commentaire) {
+              <div class="rac-comment">{{ demandeResiliationActive.commentaire }}</div>
+            }
+            <div class="rac-date">Envoyée le {{ demandeResiliationActive.createdAt | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <button class="btn-retract" (click)="openRetractModal()">↩️ Rétracter ma demande</button>
+        </div>
+      } @else {
+        <button class="btn-resiliation-link" (click)="openResiliationModal()">
+          🗑️ Demander la résiliation de mon compte
+        </button>
+      }
+    </div>
+  }
+
 </div>
 
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL RÉSILIATION                        -->
+<!-- ═══════════════════════════════════════ -->
+@if (showResiliationModal) {
+  <div class="resil-overlay" (click)="showResiliationModal=false">
+    <div class="resil-modal" (click)="$event.stopPropagation()">
+      <div class="resil-modal__header">
+        <div class="resil-modal__icon">🗑️</div>
+        <div>
+          <h2 class="resil-modal__title">Demande de résiliation</h2>
+          <p class="resil-modal__sub">Cette demande sera examinée par l'équipe Repando.</p>
+        </div>
+        <button class="resil-modal__close" (click)="showResiliationModal=false">✕</button>
+      </div>
+
+      <div class="resil-modal__body">
+        <label class="resil-label">Raison <span style="color:var(--red,#ef4444)">*</span></label>
+        <select class="resil-select" [(ngModel)]="resiliationRaison">
+          <option value="">— Sélectionnez une raison —</option>
+          @for (r of RESILIATION_RAISONS; track r) {
+            <option [value]="r">{{ r }}</option>
+          }
+        </select>
+
+        <label class="resil-label" style="margin-top:16px">Commentaire (facultatif)</label>
+        <textarea class="resil-textarea" [(ngModel)]="resiliationCommentaire" rows="3"
+                  placeholder="Précisez si vous le souhaitez…"></textarea>
+
+        @if (resiliationError) {
+          <div class="resil-error">{{ resiliationError }}</div>
+        }
+
+        <div class="resil-warning">
+          ⚠️ Cette demande n'entraîne pas la suppression immédiate de votre compte. L'équipe Repando vous contactera pour finaliser la procédure.
+        </div>
+      </div>
+
+      <div class="resil-modal__footer">
+        <button class="resil-btn-cancel" (click)="showResiliationModal=false">Annuler</button>
+        <button class="resil-btn-confirm" [disabled]="resiliationLoading || !resiliationRaison"
+                (click)="submitResiliation()">
+          @if (resiliationLoading) { ⏳ Envoi… } @else { Envoyer ma demande }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL RÉTRACTATION                       -->
+<!-- ═══════════════════════════════════════ -->
+@if (showRetractModal) {
+  <div class="resil-overlay" (click)="showRetractModal=false">
+    <div class="resil-modal" (click)="$event.stopPropagation()">
+      <div class="resil-modal__header">
+        <div class="resil-modal__icon">↩️</div>
+        <div>
+          <h2 class="resil-modal__title">Rétracter ma demande</h2>
+          <p class="resil-modal__sub">Votre compte restera actif.</p>
+        </div>
+        <button class="resil-modal__close" (click)="showRetractModal=false">✕</button>
+      </div>
+
+      <div class="resil-modal__body">
+        <label class="resil-label">Commentaire (facultatif)</label>
+        <textarea class="resil-textarea" [(ngModel)]="retractCommentaire" rows="3"
+                  placeholder="Pourquoi changez-vous d'avis ?"></textarea>
+        @if (retractError) {
+          <div class="resil-error">{{ retractError }}</div>
+        }
+      </div>
+
+      <div class="resil-modal__footer">
+        <button class="resil-btn-cancel" (click)="showRetractModal=false">Annuler</button>
+        <button class="resil-btn-confirm resil-btn-confirm--green" [disabled]="retractLoading"
+                (click)="submitRetract()">
+          @if (retractLoading) { ⏳ … } @else { ↩️ Confirmer la rétractation }
+        </button>
+      </div>
+    </div>
+  </div>
+}
