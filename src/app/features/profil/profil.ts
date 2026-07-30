@@ -11,6 +11,7 @@ import {
   UpdateProfileRequest, UpdateReparateurProfileRequest, ApiResponse
 } from '../../core/models/models';
 import { environment } from '../../../environments/environment';
+import { ReparateurService } from '../../core/services/reparateur';
 
 interface RepProfile {
   id: string;
@@ -31,6 +32,9 @@ interface RepProfile {
   isVerified: boolean;
   isFounder: boolean;
   founderNumber?: number;
+  rcProStatut?: string;
+  rcProUrl?: string;
+  rcProUploadedAt?: string;
 }
 
 @Component({
@@ -42,6 +46,7 @@ interface RepProfile {
 })
 export class ProfilComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('rcProInput') rcProInput!: ElementRef<HTMLInputElement>;
 
   user: UserDto | null = null;
   repProfile: RepProfile | null = null;
@@ -72,6 +77,7 @@ export class ProfilComponent implements OnInit {
   saveSuccess = '';
   saveError = '';
   avatarLoading = false;
+  rcProLoading = false;
   showPasswordChange = false;
   activeTab: 'infos' | 'metier' | 'securite' = 'infos';
 
@@ -80,7 +86,11 @@ export class ProfilComponent implements OnInit {
   readonly allAppareilTypes = Object.keys(TypeAppareil) as TypeAppareil[];
   readonly UserRole = UserRole;
 
-  constructor(public auth: AuthService, private http: HttpClient) {}
+  constructor(
+    public auth: AuthService,
+    private http: HttpClient,
+    private reparateurService: ReparateurService
+  ) {}
 
   private loadRepProfile(): void {
     this.http.get<any>(`${environment.apiUrl}/reparateurs/me`).subscribe({
@@ -351,7 +361,71 @@ export class ProfilComponent implements OnInit {
       }
     });
   }
+
+  openRcProDialog(): void {
+    this.rcProInput?.nativeElement.click();
+  }
+
+  onRcProSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      this.saveError = 'Format non supporte (PDF, JPG ou PNG uniquement)';
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      this.saveError = 'Fichier trop volumineux (max 10 Mo)';
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.rcProLoading = true;
+      this.saveError = '';
+      this.reparateurService.uploadRcPro(reader.result as string).subscribe({
+        next: (res) => {
+          this.rcProLoading = false;
+          if (this.repProfile) {
+            this.repProfile = {
+              ...this.repProfile,
+              rcProStatut: 'EN_VERIFICATION',
+              rcProUploadedAt: new Date().toISOString()
+            };
+          }
+          this.saveSuccess = res?.message ?? 'Attestation RC Pro envoyee. En cours de validation.';
+          setTimeout(() => this.saveSuccess = '', 4000);
+          this.loadRepProfile();
+        },
+        error: (e) => {
+          this.rcProLoading = false;
+          this.saveError = e?.error?.error ?? 'Erreur lors de l\'upload RC Pro';
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  getRcProStatutLabel(statut?: string): string {
+    switch (statut) {
+      case 'VALIDE':
+        return 'Validee';
+      case 'REFUSE':
+        return 'Refusee';
+      case 'EN_VERIFICATION':
+        return 'En cours de validation';
+      default:
+        return 'Non fournie';
+    }
+  }
+
+  getResolvedRcProUrl(): string | null {
+    return resolveStaticUrl(this.repProfile?.rcProUrl) ?? this.repProfile?.rcProUrl ?? null;
+  }
 }
-
-
-

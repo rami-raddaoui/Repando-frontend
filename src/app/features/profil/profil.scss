@@ -193,6 +193,89 @@
   &.selected { background: #3b82f6; color: #fff; border-color: #3b82f6; }
 }
 
+/* ─── RC PRO ─────────────────────────────────────────────── */
+.profil-rcpro-card {
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.profil-rcpro-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.profil-rcpro-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.profil-rcpro-status {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #e2e8f0;
+  color: #475569;
+
+  &.is-valid {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  &.is-pending {
+    background: #fef3c7;
+    color: #b45309;
+  }
+
+  &.is-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+.profil-rcpro-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  margin-bottom: 12px;
+
+  span {
+    font-size: 12px;
+    color: #64748b;
+  }
+}
+
+.profil-rcpro-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.profil-rcpro-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.profil-btn-save--secondary {
+  background: #fff;
+  color: #1e40af;
+  border: 1.5px solid #bfdbfe;
+  box-shadow: none;
+}
+
 /* ─── SAVE BUTTON ────────────────────────────────────────── */
 .profil-form-actions { display: flex; justify-content: flex-end; }
 .profil-btn-save {

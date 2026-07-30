@@ -136,6 +136,33 @@
               </div>
             }
           </div>
+
+          <div class="profil-rcpro-card">
+            <div class="profil-rcpro-head">
+              <span class="profil-rcpro-title">Attestation RC Pro</span>
+              <span class="profil-rcpro-status" [class.is-valid]="repProfile.rcProStatut === 'VALIDE'" [class.is-pending]="repProfile.rcProStatut === 'EN_VERIFICATION'" [class.is-rejected]="repProfile.rcProStatut === 'REFUSE'">
+                {{ getRcProStatutLabel(repProfile.rcProStatut) }}
+              </span>
+            </div>
+
+            <div class="profil-rcpro-meta">
+              @if (repProfile.rcProUploadedAt) {
+                <span>Dernier envoi : {{ repProfile.rcProUploadedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+              } @else {
+                <span>Aucune attestation transmise pour le moment.</span>
+              }
+              @if (repProfile.rcProUrl) {
+                <a class="profil-rcpro-link" [href]="getResolvedRcProUrl()" target="_blank" rel="noopener noreferrer">Voir le document actuel</a>
+              }
+            </div>
+
+            <div class="profil-rcpro-actions">
+              <button class="profil-btn-save profil-btn-save--secondary" (click)="openRcProDialog()" [disabled]="rcProLoading">
+                @if (rcProLoading) { ⏳ Envoi… } @else { 📎 {{ repProfile.rcProUrl ? 'Mettre à jour l\'attestation' : 'Ajouter une attestation' }} }
+              </button>
+              <input #rcProInput type="file" accept="application/pdf,image/png,image/jpeg" style="display:none" (change)="onRcProSelected($event)" />
+            </div>
+          </div>
         }
 
         <div class="profil-form-grid">

@@ -197,7 +197,16 @@ export class AdminComponent implements OnInit {
     this.repsLoading = true;
     this.http.get<any>(`${environment.apiUrl}/admin/reparateurs/all?pageSize=200`)
       .subscribe({
-        next: r => { this.allReparateurs = r.data?.items ?? []; this.repsLoading = false; },
+        next: r => {
+          this.allReparateurs = (r.data?.items ?? []).map((item: any) => ({
+            ...item,
+            rcProStatut: this.normalizeRcProStatut(item?.rcProStatut ?? item?.RcProStatut),
+            rcProUrl: item?.rcProUrl ?? item?.RcProUrl ?? null,
+            rcProUploadedAt: item?.rcProUploadedAt ?? item?.RcProUploadedAt ?? null,
+            rcProRejectReason: item?.rcProRejectReason ?? item?.RcProRejectReason ?? null,
+          }));
+          this.repsLoading = false;
+        },
         error: () => { this.repsLoading = false; }
       });
   }
@@ -639,4 +648,98 @@ export class AdminComponent implements OnInit {
   pageRange(total: number): number[] {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
+
+  // ── RC Pro ───────────────────────────────────────────────────
+  rcProModal: any = null;
+  rcProLoading = false;
+  rcProActionLoading = false;
+  rcProError = '';
+  showRcProRejectReason = false;
+  rcProRejectReason = '';
+
+  openRcProModal(reparateur: any): void {
+    this.rcProModal = {
+      ...reparateur,
+      rcProUrl: this.getResolvedRcProUrl(reparateur?.rcProUrl ?? reparateur?.RcProUrl),
+    };
+    this.rcProError = '';
+    this.rcProActionLoading = false;
+    this.showRcProRejectReason = false;
+    this.rcProRejectReason = '';
+    this.rcProLoading = false;
+  }
+
+  isReparateurAlreadyAssigned(repId: string): boolean {
+    return !!this.affectExistingMatchings.find(m =>
+      m.reparateurId === repId && m.statut !== 'ANNULE' && m.statut !== 'REFUSE'
+    );
+  }
+
+  shouldShowRcProReviewButton(reparateur: any): boolean {
+    return this.normalizeRcProStatut(reparateur?.rcProStatut ?? reparateur?.RcProStatut) === 'EN_VERIFICATION';
+  }
+
+  private normalizeRcProStatut(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim().toUpperCase();
+    return normalized || null;
+  }
+
+  getResolvedRcProUrl(url?: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return `${this.staticUrl}${url}`;
+  }
+
+  closeRcProModal(): void {
+    this.rcProModal = null;
+    this.rcProError = '';
+    this.showRcProRejectReason = false;
+    this.rcProRejectReason = '';
+  }
+
+  approuveRcPro(): void {
+    if (!this.rcProModal) return;
+    this.rcProActionLoading = true;
+    this.rcProError = '';
+    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/reparateurs/${this.rcProModal.id}/rc-pro/approuver`, {})
+      .subscribe({
+        next: () => {
+          this.rcProActionLoading = false;
+          // Mettre à jour le statut dans la liste
+          const r = this.allReparateurs.find(x => x.id === this.rcProModal.id);
+          if (r) r.rcProStatut = 'VALIDEE';
+          this.closeRcProModal();
+        },
+        error: (e) => {
+          this.rcProActionLoading = false;
+          this.rcProError = e?.error?.error ?? 'Erreur lors de l\'approbation';
+        }
+      });
+  }
+
+  rejetterRcPro(): void {
+    if (!this.rcProModal || !this.rcProRejectReason.trim()) return;
+    this.rcProActionLoading = true;
+    this.rcProError = '';
+    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/reparateurs/${this.rcProModal.id}/rc-pro/rejeter`, {
+      raison: this.rcProRejectReason
+    }).subscribe({
+      next: () => {
+        this.rcProActionLoading = false;
+        // Mettre à jour le statut dans la liste
+        const r = this.allReparateurs.find(x => x.id === this.rcProModal.id);
+        if (r) r.rcProStatut = 'REFUSEE';
+        this.closeRcProModal();
+      },
+      error: (e) => {
+        this.rcProActionLoading = false;
+        this.rcProError = e?.error?.error ?? 'Erreur lors du rejet';
+      }
+    });
+  }
+
+  // ── Autres helpers ───────────────────────────────────────────
 }

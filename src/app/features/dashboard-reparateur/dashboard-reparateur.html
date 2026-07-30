@@ -54,8 +54,9 @@
     </div>
   }
 
+  @if (dashboard && isVerified) {
   <!-- BANNER: RC PRO MANQUANTE -->
-  @if (dashboard && rcProStatut === 'MANQUANTE') {
+  @if (rcProStatut === 'MANQUANTE') {
     <div class="rcpro-banner rcpro-banner--missing">
       <div class="rcpro-banner__glow"></div>
       <div class="rcpro-banner__inner">
@@ -96,7 +97,7 @@
   }
 
   <!-- BANNER: RC PRO EN VÉRIFICATION -->
-  @if (dashboard && rcProStatut === 'EN_VERIFICATION') {
+  @if (rcProStatut === 'EN_VERIFICATION') {
     <div class="rcpro-banner rcpro-banner--pending">
       <div class="rcpro-banner__inner">
         <div class="rcpro-banner__icon-wrap">
@@ -124,6 +125,71 @@
         </div>
       </div>
     </div>
+  }
+
+  <!-- BANNER: RC PRO VALIDÉE -->
+  @if (rcProStatut === 'VALIDEE') {
+    <div class="rcpro-banner rcpro-banner--success">
+      <div class="rcpro-banner__glow rcpro-banner__glow--success"></div>
+      <div class="rcpro-banner__inner rcpro-banner__inner--success-compact">
+        <div class="rcpro-banner__icon-wrap">
+          <div class="rcpro-banner__icon rcpro-banner__icon--success">✅</div>
+          <div class="rcpro-banner__halo rcpro-banner__halo--success"></div>
+        </div>
+        <div class="rcpro-banner__content">
+          <div class="rcpro-banner__eyebrow">Badge confiance activé</div>
+          <div class="rcpro-banner__title">RC Pro validée par Repando 🎉</div>
+          <div class="rcpro-banner__text">
+            Votre attestation a été approuvée. Le badge RC Pro est maintenant visible sur votre profil et rassure vos clients dès le premier contact.
+          </div>
+          <div class="rcpro-banner__chips">
+            <span class="rcpro-chip rcpro-chip--green">✓ RC Pro validée</span>
+            <span class="rcpro-chip rcpro-chip--blue">🛡️ Badge profil activé</span>
+            <span class="rcpro-chip rcpro-chip--gold">⭐ Plus de confiance</span>
+          </div>
+        </div>
+        <div class="rcpro-banner__status rcpro-banner__status--success">
+          <div class="rcpro-status-badge rcpro-status-badge--success">✅ Attestation approuvée</div>
+          <div class="rcpro-banner__success-note">Visible sur votre profil public</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- BANNER: RC PRO REFUSÉE -->
+  @if (rcProStatut === 'REFUSEE') {
+    <div class="rcpro-banner rcpro-banner--error">
+      <div class="rcpro-banner__inner">
+        <div class="rcpro-banner__icon-wrap">
+          <div class="rcpro-banner__icon rcpro-banner__icon--error">❌</div>
+        </div>
+        <div class="rcpro-banner__content">
+          <div class="rcpro-banner__title">Attestation RC Pro refusée</div>
+          <div class="rcpro-banner__text">
+            Votre attestation RC Professionnelle n'a pas pu être validée. Cela peut être dû à un format invalide,
+            une expiration de la couverture, ou des informations incohérentes.
+          </div>
+          <div class="rcpro-banner__chips">
+            <span class="rcpro-chip rcpro-chip--red">❌ Refusée</span>
+            <span class="rcpro-chip rcpro-chip--amber">📧 Consultez votre email pour les détails</span>
+          </div>
+          <div class="rcpro-banner__reject-reason">
+            Vous pouvez importer une nouvelle attestation ci-dessus ou <strong>contacter le support</strong>.
+          </div>
+        </div>
+        <div class="rcpro-banner__action">
+          <label class="btn-rcpro-upload btn-rcpro-upload--error" [class.btn-rcpro-upload--loading]="rcProUploading">
+            @if (rcProUploading) {
+              <span class="rcpro-spinner"></span> Nouvel upload…
+            } @else {
+              📎 Importer une nouvelle attestation
+            }
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onRcProFileChange($event)" hidden [disabled]="rcProUploading" />
+          </label>
+        </div>
+      </div>
+    </div>
+  }
   }
 
   <!-- STATS -->
@@ -603,4 +669,3 @@
     </div>
   </div>
 }
-

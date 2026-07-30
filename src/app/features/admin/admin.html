@@ -248,6 +248,9 @@
             <div class="rep-actions">
               @if (r.profilComplet) {
                 <button class="btn-rep-detail" (click)="openRepDetail(r.id)">Consulter</button>
+                @if (shouldShowRcProReviewButton(r)) {
+                  <button class="btn-rcpro-review" (click)="openRcProModal(r)">👁️ Voir / Approuver RC Pro</button>
+                }
                 @if (!r.isVerified && r.isActive) {
                   <button class="btn-valider" (click)="validerReparateur(r.id)">✅ Valider</button>
                   <button class="btn-suspendre" (click)="suspendreReparateur(r.id)">❌ Refuser</button>
@@ -1049,10 +1052,10 @@
           <div class="no-reps">Aucun réparateur disponible.</div>
         }
         <div class="rep-select-list">
-          @for (r of reparateursDispo; track r.id) {
-            <!-- Exclure les réparateurs déjà affectés et actifs -->
-            @if (!affectExistingMatchings.find(m => m.reparateurId === r.id && m.statut !== 'ANNULE' && m.statut !== 'REFUSE')) {
-              <div class="rep-select-item" [class.selected]="selectedReps.has(r.id)" (click)="toggleRep(r.id)">
+           @for (r of reparateursDispo; track r.id) {
+             <!-- Exclure les réparateurs déjà affectés et actifs -->
+             @if (!isReparateurAlreadyAssigned(r.id)) {
+               <div class="rep-select-item" [class.selected]="selectedReps.has(r.id)" (click)="toggleRep(r.id)">
                 <div class="rsi-check">{{ selectedReps.has(r.id) ? '✓' : '' }}</div>
                 <div class="rsi-avatar">{{ r.nomAffiche[0] }}</div>
                 <div class="rsi-info">
@@ -1084,6 +1087,86 @@
   </div>
 }
 
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--              MODAL: APPROUVER RC PRO                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (rcProModal) {
+  <div class="modal-overlay" (click)="closeRcProModal()">
+    <div class="modal-box modal-box--rcpro" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">👁️ Attestation RC Pro</div>
+          <div class="modal-sub">{{ rcProModal.nom }} — {{ rcProModal.email }}</div>
+        </div>
+        <button class="modal-close" (click)="closeRcProModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Document viewer -->
+        @if (rcProLoading) {
+          <div class="loading-row"><div class="spinner"></div> Chargement du document…</div>
+        }
+        @if (!rcProLoading && rcProModal.rcProUrl) {
+          <div class="rcpro-viewer">
+            @if (rcProModal.rcProUrl.endsWith('.pdf')) {
+              <iframe [src]="rcProModal.rcProUrl" class="rcpro-iframe"></iframe>
+            } @else {
+              <img [src]="rcProModal.rcProUrl" class="rcpro-image" alt="RC Pro attestation" />
+            }
+          </div>
+          <div class="rcpro-meta">
+            <span>📅 Uploadé : {{ rcProModal.rcProUploadedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+            <a [href]="rcProModal.rcProUrl" target="_blank" rel="noopener noreferrer" class="rcpro-download-link">
+              📥 Télécharger
+            </a>
+          </div>
+        }
+        @if (!rcProLoading && !rcProModal.rcProUrl) {
+          <div class="modal-error" style="margin-bottom:12px">Document RC Pro introuvable pour ce réparateur.</div>
+        }
 
+        <!-- Actions -->
+        <div class="rcpro-actions-section">
+          <div class="rcpro-action-title">Décision</div>
+          <div class="rcpro-action-btns">
+            <button class="btn-rcpro-approve"
+                    [disabled]="rcProLoading || rcProActionLoading"
+                    (click)="approuveRcPro()">
+              ✅ {{ rcProActionLoading ? 'Validation…' : 'Approuver' }}
+            </button>
+            <button class="btn-rcpro-reject"
+                    [disabled]="rcProLoading || rcProActionLoading || showRcProRejectReason"
+                    (click)="showRcProRejectReason=true">
+              ❌ {{ rcProActionLoading ? 'Rejet…' : 'Refuser' }}
+            </button>
+          </div>
+        </div>
 
+        <!-- Raison rejet (si actif) -->
+        @if (showRcProRejectReason) {
+          <div class="rcpro-reject-form">
+            <label class="rcpro-reject-label">Raison du rejet <span class="required">*</span></label>
+            <textarea class="rcpro-reject-textarea" [(ngModel)]="rcProRejectReason" rows="3"
+                      placeholder="Décrivez pourquoi cette attestation est refusée (format invalide, expiration, etc.)"></textarea>
+            <div class="rcpro-reject-actions">
+              <button class="btn-cancel-sm" (click)="showRcProRejectReason=false; rcProRejectReason=''">Annuler</button>
+              <button class="btn-confirm-reject-sm"
+                      [disabled]="!rcProRejectReason.trim() || rcProActionLoading"
+                      (click)="rejetterRcPro()">
+                ❌ Confirmer le rejet
+              </button>
+            </div>
+          </div>
+        }
 
+        @if (rcProError) {
+          <div class="modal-error" style="margin-top:12px">{{ rcProError }}</div>
+        }
+      </div>
+      <div class="modal-footer">
+        @if (!showRcProRejectReason) {
+          <button class="btn-cancel" (click)="closeRcProModal()">Fermer</button>
+        }
+      </div>
+     </div>
+    </div>
+  }

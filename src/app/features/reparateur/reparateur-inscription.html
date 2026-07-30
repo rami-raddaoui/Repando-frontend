@@ -20,16 +20,34 @@
       <h2 class="lr-title">Créer votre compte réparateur</h2>
       <p class="lr-sub">Étape 1/2 — Informations personnelles</p>
 
-      @if (error) { <div class="alert-error">{{ error }}</div> }
-
-      <form [formGroup]="accountForm" (ngSubmit)="submitAccount()">
+      <form [formGroup]="accountForm" (ngSubmit)="submitAccount()" novalidate>
         <div class="form-row">
-          <div class="fg"><label>Prénom *</label><input formControlName="prenom" placeholder="Mohammed"/></div>
-          <div class="fg"><label>Nom *</label><input formControlName="nom" placeholder="Khalid"/></div>
+          <div class="fg">
+            <label>Prénom *</label>
+            <input formControlName="prenom" placeholder="Mohammed" [class.is-invalid]="isFieldInvalid(accountForm, 'prenom')"/>
+            @if (isFieldInvalid(accountForm, 'prenom')) { <span class="field-error">{{ fieldError(accountForm, 'prenom') }}</span> }
+          </div>
+          <div class="fg">
+            <label>Nom *</label>
+            <input formControlName="nom" placeholder="Khalid" [class.is-invalid]="isFieldInvalid(accountForm, 'nom')"/>
+            @if (isFieldInvalid(accountForm, 'nom')) { <span class="field-error">{{ fieldError(accountForm, 'nom') }}</span> }
+          </div>
         </div>
-        <div class="fg"><label>Email *</label><input type="email" formControlName="email" placeholder="votre@email.com"/></div>
-        <div class="fg"><label>Téléphone</label><input formControlName="telephone" placeholder="+33 6 ..."/></div>
-        <div class="fg"><label>Mot de passe * (8 min.)</label><input type="password" formControlName="password" placeholder="••••••••"/></div>
+        <div class="fg">
+          <label>Email *</label>
+          <input type="email" formControlName="email" placeholder="votre@email.com" [class.is-invalid]="isFieldInvalid(accountForm, 'email')"/>
+          @if (isFieldInvalid(accountForm, 'email')) { <span class="field-error">{{ fieldError(accountForm, 'email') }}</span> }
+        </div>
+        <div class="fg">
+          <label>Téléphone *</label>
+          <input formControlName="telephone" placeholder="+33 6 ..." autocomplete="tel" [class.is-invalid]="isFieldInvalid(accountForm, 'telephone')"/>
+          @if (isFieldInvalid(accountForm, 'telephone')) { <span class="field-error">{{ fieldError(accountForm, 'telephone') }}</span> }
+        </div>
+        <div class="fg">
+          <label>Mot de passe * (8 min.)</label>
+          <input type="password" formControlName="password" placeholder="••••••••" [class.is-invalid]="isFieldInvalid(accountForm, 'password')"/>
+          @if (isFieldInvalid(accountForm, 'password')) { <span class="field-error">{{ fieldError(accountForm, 'password') }}</span> }
+        </div>
         <button type="submit" class="btn-join" [disabled]="accountForm.invalid || loading">
           {{ loading ? 'Création...' : 'Continuer →' }}
         </button>
@@ -57,40 +75,65 @@
 
       @if (error) { <div class="alert-error">{{ error }}</div> }
 
-      <form [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+      <form [formGroup]="profileForm" (ngSubmit)="submitProfile()" novalidate>
         <div class="form-row">
-          <div class="fg"><label>SIRET * (14 chiffres)</label><input formControlName="siret" placeholder="12345678901234"/></div>
-          <div class="fg"><label>N° QualiRépar</label><input formControlName="numeroQualirepar" placeholder="QR-XXXXX"/></div>
+          <div class="fg">
+            <label>SIRET * (14 chiffres)</label>
+            <input formControlName="siret" placeholder="12345678901234" inputmode="numeric" [class.is-invalid]="isFieldInvalid(profileForm, 'siret')"/>
+            @if (isFieldInvalid(profileForm, 'siret')) { <span class="field-error">{{ fieldError(profileForm, 'siret') }}</span> }
+          </div>
+          <div class="fg">
+            <label>N° QualiRépar</label>
+            <input formControlName="numeroQualirepar" placeholder="QR-XXXXX"/>
+            <span class="field-hint">Optionnel</span>
+          </div>
         </div>
-        <div class="fg"><label>Années d'expérience *</label><input type="number" formControlName="anneesExperience" min="0"/></div>
-        <div class="fg"><label>Présentation</label><textarea formControlName="bio" rows="3" placeholder="Décrivez votre expertise, vos marques de prédilection..."></textarea></div>
-        <div class="fg"><label>Adresse atelier *</label><input formControlName="adresseAtelier" placeholder="123 rue de la République"/></div>
+        <div class="fg">
+          <label>Présentation</label>
+          <textarea formControlName="bio" rows="3" placeholder="Décrivez votre expertise, vos marques de prédilection..."></textarea>
+          <span class="field-hint">Optionnel</span>
+        </div>
+        <div class="fg">
+          <label>Adresse *</label>
+          <input formControlName="adresseAtelier" placeholder="123 rue de la République" [class.is-invalid]="isFieldInvalid(profileForm, 'adresseAtelier')"/>
+          @if (isFieldInvalid(profileForm, 'adresseAtelier')) { <span class="field-error">{{ fieldError(profileForm, 'adresseAtelier') }}</span> }
+        </div>
         <div class="form-row">
-          <div class="fg small"><label>Code postal *</label><input formControlName="codePostal" placeholder="75015"/></div>
-          <div class="fg"><label>Ville *</label><input formControlName="ville" readonly/></div>
+          <div class="fg small">
+            <label>Code postal *</label>
+            <input formControlName="codePostal" placeholder="75015" inputmode="numeric" maxlength="5" [class.is-invalid]="isFieldInvalid(profileForm, 'codePostal') || !!idfError"/>
+            @if (isFieldInvalid(profileForm, 'codePostal')) { <span class="field-error">{{ fieldError(profileForm, 'codePostal') }}</span> }
+            @if (!isFieldInvalid(profileForm, 'codePostal') && idfError) { <span class="field-error">{{ idfError }}</span> }
+          </div>
+          <div class="fg">
+            <label>Ville *</label>
+            <input formControlName="ville" readonly [class.is-invalid]="isFieldInvalid(profileForm, 'ville') || needsCommuneSelection()"/>
+            @if (cityError()) { <span class="field-error">{{ cityError() }}</span> }
+          </div>
         </div>
-        <div class="fg"><label>Rayon d'intervention (km) *</label><input type="number" formControlName="rayonInterventionKm" min="1"/></div>
 
         <div *ngIf="postalMatches.length > 1" class="fg">
           <label>Commune</label>
-          <select (change)="selectCommuneByEvent($event)">
+          <select (change)="selectCommuneByEvent($event)" [class.is-invalid]="needsCommuneSelection()">
+            <option value="" selected disabled>Choisissez votre commune</option>
             <option *ngFor="let m of postalMatches" [value]="m.nom">{{ m.nom }}</option>
           </select>
+          @if (needsCommuneSelection()) { <span class="field-error">Choisissez votre commune.</span> }
         </div>
 
         <div class="fg">
           <label>Spécialités * (choisissez au moins une)</label>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
+          <div class="specialites-grid" [class.is-invalid]="specialitesError() !== ''">
             @for (a of appareilsList; track a) {
-              <div style="padding:10px;text-align:center;border:1.5px solid;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s"
-                [style.border-color]="isSelected(a) ? 'var(--blue)' : 'var(--border)'"
-                [style.background]="isSelected(a) ? 'var(--blue-pale)' : 'white'"
-                [style.color]="isSelected(a) ? 'var(--blue)' : 'var(--dark)'"
+              <button type="button"
+                class="specialite-chip"
+                [class.is-selected]="isSelected(a)"
                 (click)="toggleSpecialite(a)">
                 {{ a }}
-              </div>
+              </button>
             }
           </div>
+          @if (specialitesError()) { <span class="field-error">{{ specialitesError() }}</span> }
         </div>
 
         <button type="submit" class="btn-join" [disabled]="profileForm.invalid || selectedSpecialites.length === 0 || loading">
