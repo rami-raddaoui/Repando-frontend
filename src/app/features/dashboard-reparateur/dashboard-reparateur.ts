@@ -41,6 +41,8 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
   selectedDemande: DemandeDto | null = null;
   demandeLoading = false;
   showDetailModal = false;
+  /** true when the popup was opened via a notification deep-link → hide action buttons */
+  detailReadOnly = false;
   detailTab: 'apercu' | 'details' = 'apercu';
   lightboxUrl: string | null = null;
   lightboxIndex = 0;
@@ -127,10 +129,11 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
   }
 
   // ── Detail modal ──────────────────────────────────────────────
-  openDetail(m: MatchingDto): void {
+  openDetail(m: MatchingDto, readOnly = false): void {
     this.selectedMission = m;
     this.selectedDemande = null;
     this.detailTab = 'apercu';
+    this.detailReadOnly = readOnly;
     this.showDetailModal = true;
     if (m.statut === 'NOUVEAU') {
       this.demandeService.marquerVu(m.id).subscribe();
@@ -153,7 +156,7 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
     if (!matching) return;
 
     this.pendingMatchingDetailId = null;
-    this.openDetail(matching);
+    this.openDetail(matching, true);  // readOnly — opened from notification
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
@@ -167,6 +170,7 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
     this.selectedDemande = null;
     this.lightboxUrl = null;
     this.detailTab = 'apercu';
+    this.detailReadOnly = false;
   }
 
   openLightbox(url: string, index = 0): void { this.lightboxUrl = url; this.lightboxIndex = index; }

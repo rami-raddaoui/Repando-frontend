@@ -526,19 +526,23 @@
 
       <!-- Footer -->
       <div class="detail-modal__footer">
-        <button class="btn-decline-outline" (click)="openDeclineModal(selectedMission)">
-          ✕ Décliner
-        </button>
+        @if (!detailReadOnly) {
+          <button class="btn-decline-outline" (click)="openDeclineModal(selectedMission)">
+            ✕ Décliner
+          </button>
+        }
         @if (!demandeLoading && selectedDemande && detailTab === 'apercu' && (selectedDemande.description || selectedDemande.photoUrls?.length)) {
           <button class="btn-see-details" (click)="detailTab = 'details'">
             📸 Voir description & photos
           </button>
         }
-        <button class="btn-accept-lg" [disabled]="actionLoading === selectedMission.id"
-                (click)="accepterMission(selectedMission.id)">
-          @if (actionLoading === selectedMission.id) { ⏳ En cours… }
-          @else { 💬 Démarrer la discussion }
-        </button>
+        @if (!detailReadOnly) {
+          <button class="btn-accept-lg" [disabled]="actionLoading === selectedMission.id"
+                  (click)="accepterMission(selectedMission.id)">
+            @if (actionLoading === selectedMission.id) { ⏳ En cours… }
+            @else { 💬 Démarrer la discussion }
+          </button>
+        }
       </div>
     </div>
   </div>
