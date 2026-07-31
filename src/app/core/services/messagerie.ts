@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, Subject, Subscription, interval } from 'rxjs';
 import { map, debounceTime, throttleTime } from 'rxjs/operators';
 import * as signalR from '@microsoft/signalr';
-import { ApiResponse, MessageDto, MatchingDto, SendMessageRequest, TypeMessage } from '../models/models';
+import { ApiResponse, MessageDto, MatchingDto, SendMessageRequest, StatutMatching, TypeMessage } from '../models/models';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth';
 
@@ -423,8 +423,13 @@ export class MessagerieService {
   }
 
   setRecentConvs(matchings: MatchingDto[]): void {
-    this._recentConvs$.next(matchings.slice(0, 10));
-    const unread = matchings.filter(m => m.hasUnreadMessages).length;
+    // Réparateur: masquer les missions nouvellement assignées tant qu'elles ne sont pas acceptées.
+    const visibleMatchings = this.auth.isReparateur()
+      ? matchings.filter(m => m.statut !== StatutMatching.NOUVEAU && m.statut !== StatutMatching.VU)
+      : matchings;
+
+    this._recentConvs$.next(visibleMatchings.slice(0, 10));
+    const unread = visibleMatchings.filter(m => m.hasUnreadMessages).length;
     this._unreadCount$.next(unread);
   }
 }
