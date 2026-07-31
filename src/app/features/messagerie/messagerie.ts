@@ -68,6 +68,11 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   actionLoading = false;
   actionSuccess = '';
   actionError = '';
+  repairStatusAction: 'TERMINEE' | 'CLIENT_ANNULE' | 'AUTRE_PROBLEME' | '' = '';
+  repairStatusComment = '';
+  repairStatusLoading = false;
+  repairStatusSuccess = '';
+  repairStatusError = '';
   // Welcome popup (1ère ouverture messagerie pour le client)
   showWelcomePopup = false;
   private readonly WELCOME_KEY_CLIENT = 'repando_welcome_chat_client_seen';
@@ -304,6 +309,10 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.loading = true;
     this.actionSuccess = '';
     this.actionError = '';
+    this.repairStatusAction = '';
+    this.repairStatusComment = '';
+    this.repairStatusSuccess = '';
+    this.repairStatusError = '';
     // Popup bienvenue client (1ère fois uniquement)
     const role = this.auth.currentUser()?.role;
     if (role === 'CLIENT' && !localStorage.getItem(this.WELCOME_KEY_CLIENT)) {
@@ -540,6 +549,59 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       error: (e) => { this.actionLoading = false; this.actionError = e?.error?.error ?? 'Erreur'; }
     });
   }
+
+  selectRepairStatusAction(action: 'TERMINEE' | 'CLIENT_ANNULE' | 'AUTRE_PROBLEME'): void {
+    this.repairStatusAction = action;
+    this.repairStatusSuccess = '';
+    this.repairStatusError = '';
+  }
+
+  submitRepairStatus(): void {
+    if (!this.activeMatchingId || !this.repairStatusAction || this.repairStatusLoading) return;
+
+    const needsDetail = this.repairStatusAction === 'CLIENT_ANNULE' || this.repairStatusAction === 'AUTRE_PROBLEME';
+    if (needsDetail && !this.repairStatusComment.trim()) {
+      this.repairStatusError = 'Ajoutez un détail pour cette action.';
+      return;
+    }
+
+    this.repairStatusLoading = true;
+    this.repairStatusError = '';
+
+    this.demandeService.updateRepairStatus(this.activeMatchingId, {
+      statut: this.repairStatusAction,
+      commentaire: this.repairStatusComment.trim() || undefined
+    }).subscribe({
+      next: (res) => {
+        this.repairStatusLoading = false;
+
+        const newStatut = (res?.statut ?? res?.Statut ?? '').toString().toUpperCase();
+        if (newStatut && this.activeMatchingId) {
+          this.matchings = this.matchings.map(m =>
+            m.id === this.activeMatchingId ? { ...m, statut: newStatut as StatutMatching } : m
+          );
+          this.activeMatching = this.matchings.find(m => m.id === this.activeMatchingId) ?? this.activeMatching;
+          this.isClosed = this.isConvClosed(newStatut);
+        }
+
+        this.repairStatusSuccess = this.repairStatusAction === 'TERMINEE'
+          ? 'Réparation marquée comme terminée.'
+          : this.repairStatusAction === 'CLIENT_ANNULE'
+            ? 'Annulation client enregistrée.'
+            : 'Incident signalé à l’équipe Repando.';
+
+        this.repairStatusAction = '';
+        this.repairStatusComment = '';
+        this.loadMatchings();
+        this.timers.push(setTimeout(() => this.repairStatusSuccess = '', 5000));
+      },
+      error: (e) => {
+        this.repairStatusLoading = false;
+        this.repairStatusError = e?.error?.error ?? 'Erreur lors de la mise à jour.';
+      }
+    });
+  }
+
   // ── Signalement ──────────────────────────────────────────────
   openSignal(): void {
     this.showSignalModal = true;

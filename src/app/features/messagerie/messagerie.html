@@ -272,6 +272,59 @@
         </div>
       }
 
+      @if (auth.isReparateur() && confirmedByClient && !isClosed && !auth.isImpersonating()) {
+        <div class="msgr-repair-status-card">
+          <div class="msgr-repair-status-card__header">
+            <div class="msgr-repair-status-card__icon">🧭</div>
+            <div>
+              <div class="msgr-repair-status-card__title">Mettre à jour l'état de la réparation</div>
+              <div class="msgr-repair-status-card__sub">Choisissez l'issue actuelle pour garder le client et l'équipe Repando alignés.</div>
+            </div>
+          </div>
+
+          <div class="msgr-repair-status-grid">
+            <button class="msgr-repair-status-chip"
+                    [class.active]="repairStatusAction === 'TERMINEE'"
+                    (click)="selectRepairStatusAction('TERMINEE')">
+              ✅ Réparation terminée
+            </button>
+            <button class="msgr-repair-status-chip"
+                    [class.active]="repairStatusAction === 'CLIENT_ANNULE'"
+                    (click)="selectRepairStatusAction('CLIENT_ANNULE')">
+              ❌ Client a annulé
+            </button>
+            <button class="msgr-repair-status-chip"
+                    [class.active]="repairStatusAction === 'AUTRE_PROBLEME'"
+                    (click)="selectRepairStatusAction('AUTRE_PROBLEME')">
+              ⚠️ Autre incident
+            </button>
+          </div>
+
+          @if (repairStatusAction === 'CLIENT_ANNULE' || repairStatusAction === 'AUTRE_PROBLEME') {
+            <textarea class="msgr-repair-status-textarea"
+                      [(ngModel)]="repairStatusComment"
+                      rows="3"
+                      placeholder="Ajoutez un détail utile (ex: client indisponible, pièce manquante, contrainte technique…)."></textarea>
+          }
+
+          @if (repairStatusError) {
+            <div class="msgr-repair-status-error">{{ repairStatusError }}</div>
+          }
+          @if (repairStatusSuccess) {
+            <div class="msgr-repair-status-success">{{ repairStatusSuccess }}</div>
+          }
+
+          <div class="msgr-repair-status-actions">
+            <button class="msgr-repair-status-submit"
+                    [disabled]="!repairStatusAction || repairStatusLoading"
+                    (click)="submitRepairStatus()">
+              @if (repairStatusLoading) { ⏳ Mise à jour… }
+              @else { ✅ Enregistrer l'état }
+            </button>
+          </div>
+        </div>
+      }
+
       <!-- ═══ PRISE EN CHARGE — Client ═══ -->
 
       <!-- [CLIENT] État 1: Doit confirmer -->

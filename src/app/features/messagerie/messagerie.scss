@@ -309,6 +309,138 @@
   border-radius: 50%; animation: msgr-spin .7s linear infinite;
 }
 
+/* ─── Repair status update card (repairer) ───────────────────── */
+.msgr-repair-status-card {
+  margin: 10px 14px 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+  flex-shrink: 0;
+}
+
+.msgr-repair-status-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.msgr-repair-status-card__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.msgr-repair-status-card__title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.msgr-repair-status-card__sub {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.msgr-repair-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.msgr-repair-status-chip {
+  border: 1.5px solid #dbe3ef;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 8px;
+  cursor: pointer;
+  transition: all .15s ease;
+  text-align: center;
+
+  &:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    color: #1e3a8a;
+  }
+
+  &.active {
+    border-color: #2563eb;
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    color: #1e40af;
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, .18);
+  }
+}
+
+.msgr-repair-status-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
+  border: 1.5px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'Satoshi', 'Inter', sans-serif;
+  color: #1e293b;
+  resize: vertical;
+  min-height: 78px;
+  outline: none;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .09);
+  }
+}
+
+.msgr-repair-status-error,
+.msgr-repair-status-success {
+  margin-top: 10px;
+  font-size: 12px;
+  border-radius: 9px;
+  padding: 8px 10px;
+}
+
+.msgr-repair-status-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.msgr-repair-status-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.msgr-repair-status-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.msgr-repair-status-submit {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .15s, opacity .15s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: .55;
+    cursor: default;
+  }
+}
+
 /* Messages area */
 .msgr-messages-area {
   flex: 1; overflow-y: auto; padding: 20px 24px;
@@ -564,6 +696,19 @@
   .msgr-pec-cta__btn {
     padding: 8px 12px;
     font-size: 12px;
+  }
+
+  .msgr-repair-status-card {
+    margin: 8px 10px 0;
+    padding: 12px;
+  }
+
+  .msgr-repair-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .msgr-repair-status-submit {
+    width: 100%;
   }
 
   .msgr-messages-area {

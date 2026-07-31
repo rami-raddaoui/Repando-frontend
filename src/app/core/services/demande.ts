@@ -113,6 +113,12 @@ export class DemandeService {
     ).pipe(map(() => void 0));
   }
 
+  /** POST /api/matchings/{id}/etat-reparation — réparateur met à jour l'issue de la réparation */
+  updateRepairStatus(matchingId: string, req: { statut: string; commentaire?: string }): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.matchingsBase}/${matchingId}/etat-reparation`, req)
+      .pipe(map(r => r.data ?? null));
+  }
+
   // ---- ADMIN ----
 
   /** GET /api/admin/demandes */
