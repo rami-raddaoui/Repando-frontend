@@ -188,6 +188,21 @@ export class MessagerieService {
       this._unreadCount$.next(convs.filter(c => c.hasUnreadMessages).length);
     });
 
+    // Platform notifications (relancers, approvals, etc.) → show in bell icon
+    this.globalHub.on('ReceiveNotification', (data: any) => {
+      this.pushNotification({
+        id: data.id ?? crypto.randomUUID(),
+        type: data.type ?? 'SYSTEM',
+        titre: data.titre ?? data.Titre ?? 'Notification',
+        message: data.message ?? data.Message ?? 'Vous avez une nouvelle notification',
+        matchingId: data.matching_id,
+        isRead: false,
+        createdAt: data.createdAt ?? new Date().toISOString()
+      });
+      // Refresh convs to sync matching status if needed
+      this.refreshConvs();
+    });
+
     this.globalHub.start()
       .then(() => { this._globalConnected = true; })
       .catch(console.error);
