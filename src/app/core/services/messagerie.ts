@@ -359,12 +359,16 @@ export class MessagerieService {
     );
     this._notifications$.next(updated);
     this._notifCount$.next(updated.filter(n => !n.isRead).length);
+    // Persist server-side (fire-and-forget)
+    this.http.post(`${environment.apiUrl}/notifications/${id}/read`, {}).subscribe();
   }
 
   markAllNotifsRead(): void {
     const updated = this._notifications$.value.map(n => ({ ...n, isRead: true }));
     this._notifications$.next(updated);
     this._notifCount$.next(0);
+    // Persist server-side (fire-and-forget)
+    this.http.post(`${environment.apiUrl}/notifications/read-all`, {}).subscribe();
   }
 
   clearNotifs(): void {
