@@ -321,9 +321,9 @@
       <div class="res-card">
         <div class="rc-status">
           <div class="rc-status-icon confirmed">{{ getAppareilLabel(m.demandeAppareil).icon }}</div>
-          <div class="rc-status-label confirmed" [style.background]="getStatutLabel(m.statut).bg"
-               [style.color]="getStatutLabel(m.statut).color">
-            {{ getStatutLabel(m.statut).label }}
+          <div class="rc-status-label confirmed" [style.background]="getMatchingStatutLabel(m).bg"
+               [style.color]="getMatchingStatutLabel(m).color">
+            {{ getMatchingStatutLabel(m).label }}
           </div>
         </div>
         <div class="rc-info">
@@ -353,18 +353,21 @@
       </div>
     }
     @for (m of historique; track m.id) {
-      <div class="res-card" style="opacity:.7">
+      <div class="res-card res-card--history">
         <div class="rc-status">
           <div class="rc-status-icon">{{ getAppareilLabel(m.demandeAppareil).icon }}</div>
-          <div class="rc-status-label" [style.background]="getStatutLabel(m.statut).bg"
-               [style.color]="getStatutLabel(m.statut).color">
-            {{ getStatutLabel(m.statut).label }}
+          <div class="rc-status-label" [style.background]="getMatchingStatutLabel(m).bg"
+               [style.color]="getMatchingStatutLabel(m).color">
+            {{ getMatchingStatutLabel(m).label }}
           </div>
         </div>
         <div class="rc-info">
           <div class="rc-title">{{ getAppareilLabel(m.demandeAppareil).label }}</div>
           <div class="rc-details">
             <div class="rc-detail">{{ m.updatedAt | date:'dd MMM yyyy' }}</div>
+            @if (m.repairOutcomeComment) {
+              <div class="rc-detail" style="color:#475569">📝 {{ m.repairOutcomeComment }}</div>
+            }
           </div>
         </div>
       </div>
@@ -391,9 +394,9 @@
             Réf. #{{ selectedMission.id.substring(0,8).toUpperCase() }} · {{ selectedMission.createdAt | date:'dd MMM yyyy' }}
           </div>
         </div>
-        <span class="mc-badge" [style.background]="getStatutLabel(selectedMission.statut).bg"
-              [style.color]="getStatutLabel(selectedMission.statut).color">
-          {{ getStatutLabel(selectedMission.statut).label }}
+        <span class="mc-badge" [style.background]="getMatchingStatutLabel(selectedMission).bg"
+              [style.color]="getMatchingStatutLabel(selectedMission).color">
+          {{ getMatchingStatutLabel(selectedMission).label }}
         </span>
         <button class="modal-close" (click)="closeDetail()">✕</button>
       </div>

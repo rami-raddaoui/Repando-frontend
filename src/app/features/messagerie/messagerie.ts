@@ -502,12 +502,27 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     localStorage.setItem(this.WELCOME_KEY_CLIENT, '1');
     this.showWelcomePopup = false;
   }
-  getClosedReason(statut: string): string {
+  getClosedReason(matching: MatchingDto | null): string {
+    const outcome = matching?.repairOutcome?.toUpperCase();
+    if (outcome === 'TERMINEE') return 'Réparation terminée et clôturée.';
+    if (outcome === 'CLIENT_ANNULE') return 'Annulation client signalée. Conversation clôturée.';
+    if (outcome === 'AUTRE_PROBLEME') return 'Incident signalé. Conversation clôturée en attente de suivi.';
+
+    const statut = matching?.statut ?? '';
     switch (statut) {
       case 'ANNULE': return 'La demande a ete annulee. Cette conversation est definitivement cloturee.';
       case 'REFUSE': return 'Cette conversation est cloturee.';
       case 'CLOTURE': return 'Reparation cloturee.';
       default: return 'Cette conversation est fermee.';
+    }
+  }
+
+  getRepairOutcomeLabel(outcome?: string | null): string {
+    switch ((outcome ?? '').toUpperCase()) {
+      case 'TERMINEE': return 'Réparation terminée';
+      case 'CLIENT_ANNULE': return 'Client a annulé';
+      case 'AUTRE_PROBLEME': return 'Incident signalé';
+      default: return '';
     }
   }
   // ── Prise en charge ──────────────────────────────────────────
@@ -576,9 +591,20 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.repairStatusLoading = false;
 
         const newStatut = (res?.statut ?? res?.Statut ?? '').toString().toUpperCase();
+        const outcome = (res?.repairOutcome ?? res?.RepairOutcome ?? res?.action ?? res?.Action ?? this.repairStatusAction)
+          .toString().toUpperCase();
+        const comment = (res?.repairOutcomeComment ?? res?.RepairOutcomeComment ?? this.repairStatusComment).toString().trim();
+
         if (newStatut && this.activeMatchingId) {
           this.matchings = this.matchings.map(m =>
-            m.id === this.activeMatchingId ? { ...m, statut: newStatut as StatutMatching } : m
+            m.id === this.activeMatchingId
+              ? {
+                  ...m,
+                  statut: newStatut as StatutMatching,
+                  repairOutcome: outcome,
+                  repairOutcomeComment: comment || m.repairOutcomeComment
+                }
+              : m
           );
           this.activeMatching = this.matchings.find(m => m.id === this.activeMatchingId) ?? this.activeMatching;
           this.isClosed = this.isConvClosed(newStatut);

@@ -263,6 +263,78 @@
   &:hover { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
   &:disabled { opacity: .5; cursor: default; }
 }
+
+// ─── Mission/history cards layout alignment fix ───────────────────────────────
+.client-layout {
+  .res-card {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .rc-status {
+    width: 96px;
+    flex: 0 0 96px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rc-status-label {
+    width: 100%;
+    text-align: center;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    border-radius: 999px;
+    padding: 6px 8px;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .rc-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rc-title {
+    margin-bottom: 8px;
+  }
+
+  .res-card--history {
+    opacity: .78;
+  }
+
+  .res-card--history .rc-details {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .res-card--history .rc-detail {
+    display: block;
+  }
+
+  @media (max-width: 640px) {
+    .res-card {
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .rc-status {
+      width: 78px;
+      flex-basis: 78px;
+    }
+
+    .rc-status-label {
+      font-size: 10px;
+      padding: 5px 6px;
+    }
+  }
+}
 .alert-success {
   background: #dcfce7;
   color: #15803d;

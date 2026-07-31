@@ -217,6 +217,8 @@ export interface MatchingDto {
   hasUnreadMessages: boolean;
   awaitingClientConfirm: boolean;
   confirmedByClient: boolean;
+  repairOutcome?: 'TERMINEE' | 'CLIENT_ANNULE' | 'AUTRE_PROBLEME' | string;
+  repairOutcomeComment?: string;
 }
 
 export interface SendDevisRequest {

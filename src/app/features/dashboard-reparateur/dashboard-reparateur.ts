@@ -327,5 +327,19 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
       default:             return { label: statut, color: '#64748b', bg: '#f1f5f9' };
     }
   }
+
+  getMatchingStatutLabel(m: MatchingDto): { label: string; color: string; bg: string } {
+    const outcome = (m.repairOutcome ?? '').toUpperCase();
+    if (outcome === 'TERMINEE') {
+      return { label: 'Réparation terminée', color: '#166534', bg: '#dcfce7' };
+    }
+    if (outcome === 'CLIENT_ANNULE') {
+      return { label: 'Client a annulé', color: '#991b1b', bg: '#fee2e2' };
+    }
+    if (outcome === 'AUTRE_PROBLEME') {
+      return { label: 'Incident signalé', color: '#92400e', bg: '#fef3c7' };
+    }
+    return this.getStatutLabel(m.statut);
+  }
 }
 

@@ -95,6 +95,9 @@
             {{ activeMatching?.demandeAppareil }}
             @if (isClosed) { · <span style="color:#ef4444">Clôturée</span> }
             @else { · <span style="color:#22c55e">Active</span> }
+            @if (activeMatching?.repairOutcome) {
+              · <span style="color:#7c3aed;font-weight:700">{{ getRepairOutcomeLabel(activeMatching?.repairOutcome) }}</span>
+            }
           </div>
         </div>
         @if (!isClosed) {
@@ -205,7 +208,12 @@
       @if (isClosed && activeMatching) {
         <div class="msgr-closed-banner">
           <span>🔒</span>
-          <span>{{ getClosedReason(activeMatching.statut) }} — La conversation reste visible.</span>
+          <span>
+            {{ getClosedReason(activeMatching) }} — La conversation reste visible.
+            @if (activeMatching.repairOutcomeComment) {
+              <strong> Détail:</strong> {{ activeMatching.repairOutcomeComment }}
+            }
+          </span>
         </div>
       }
 
