@@ -88,9 +88,6 @@
           <div class="notif-dropdown">
             <div class="notif-header">
               <span class="notif-title">Notifications</span>
-              @if (notifCount > 0 && !auth.isImpersonating()) {
-                <button class="notif-mark-all" (click)="markAllRead()">Tout marquer lu</button>
-              }
             </div>
             @if (auth.isImpersonating()) {
               <div class="bubble-readonly-badge bubble-readonly-badge--notif">👁️ Mode surveillance — lecture seule</div>

@@ -84,7 +84,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   toggleNotifPanel(): void {
     this.showNotifPanel = !this.showNotifPanel;
-    if (this.showNotifPanel) { this.showConvBubble = false; this.showUserMenu = false; }
+    if (this.showNotifPanel) {
+      this.showConvBubble = false;
+      this.showUserMenu = false;
+      // Mark all as read as soon as the panel is opened
+      this.markAllRead();
+    }
   }
 
   toggleUserMenu(): void {
