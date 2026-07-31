@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth';
@@ -7,6 +7,7 @@ import { DemandeService } from '../../core/services/demande';
 import { ReparateurService } from '../../core/services/reparateur';
 import { MatchingDto, DemandeDto, APPAREIL_LABELS, StatutMatching } from '../../core/models/models';
 import { environment } from '../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 export const DECLINE_REASONS = [
   { id: 'zone',      label: 'Pas dans ma zone d\'intervention', icon: '📍' },
@@ -24,7 +25,7 @@ export const DECLINE_REASONS = [
   templateUrl: './dashboard-reparateur.html',
   styleUrl: './dashboard-reparateur.scss'
 })
-export class DashboardReparateurComponent implements OnInit {
+export class DashboardReparateurComponent implements OnInit, OnDestroy {
   tab: 'missions' | 'actifs' | 'historique' = 'missions';
   matchings: MatchingDto[] = [];
   dashboard: any = null;
@@ -44,6 +45,8 @@ export class DashboardReparateurComponent implements OnInit {
   lightboxUrl: string | null = null;
   lightboxIndex = 0;
   readonly staticUrl = environment.staticUrl;
+  private pendingMatchingDetailId: string | null = null;
+  private routeSub?: Subscription;
 
   // ── Welcome popup (première ouverture messagerie) ─────────────
   showWelcomePopup = false;
@@ -87,9 +90,15 @@ export class DashboardReparateurComponent implements OnInit {
     private demandeService: DemandeService,
     private reparateurService: ReparateurService,
     private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
+    this.routeSub = this.route.queryParamMap.subscribe(params => {
+      this.pendingMatchingDetailId = params.get('matchingId');
+      this.tryOpenPendingDetail();
+    });
+
     this.loadMatchings();
     this.reparateurService.getDashboard().subscribe({
       next: d => this.dashboard = d,
@@ -97,10 +106,18 @@ export class DashboardReparateurComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
+  }
+
   loadMatchings(): void {
     this.loading = true;
     this.demandeService.getMyMatchings().subscribe({
-      next: m => { this.matchings = m; this.loading = false; },
+      next: m => {
+        this.matchings = m;
+        this.loading = false;
+        this.tryOpenPendingDetail();
+      },
       error: () => { this.loading = false; }
     });
   }
@@ -125,6 +142,22 @@ export class DashboardReparateurComponent implements OnInit {
         console.error('[openDetail] getDemandeByMatching failed', err?.status, err?.error);
         this.demandeLoading = false;
       }
+    });
+  }
+
+  private tryOpenPendingDetail(): void {
+    if (!this.pendingMatchingDetailId) return;
+    if (this.showDetailModal && this.selectedMission?.id === this.pendingMatchingDetailId) return;
+
+    const matching = this.matchings.find(m => m.id === this.pendingMatchingDetailId);
+    if (!matching) return;
+
+    this.pendingMatchingDetailId = null;
+    this.openDetail(matching);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
     });
   }
 

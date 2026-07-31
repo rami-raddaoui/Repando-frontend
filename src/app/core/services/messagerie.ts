@@ -20,6 +20,7 @@ export interface AppNotification {
   titre: string;
   message: string;
   matchingId?: string;
+  data?: any;
   isRead: boolean;
   createdAt: string;
 }
@@ -190,12 +191,19 @@ export class MessagerieService {
 
     // Platform notifications (relancers, approvals, etc.) → show in bell icon
     this.globalHub.on('ReceiveNotification', (data: any) => {
+      const payloadData = data.data ?? data.Data ?? null;
+      const matchingId = payloadData?.matching_id ?? payloadData?.matchingId ?? data.matching_id ?? data.matchingId;
+      const notifType = payloadData?.target === 'repairer_detail'
+        ? 'DEMANDE_UPDATED'
+        : (data.type ?? 'SYSTEM');
+
       this.pushNotification({
         id: data.id ?? crypto.randomUUID(),
-        type: data.type ?? 'SYSTEM',
+        type: notifType,
         titre: data.titre ?? data.Titre ?? 'Notification',
         message: data.message ?? data.Message ?? 'Vous avez une nouvelle notification',
-        matchingId: data.matching_id,
+        matchingId,
+        data: payloadData,
         isRead: false,
         createdAt: data.createdAt ?? new Date().toISOString()
       });
@@ -364,9 +372,38 @@ export class MessagerieService {
     this._notifCount$.next(0);
   }
 
+  hydrateNotifications(notifs: Array<Partial<AppNotification> & { id: string; titre: string; message: string; createdAt: string }>): void {
+    const normalized = notifs.map(n => ({
+      id: n.id,
+      type: n.type ?? 'SYSTEM',
+      titre: n.titre,
+      message: n.message,
+      matchingId: n.matchingId,
+      data: n.data,
+      isRead: n.isRead ?? false,
+      createdAt: n.createdAt
+    }));
+    this._notifications$.next(normalized);
+    this._notifCount$.next(normalized.filter(n => !n.isRead).length);
+  }
+
   // ═══════════════════════════════════════════════════════════
   // HTTP
   // ═══════════════════════════════════════════════════════════
+
+  getNotifications(): Observable<AppNotification[]> {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/notifications`)
+      .pipe(map(r => (r.data ?? []).map(n => ({
+        id: n.id,
+        type: n.type,
+        titre: n.titre,
+        message: n.message,
+        matchingId: n.matchingId ?? n.matching_id,
+        data: n.data ? (typeof n.data === 'string' ? JSON.parse(n.data) : n.data) : undefined,
+        isRead: n.isRead,
+        createdAt: n.createdAt
+      }))));
+  }
   getMessages(matchingId: string): Observable<MessageDto[]> {
     // En mode impersonation admin : utiliser l'endpoint readonly (sans marquer comme lu)
     const endpoint = this.auth.isImpersonating()

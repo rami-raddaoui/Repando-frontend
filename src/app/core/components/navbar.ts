@@ -43,10 +43,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.msgService.refreshConvs();
       // Connect persistent global hub
       this.msgService.connectGlobalHub();
+      this.msgService.getNotifications().subscribe({
+        next: notifs => this.msgService.hydrateNotifications(notifs),
+        error: () => {}
+      });
     } else if (this.auth.isImpersonating()) {
       // Mode surveillance : charger les convs sans déclencher d'actions admin
       this.msgService.refreshConvs();
       this.msgService.connectGlobalHub();
+      this.msgService.getNotifications().subscribe({
+        next: notifs => this.msgService.hydrateNotifications(notifs),
+        error: () => {}
+      });
     }
 
     // Sync body class for impersonation banner offset
@@ -108,6 +116,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.msgService.markNotifRead(notif.id);
     }
     this.showNotifPanel = false;
+
+    const notifData = notif.data ?? {};
+    const repairerDetailMatchingId = notif.matchingId ?? notifData.matching_id ?? notifData.matchingId;
+
+    if (notif.type === 'DEMANDE_UPDATED' || notifData.target === 'repairer_detail') {
+      if (repairerDetailMatchingId) {
+        this.router.navigate(['/dashboard-reparateur'], { queryParams: { matchingId: repairerDetailMatchingId } });
+      }
+      return;
+    }
+
     if (notif.matchingId) {
       // Côté client: si la mission est encore assignée (NOUVEAU/VU), elle est masquée des convs.
       // On bloque donc la navigation depuis la cloche tant que le réparateur n'a pas accepté.
@@ -140,6 +159,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   getNotifIcon(type: string): string {
     switch (type) {
+      case 'DEMANDE_UPDATED':   return '✏️';
       case 'NEW_MESSAGE':          return '💬';
       case 'PRISE_EN_CHARGE':      return '🔧';
       case 'CONFIRMED':            return '✅';
