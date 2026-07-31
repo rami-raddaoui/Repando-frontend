@@ -724,7 +724,7 @@ export class AdminComponent implements OnInit {
     if (!this.rcProModal || !this.rcProRejectReason.trim()) return;
     this.rcProActionLoading = true;
     this.rcProError = '';
-    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/reparateurs/${this.rcProModal.id}/rc-pro/rejeter`, {
+    this.http.post<ApiResponse<void>>(`${environment.apiUrl}/reparateurs/${this.rcProModal.id}/rc-pro/rejeter`, {
       raison: this.rcProRejectReason
     }).subscribe({
       next: () => {
