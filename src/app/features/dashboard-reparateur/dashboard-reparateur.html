@@ -337,6 +337,7 @@
             }
           </div>
           <div class="rc-actions">
+            <button class="btn-details" (click)="openDetail(m, true)">🔍 Détails</button>
             <a [routerLink]="['/messagerie', m.id]" class="btn-secondary btn-sm">💬 Conversation</a>
           </div>
         </div>
@@ -368,6 +369,10 @@
             @if (m.repairOutcomeComment) {
               <div class="rc-detail" style="color:#475569">📝 {{ m.repairOutcomeComment }}</div>
             }
+          </div>
+          <div class="rc-actions">
+            <button class="btn-details" (click)="openDetail(m, true)">🔍 Détails</button>
+            <a [routerLink]="['/messagerie', m.id]" class="btn-secondary btn-sm">💬 Conversation</a>
           </div>
         </div>
       </div>
@@ -467,17 +472,19 @@
             </div>
           }
 
-          <!-- Info box "Comment ça marche ?" -->
-          <div class="detail-info-box">
-            <div class="detail-info-box__icon">💡</div>
-            <div>
-              <div class="detail-info-box__title">Comment ça marche ?</div>
-              <div class="detail-info-box__text">
-                En acceptant cette mission, vous ouvrez une conversation directe avec le client afin d'échanger sur les détails de l'intervention, poser vos questions et, si vous êtes en accord, convenir d'un rendez-vous. Vous pourrez ensuite lui envoyer votre devis.
-                Aucun engagement définitif à ce stade : vous restez libre de refuser la mission si les conditions ne vous conviennent pas.
+          @if (!detailReadOnly) {
+            <!-- Info box "Comment ça marche ?" -->
+            <div class="detail-info-box">
+              <div class="detail-info-box__icon">💡</div>
+              <div>
+                <div class="detail-info-box__title">Comment ça marche ?</div>
+                <div class="detail-info-box__text">
+                  En acceptant cette mission, vous ouvrez une conversation directe avec le client afin d'échanger sur les détails de l'intervention, poser vos questions et, si vous êtes en accord, convenir d'un rendez-vous. Vous pourrez ensuite lui envoyer votre devis.
+                  Aucun engagement définitif à ce stade : vous restez libre de refuser la mission si les conditions ne vous conviennent pas.
+                </div>
               </div>
             </div>
-          </div>
+          }
         }
 
         <!-- ══ ONGLET DESCRIPTION & PHOTOS ══ -->
