@@ -98,38 +98,59 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     private cdr: ChangeDetectorRef,
   ) {}
   ngOnInit(): void {
-    const matchingIdFromUrl = this.route.snapshot.paramMap.get('matchingId');
-    this.demandeIdFilter = this.route.snapshot.queryParamMap.get('demandeId');
-    // Load user profile for phone + email
+    // ── Load user profile (phone + email) ──────────────────────
     this.userEmail = this.auth.currentUser()?.email ?? '';
     this.auth.me().pipe(takeUntil(this.destroy$)).subscribe({
-      next: u => {
-        this.userTelephone.set(u.telephone ?? null);
-        this.userEmail = u.email;
-      },
+      next: u => { this.userTelephone.set(u.telephone ?? null); this.userEmail = u.email; },
       error: () => {}
     });
+
+    // ── Subscribe to route changes FIRST so mid-session navbar switches work ──
+    // When matchings are not loaded yet, we buffer the requested id and open after load.
+    let pendingMatchingId: string | null = null;
+    let matchingsLoaded = false;
+
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const id = params.get('matchingId');
+      if (id) {
+        if (matchingsLoaded) {
+          this.openConversation(id);
+        } else {
+          pendingMatchingId = id;
+        }
+      }
+    });
+
+    // ── Load matchings, then honour any buffered navigation ──────
+    this.demandeIdFilter = this.route.snapshot.queryParamMap.get('demandeId');
     this.demandeService.getMyMatchings().pipe(takeUntil(this.destroy$)).subscribe({
       next: m => {
         this.matchings = this.filterVisibleMatchingsForRole(m);
         this.messagerieService.setRecentConvs(this.matchings);
         this.applyFilter();
-        if (matchingIdFromUrl) {
-          this.openConversation(matchingIdFromUrl);
+        matchingsLoaded = true;
+
+        if (pendingMatchingId) {
+          this.openConversation(pendingMatchingId);
+          pendingMatchingId = null;
         } else if (this.demandeIdFilter) {
           const dm = this.matchings.filter(x => x.demandeId === this.demandeIdFilter);
           if (dm.length > 0) {
             this.openConversation(dm[0].id);
             this.demandeAppareilFilter = dm[0].demandeAppareil;
           }
-          this.demandeService.getById(this.demandeIdFilter).pipe(takeUntil(this.destroy$)).subscribe({
+          this.demandeService.getById(this.demandeIdFilter!).pipe(takeUntil(this.destroy$)).subscribe({
             next: d => { this.demandeDetail = d; },
             error: () => {}
           });
         }
       },
       error: () => {
-        if (matchingIdFromUrl) this.openConversation(matchingIdFromUrl);
+        matchingsLoaded = true;
+        if (pendingMatchingId) {
+          this.openConversation(pendingMatchingId);
+          pendingMatchingId = null;
+        }
       }
     });
     this.subs.push(
