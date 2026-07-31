@@ -120,7 +120,7 @@
 
   <!-- ═══ TAB: MESSAGES ═════════════════════════════════════════ -->
   @if (tab === 'messages') {
-    @if (matchings.length === 0 && !loading) {
+    @if (visibleMatchings.length === 0 && !loading) {
       <div class="empty-state">
         <div class="empty-icon">💬</div>
         <div class="empty-title">Aucune conversation</div>
@@ -129,7 +129,7 @@
       </div>
     }
     <div class="conv-list">
-      @for (m of matchings; track m.id) {
+      @for (m of visibleMatchings; track m.id) {
         <div class="conv-card" [class.conv-card--unread]="m.hasUnreadMessages"
              [class.conv-card--closed]="['ANNULE','REFUSE','EXPIRE','CLOTURE'].includes(m.statut)"
              (click)="router.navigate(['/messagerie', m.id])">

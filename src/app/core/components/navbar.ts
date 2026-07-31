@@ -109,6 +109,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
     this.showNotifPanel = false;
     if (notif.matchingId) {
+      // Côté client: si la mission est encore assignée (NOUVEAU/VU), elle est masquée des convs.
+      // On bloque donc la navigation depuis la cloche tant que le réparateur n'a pas accepté.
+      if (this.auth.isClient() && !this.recentConvs.some(c => c.id === notif.matchingId)) {
+        return;
+      }
       this.router.navigate(['/messagerie', notif.matchingId]);
     }
   }

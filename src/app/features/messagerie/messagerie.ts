@@ -8,7 +8,7 @@ import { Subject } from 'rxjs';
 import { MessagerieService, ReclamationDto } from '../../core/services/messagerie';
 import { DemandeService } from '../../core/services/demande';
 import { AuthService } from '../../core/services/auth';
-import { MessageDto, MatchingDto, TypeMessage, APPAREIL_LABELS, DemandeDto, StatutDemande } from '../../core/models/models';
+import { MessageDto, MatchingDto, TypeMessage, APPAREIL_LABELS, DemandeDto, StatutDemande, StatutMatching } from '../../core/models/models';
 import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-messagerie',
@@ -111,13 +111,13 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     });
     this.demandeService.getMyMatchings().pipe(takeUntil(this.destroy$)).subscribe({
       next: m => {
-        this.matchings = m;
-        this.messagerieService.setRecentConvs(m);
+        this.matchings = this.filterVisibleMatchingsForRole(m);
+        this.messagerieService.setRecentConvs(this.matchings);
         this.applyFilter();
         if (matchingIdFromUrl) {
           this.openConversation(matchingIdFromUrl);
         } else if (this.demandeIdFilter) {
-          const dm = m.filter(x => x.demandeId === this.demandeIdFilter);
+          const dm = this.matchings.filter(x => x.demandeId === this.demandeIdFilter);
           if (dm.length > 0) {
             this.openConversation(dm[0].id);
             this.demandeAppareilFilter = dm[0].demandeAppareil;
@@ -186,11 +186,11 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   loadMatchings(): void {
     this.demandeService.getMyMatchings().subscribe({
       next: m => {
-        this.matchings = m;
-        this.messagerieService.setRecentConvs(m);
+        this.matchings = this.filterVisibleMatchingsForRole(m);
+        this.messagerieService.setRecentConvs(this.matchings);
         this.applyFilter();
         if (this.activeMatchingId) {
-          const found = m.find(x => x.id === this.activeMatchingId) ?? null;
+          const found = this.matchings.find(x => x.id === this.activeMatchingId) ?? null;
           this.activeMatching = found;
           this.isClosed = this.isConvClosed(found?.statut ?? '');
           this.awaitingClientConfirm = found?.awaitingClientConfirm ?? false;
@@ -262,6 +262,13 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   }
 
   openConversation(matchingId: string): void {    if (this.activeMatchingId === matchingId) return;
+    const found = this.matchings.find(m => m.id === matchingId) ?? null;
+    if (!found) {
+      // Matching masqué (ex: mission assignée pas encore acceptée) ou inexistant.
+      this.router.navigate(['/messagerie']);
+      return;
+    }
+
     this.messagerieService.disconnectHub();
     this.activeMatchingId = matchingId;
     this.mobileConvSelected = true; // ← affiche le chat sur mobile, cache la sidebar
@@ -269,7 +276,6 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.photoPreviews = [];
     this.showPhotoMenu = false;
     this.revealedMessages = new Set<string>();
-    const found = this.matchings.find(m => m.id === matchingId) ?? null;
     this.activeMatching = found;
     this.isClosed = this.isConvClosed(found?.statut ?? '');
     this.awaitingClientConfirm = found?.awaitingClientConfirm ?? false;
@@ -305,6 +311,13 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       this.demandeService.marquerVu(matchingId).subscribe();
     }
     this.loadMatchings();
+  }
+
+  private filterVisibleMatchingsForRole(matchings: MatchingDto[]): MatchingDto[] {
+    if (this.auth.isClient() || this.auth.isReparateur()) {
+      return matchings.filter(m => m.statut !== StatutMatching.NOUVEAU && m.statut !== StatutMatching.VU);
+    }
+    return matchings;
   }
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.activeMatchingId || this.isClosed) return;

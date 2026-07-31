@@ -423,8 +423,9 @@ export class MessagerieService {
   }
 
   setRecentConvs(matchings: MatchingDto[]): void {
-    // Réparateur: masquer les missions nouvellement assignées tant qu'elles ne sont pas acceptées.
-    const visibleMatchings = this.auth.isReparateur()
+    // Client + réparateur: masquer les missions nouvellement assignées tant que la discussion n'est pas démarrée.
+    const shouldHideAssigned = this.auth.isReparateur() || this.auth.isClient();
+    const visibleMatchings = shouldHideAssigned
       ? matchings.filter(m => m.statut !== StatutMatching.NOUVEAU && m.statut !== StatutMatching.VU)
       : matchings;
 

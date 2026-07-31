@@ -75,10 +75,14 @@ export class DashboardClientComponent implements OnInit, OnDestroy {
       .reduce((sum, m) => sum + (m.devisMontantBonus ?? 0), 0);
   }
   get matchingsAvecMessage() {
-    return this.matchings.filter(m => m.hasUnreadMessages);
+    return this.visibleMatchings.filter(m => m.hasUnreadMessages);
   }
   get matchingsUnread() {
-    return this.matchings.filter(m => m.hasUnreadMessages).length;
+    return this.visibleMatchings.filter(m => m.hasUnreadMessages).length;
+  }
+
+  get visibleMatchings(): MatchingDto[] {
+    return this.matchings.filter(m => m.statut !== StatutMatching.NOUVEAU && m.statut !== StatutMatching.VU);
   }
 
   constructor(
@@ -145,7 +149,7 @@ export class DashboardClientComponent implements OnInit, OnDestroy {
   }
 
   getMatchingsForDemande(demandeId: string): MatchingDto[] {
-    return this.matchings.filter(m => m.demandeId === demandeId);
+    return this.visibleMatchings.filter(m => m.demandeId === demandeId);
   }
 
   getStatutMatchingLabel(statut: string): { label: string; color: string } {
@@ -167,7 +171,7 @@ export class DashboardClientComponent implements OnInit, OnDestroy {
   }
 
   goToMessagerie(demandeId: string): void {
-    const demandeMatchings = this.matchings.filter(m => m.demandeId === demandeId);
+    const demandeMatchings = this.visibleMatchings.filter(m => m.demandeId === demandeId);
     if (demandeMatchings.length === 1) {
       this.router.navigate(['/messagerie', demandeMatchings[0].id]);
     } else if (demandeMatchings.length > 1) {
