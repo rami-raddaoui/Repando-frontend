@@ -206,6 +206,45 @@
         <div style="font-size:13px;color:var(--gray);margin-top:4px">Terminées</div>
       </div>
     </div>
+
+    <div class="rep-avis-panel">
+      <div class="rep-avis-head">
+        <div>
+          <div class="rep-avis-title">Avis clients</div>
+          <div class="rep-avis-sub">Les réparateurs les mieux notés reçoivent plus de missions.</div>
+        </div>
+        <div class="rep-avis-metrics">
+          <div class="rep-avis-metric">
+            <span class="rep-avis-metric__label">Note moyenne</span>
+            <span class="rep-avis-metric__value">{{ noteMoyenne | number:'1.1-2' }}/5</span>
+          </div>
+          <div class="rep-avis-metric">
+            <span class="rep-avis-metric__label">Nombre d'avis</span>
+            <span class="rep-avis-metric__value">{{ nbAvis }}</span>
+          </div>
+        </div>
+      </div>
+
+      @if (avisRecents.length === 0) {
+        <div class="rep-avis-empty">Aucun avis pour le moment.</div>
+      } @else {
+        <div class="rep-avis-list">
+          @for (a of avisRecents; track a.id) {
+            <div class="rep-avis-item">
+              <div class="rep-avis-item__top">
+                <strong>{{ a.clientNom }}</strong>
+                <span>{{ a.createdAt | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="rep-avis-item__stars">{{ getStars(a.note) }} <small>({{ a.note }}/5)</small></div>
+              <div class="rep-avis-item__appareil">{{ getAppareilLabel(a.appareil).icon }} {{ getAppareilLabel(a.appareil).label }}</div>
+              @if (a.commentaire) {
+                <div class="rep-avis-item__comment">"{{ a.commentaire }}"</div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
   }
 
   <!-- Feedback global -->

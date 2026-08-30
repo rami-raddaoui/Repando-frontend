@@ -219,6 +219,9 @@ export interface MatchingDto {
   confirmedByClient: boolean;
   repairOutcome?: 'TERMINEE' | 'CLIENT_ANNULE' | 'AUTRE_PROBLEME' | string;
   repairOutcomeComment?: string;
+  hasAvis?: boolean;
+  avisNote?: number;
+  avisCommentaire?: string;
 }
 
 export interface SendDevisRequest {

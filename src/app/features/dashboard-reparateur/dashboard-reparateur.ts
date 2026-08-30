@@ -86,6 +86,20 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
       m.statut === 'CLOTURE' || m.statut === 'REFUSE' || m.statut === 'ANNULE' || m.statut === 'EXPIRE'
     );
   }
+  get noteMoyenne(): number {
+    return Number(this.dashboard?.reparateur?.noteMoyenne ?? 0);
+  }
+  get nbAvis(): number {
+    return Number(this.dashboard?.reparateur?.nbAvis ?? 0);
+  }
+  get avisRecents(): Array<{ id: string; note: number; commentaire?: string; createdAt: string; clientNom: string; appareil: string }> {
+    return this.dashboard?.avisRecents ?? [];
+  }
+
+  getStars(note: number): string {
+    const safe = Math.max(0, Math.min(5, Math.round(note || 0)));
+    return `${'★'.repeat(safe)}${'☆'.repeat(5 - safe)}`;
+  }
 
   constructor(
     public auth: AuthService,

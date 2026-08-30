@@ -1467,3 +1467,112 @@
     }
   }
 }
+
+.rep-avis-panel {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, .06);
+}
+
+.rep-avis-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rep-avis-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rep-avis-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.rep-avis-metrics {
+  display: flex;
+  gap: 10px;
+}
+
+.rep-avis-metric {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.rep-avis-metric__label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.rep-avis-metric__value {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rep-avis-empty {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 8px 2px;
+}
+
+.rep-avis-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.rep-avis-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.rep-avis-item__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.rep-avis-item__stars {
+  margin-top: 6px;
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+.rep-avis-item__stars small {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.rep-avis-item__appareil {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.rep-avis-item__comment {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  font-style: italic;
+}
+
