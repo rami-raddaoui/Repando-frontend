@@ -51,6 +51,47 @@ $banner-height: 37px;
   }
 }
 
+/* ─── LOGO NAVBAR ───────────────────────────────────────────── */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 100%;
+}
+
+.logo-img-frame {
+  width: clamp(172px, 15vw, 236px);
+  height: 50px;
+  max-height: calc(64px - 10px);
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.logo-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: scale(2.2) translateY(15px);
+  transform-origin: center bottom;
+  flex-shrink: 0;
+}
+
+.logo-fallback {
+  display: none;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 21px;
+  color: #1f2a56;
+}
+
 /* ─── MESSENGER BUBBLE ───────────────────────────────────────── */
 
 .msg-bubble-wrap {
@@ -462,6 +503,15 @@ $banner-height: 37px;
 
 /* ─── RESPONSIVE NAVBAR ──────────────────────────────────── */
 @media (max-width: 768px) {
+  .logo-img-frame {
+    width: clamp(156px, 47vw, 198px);
+    height: 44px;
+  }
+
+  .logo-img {
+    transform: scale(2.05) translateY(14px);
+  }
+
   .nav-hamburger { display: flex; }
 
   .nav-links {
@@ -528,5 +578,10 @@ $banner-height: 37px;
       justify-content: flex-start;
     }
   }
+}
+
+@media (prefers-reduced-data: reduce) {
+  .logo-img-frame { display: none; }
+  .logo-fallback { display: inline; }
 }
 

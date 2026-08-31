@@ -8,8 +8,10 @@
 
 <nav class="nav" [class.nav--with-banner]="isImpersonating" [class.nav--open]="mobileMenuOpen">
   <a routerLink="/" class="logo">
-    <div class="logo-dot"></div>
-    Repair<span>ando</span>
+    <span class="logo-img-frame" aria-hidden="true">
+      <img class="logo-img" src="/branding/repando-logo.jpg" alt="Repando" />
+    </span>
+    <span class="logo-fallback" aria-hidden="true">Repando</span>
   </a>
 
   <!-- Hamburger mobile -->
