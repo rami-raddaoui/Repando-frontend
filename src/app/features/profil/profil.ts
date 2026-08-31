@@ -77,6 +77,24 @@ export class ProfilComponent implements OnInit {
     specialites: [] as TypeAppareil[]
   };
 
+  private initialInfoForm = {
+    prenom: '',
+    nom: '',
+    telephone: ''
+  };
+
+  private initialRepForm = {
+    siret: '',
+    numeroQualirepar: '',
+    bio: '',
+    anneesExperience: 0,
+    adresseAtelier: '',
+    ville: '',
+    codePostal: '',
+    rayonInterventionKm: 10,
+    specialites: [] as TypeAppareil[]
+  };
+
   // ── State ────────────────────────────────────────────────
   saveLoading = false;
   saveSuccess = '';
@@ -128,6 +146,7 @@ export class ProfilComponent implements OnInit {
           this.repForm.codePostal = r.codePostal ?? '';
           this.repForm.rayonInterventionKm = r.rayonInterventionKm ?? 10;
           this.repForm.specialites = (r.specialites ?? []) as TypeAppareil[];
+          this.snapshotRepForm();
           this.applyRequestedMetierFocus();
         }
       },
@@ -233,6 +252,58 @@ export class ProfilComponent implements OnInit {
     return `+33${local}`;
   }
 
+  private snapshotInfoForm(): void {
+    this.initialInfoForm = {
+      prenom: this.form.prenom.trim(),
+      nom: this.form.nom.trim(),
+      telephone: this.form.telephone.trim()
+    };
+  }
+
+  private snapshotRepForm(): void {
+    this.initialRepForm = {
+      siret: this.repForm.siret.trim(),
+      numeroQualirepar: this.repForm.numeroQualirepar.trim(),
+      bio: this.repForm.bio.trim(),
+      anneesExperience: this.repForm.anneesExperience,
+      adresseAtelier: this.repForm.adresseAtelier.trim(),
+      ville: this.repForm.ville.trim(),
+      codePostal: this.repForm.codePostal.trim(),
+      rayonInterventionKm: this.repForm.rayonInterventionKm,
+      specialites: [...this.repForm.specialites].sort()
+    };
+  }
+
+  hasInfoChanges(): boolean {
+    return this.form.prenom.trim() !== this.initialInfoForm.prenom
+      || this.form.nom.trim() !== this.initialInfoForm.nom
+      || this.form.telephone.trim() !== this.initialInfoForm.telephone;
+  }
+
+  hasMetierChanges(): boolean {
+    const specialitesA = [...this.repForm.specialites].sort();
+    const specialitesB = [...this.initialRepForm.specialites].sort();
+    const specialitesChanged = specialitesA.length !== specialitesB.length
+      || specialitesA.some((value, index) => value !== specialitesB[index]);
+
+    const siretChanged = this.canEditSiret
+      ? this.repForm.siret.trim() !== this.initialRepForm.siret
+      : false;
+    const qualireparChanged = this.canEditNumeroQualirepar
+      ? this.repForm.numeroQualirepar.trim() !== this.initialRepForm.numeroQualirepar
+      : false;
+
+    return siretChanged
+      || qualireparChanged
+      || this.repForm.bio.trim() !== this.initialRepForm.bio
+      || this.repForm.anneesExperience !== this.initialRepForm.anneesExperience
+      || this.repForm.adresseAtelier.trim() !== this.initialRepForm.adresseAtelier
+      || this.repForm.ville.trim() !== this.initialRepForm.ville
+      || this.repForm.codePostal.trim() !== this.initialRepForm.codePostal
+      || this.repForm.rayonInterventionKm !== this.initialRepForm.rayonInterventionKm
+      || specialitesChanged;
+  }
+
   validatePrenomNom(): boolean {
     this.fieldErrors = {};
     let isValid = true;
@@ -321,6 +392,7 @@ export class ProfilComponent implements OnInit {
         this.saveLoading = false;
         this.user = u;
         this.form.telephone = this.normalizeFrenchPhoneEditablePart(u.telephone);
+        this.snapshotInfoForm();
         this.saveSuccess = '✨ Profil mis à jour avec succès !';
         this.form.currentPassword = '';
         this.form.newPassword = '';
@@ -372,11 +444,9 @@ export class ProfilComponent implements OnInit {
        isValid = false;
      }
 
-     // Validation Ville
-     if (!this.repForm.ville.trim()) {
-       this.fieldErrors['ville'] = this.needsCommuneSelection()
-         ? '🏙️ Choisissez votre commune'
-         : '🏙️ Veuillez saisir votre ville';
+     // Validation Ville uniquement si plusieurs communes possibles
+     if (this.needsCommuneSelection()) {
+       this.fieldErrors['ville'] = '🏙️ Choisissez votre commune';
        if (!firstErrorField) firstErrorField = 'ville';
        isValid = false;
      }
@@ -518,6 +588,7 @@ export class ProfilComponent implements OnInit {
         this.form.prenom = u.prenom;
         this.form.nom = u.nom;
         this.form.telephone = this.normalizeFrenchPhoneEditablePart(u.telephone);
+        this.snapshotInfoForm();
         this.loading = false;
         if (this.auth.isReparateur()) this.loadRepProfile();
         this.loadResiliation();
@@ -769,7 +840,7 @@ export class ProfilComponent implements OnInit {
 
   cityError(): string {
     if (this.needsCommuneSelection()) return 'Choisissez votre commune.';
-    return this.getFieldError('ville');
+    return '';
   }
 
   needsCommuneSelection(): boolean {
@@ -842,11 +913,8 @@ export class ProfilComponent implements OnInit {
 
   // ── Validate ville on input ────────────────────────
   validateVilleFormat(): void {
-    const trimmed = this.repForm.ville.trim();
     if (this.needsCommuneSelection()) {
       this.fieldErrors['ville'] = '🏙️ Choisissez votre commune';
-    } else if (trimmed.length === 0) {
-      this.fieldErrors['ville'] = '🏙️ Veuillez saisir votre ville';
     } else {
       this.clearFieldError('ville');
     }

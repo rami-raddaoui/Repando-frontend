@@ -150,7 +150,7 @@
         </div>
 
         <div class="profil-form-actions">
-          <button class="profil-btn-save" (click)="saveProfile()" [disabled]="saveLoading">
+          <button class="profil-btn-save" (click)="saveProfile()" [disabled]="saveLoading || !hasInfoChanges()">
             @if (saveLoading) { ⏳ Enregistrement… } @else { 💾 Enregistrer }
           </button>
         </div>
@@ -341,7 +341,7 @@
          </div>
 
          <div class="profil-form-actions">
-           <button class="profil-btn-save" (click)="saveRepProfile()" [disabled]="saveLoading">
+           <button class="profil-btn-save" (click)="saveRepProfile()" [disabled]="saveLoading || !hasMetierChanges()">
              @if (saveLoading) { ⏳ Enregistrement… } @else { 💾 Enregistrer le profil métier }
            </button>
          </div>
