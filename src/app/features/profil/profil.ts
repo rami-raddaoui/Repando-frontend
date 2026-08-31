@@ -50,6 +50,7 @@ interface RepProfile {
 export class ProfilComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild('rcProInput') rcProInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('feedbackBanner') feedbackBanner?: ElementRef<HTMLElement>;
 
   user: UserDto | null = null;
   repProfile: RepProfile | null = null;
@@ -97,8 +98,8 @@ export class ProfilComponent implements OnInit {
 
   // ── State ────────────────────────────────────────────────
   saveLoading = false;
-  saveSuccess = '';
-  saveError = '';
+  private _saveSuccess = '';
+  private _saveError = '';
   avatarLoading = false;
   rcProLoading = false;
   showPasswordChange = false;
@@ -126,12 +127,51 @@ export class ProfilComponent implements OnInit {
   private readonly namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
   private readonly frPhonePattern = /^[1-9]\d{8}$/;
 
+  get saveSuccess(): string {
+    return this._saveSuccess;
+  }
+
+  set saveSuccess(value: string) {
+    this._saveSuccess = value;
+    if (value) this.scrollToFeedbackBanner();
+  }
+
+  get saveError(): string {
+    return this._saveError;
+  }
+
+  set saveError(value: string) {
+    this._saveError = value;
+    if (value) this.scrollToFeedbackBanner();
+  }
+
   constructor(
     public auth: AuthService,
     private http: HttpClient,
     private reparateurService: ReparateurService,
     private route: ActivatedRoute
   ) {}
+
+  private scrollToFeedbackBanner(): void {
+    setTimeout(() => {
+      this.feedbackBanner?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
+
+  private createEmptyRepProfile(): RepProfile {
+    return {
+      id: '',
+      anneesExperience: 0,
+      ville: '',
+      rayonInterventionKm: 10,
+      specialites: [],
+      noteMoyenne: 0,
+      nbAvis: 0,
+      nbReparations: 0,
+      isVerified: false,
+      isFounder: false
+    };
+  }
 
   private loadRepProfile(forceRefresh = false): void {
     const suffix = forceRefresh ? `?t=${Date.now()}` : '';
@@ -599,7 +639,11 @@ export class ProfilComponent implements OnInit {
         this.form.telephone = this.normalizeFrenchPhoneEditablePart(u.telephone);
         this.snapshotInfoForm();
         this.loading = false;
-        if (this.auth.isReparateur()) this.loadRepProfile();
+        if (this.auth.isReparateur()) {
+          // Render metier fields immediately while async profile data is loading.
+          if (!this.repProfile) this.repProfile = this.createEmptyRepProfile();
+          this.loadRepProfile();
+        }
         this.loadResiliation();
       },
       error: () => { this.loading = false; }

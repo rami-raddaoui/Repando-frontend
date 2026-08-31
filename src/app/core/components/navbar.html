@@ -18,11 +18,6 @@
   </button>
 
   <div class="nav-links" [class.nav-links--open]="mobileMenuOpen" (click)="closeMobileMenu()">
-    <a routerLink="/contact" class="nav-link">Nous contacter</a>
-
-    @if (!auth.isReparateur()) {
-      <a routerLink="/recherche" class="nav-link">Trouver un réparateur</a>
-    }
 
     @if (!auth.isLoggedIn()) {
       <a routerLink="/connexion" class="btn-ghost">Connexion</a>
@@ -123,7 +118,7 @@
     }
 
     @if (auth.isLoggedIn() && auth.isReparateur()) {
-      <a routerLink="/dashboard-reparateur" class="btn-ghost">Dashboard</a>
+      <a routerLink="/dashboard-reparateur" class="btn-ghost">Mon tableau de bord</a>
     }
 
     @if (auth.isLoggedIn() && auth.isAdmin()) {

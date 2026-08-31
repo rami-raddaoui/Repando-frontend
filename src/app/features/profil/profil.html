@@ -60,13 +60,13 @@
 
     <!-- ═══ FEEDBACK BANNERS ═══ -->
     @if (saveSuccess) {
-      <div class="profil-banner profil-banner--success profil-banner--animated">
+      <div #feedbackBanner class="profil-banner profil-banner--success profil-banner--animated">
         <span class="profil-banner-icon">✨</span>
         {{ saveSuccess }}
       </div>
     }
     @if (saveError) {
-      <div class="profil-banner profil-banner--error profil-banner--animated">
+      <div #feedbackBanner class="profil-banner profil-banner--error profil-banner--animated">
         <span class="profil-banner-icon">❌</span>
         {{ saveError }}
       </div>
