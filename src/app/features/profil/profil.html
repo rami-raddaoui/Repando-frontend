@@ -182,8 +182,8 @@
                    [(ngModel)]="repForm.siret"
                    maxlength="14"
                    placeholder="14 chiffres"
-                   (blur)="markFieldTouched('siret')"
-                   (input)="clearFieldError('siret')" />
+                   (blur)="markFieldTouched('siret'); validateSiretFormat()"
+                   (input)="validateSiretFormat()" />
                  @if (hasFieldError('siret')) {
                    <span class="profil-error-msg">{{ getFieldError('siret') }}</span>
                  } @else {
@@ -262,8 +262,8 @@
                type="text"
                [(ngModel)]="repForm.ville"
                placeholder="Paris"
-               (blur)="markFieldTouched('ville')"
-               (input)="clearFieldError('ville')" />
+               (blur)="markFieldTouched('ville'); validateVilleFormat()"
+               (input)="validateVilleFormat()" />
              @if (hasFieldError('ville')) {
                <span class="profil-error-msg">{{ getFieldError('ville') }}</span>
              }
@@ -276,8 +276,8 @@
                [(ngModel)]="repForm.codePostal"
                placeholder="75000"
                maxlength="5"
-               (blur)="markFieldTouched('code_postal')"
-               (input)="clearFieldError('code_postal')" />
+               (blur)="markFieldTouched('code_postal'); validateCodePostalFormat()"
+               (input)="validateCodePostalFormat()" />
              @if (hasFieldError('code_postal')) {
                <span class="profil-error-msg">{{ getFieldError('code_postal') }}</span>
              }

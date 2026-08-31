@@ -292,6 +292,12 @@ export class ProfilComponent implements OnInit {
        this.fieldErrors['siret'] = '📋 Le SIRET est obligatoire pour recevoir des missions';
        if (!firstErrorField) firstErrorField = 'siret';
        isValid = false;
+     } else if (this.canEditSiret && this.repForm.siret.trim().length > 0) {
+       if (!/^\d{14}$/.test(this.repForm.siret.trim())) {
+         this.fieldErrors['siret'] = '📋 Le SIRET doit contenir exactement 14 chiffres';
+         if (!firstErrorField) firstErrorField = 'siret';
+         isValid = false;
+       }
      }
 
      // Validation Ville
@@ -356,6 +362,8 @@ export class ProfilComponent implements OnInit {
         this.fieldErrors = {};
         this.touchedFields.clear();
         this.showAllValidationErrors = false;
+        // Reload profile to update canEditSiret/canEditNumeroQualirepar flags
+        this.loadRepProfile();
         setTimeout(() => this.saveSuccess = '', 4000);
       },
       error: (e) => {
@@ -640,5 +648,39 @@ export class ProfilComponent implements OnInit {
     }, 2600);
 
     this.requestedFocusField = null;
+  }
+
+  // ── Validate SIRET format on input ──────────────────
+  validateSiretFormat(): void {
+    const trimmed = this.repForm.siret.trim();
+    if (trimmed.length === 0) {
+      this.fieldErrors['siret'] = '📋 Le SIRET est obligatoire pour recevoir des missions';
+    } else if (!/^\d{14}$/.test(trimmed)) {
+      this.fieldErrors['siret'] = '📋 Le SIRET doit contenir exactement 14 chiffres';
+    } else {
+      this.clearFieldError('siret');
+    }
+  }
+
+  // ── Validate code postal format on input ─────────────
+  validateCodePostalFormat(): void {
+    const trimmed = this.repForm.codePostal.trim();
+    if (trimmed.length === 0) {
+      this.fieldErrors['code_postal'] = '📮 Veuillez saisir votre code postal';
+    } else if (!/^\d{5}$/.test(trimmed)) {
+      this.fieldErrors['code_postal'] = '⚠️ Le code postal doit contenir 5 chiffres';
+    } else {
+      this.clearFieldError('code_postal');
+    }
+  }
+
+  // ── Validate ville on input ────────────────────────
+  validateVilleFormat(): void {
+    const trimmed = this.repForm.ville.trim();
+    if (trimmed.length === 0) {
+      this.fieldErrors['ville'] = '🏙️ Veuillez saisir votre ville';
+    } else {
+      this.clearFieldError('ville');
+    }
   }
 }
