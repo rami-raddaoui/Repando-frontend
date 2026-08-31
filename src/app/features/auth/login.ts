@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { UserRole } from '../../core/models/models';
 import { CommonModule } from '@angular/common';
@@ -23,7 +23,7 @@ export class LoginComponent {
   registerForm: FormGroup;
   forgotForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private route: ActivatedRoute) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
@@ -41,6 +41,12 @@ export class LoginComponent {
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
+
+    // Allow links like /connexion?mode=register to open client signup directly.
+    const forcedMode = this.route.snapshot.queryParamMap.get('mode');
+    if (forcedMode === 'register') this.mode.set('register');
+    else if (forcedMode === 'choose-role') this.mode.set('choose-role');
+    else if (forcedMode === 'forgot-password') this.mode.set('forgot-password');
   }
 
   passwordMatchValidator(g: FormGroup) {
