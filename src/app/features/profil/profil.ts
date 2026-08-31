@@ -104,6 +104,8 @@ export class ProfilComponent implements OnInit {
   readonly allAppareilTypes = Object.keys(TypeAppareil) as TypeAppareil[];
   readonly UserRole = UserRole;
   readonly Object = Object;
+  private readonly namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
+  private readonly frPhonePattern = /^[1-9]\d{8}$/;
 
   constructor(
     public auth: AuthService,
@@ -194,6 +196,43 @@ export class ProfilComponent implements OnInit {
     return (this.showAllValidationErrors || this.touchedFields.has(field)) && !!this.fieldErrors[field];
   }
 
+  onNameInput(field: 'prenom' | 'nom'): void {
+    // Keep letters, accents, spaces, apostrophes and hyphens for names.
+    const current = (this.form[field] ?? '').toString();
+    const sanitized = current.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ' -]/g, '');
+    this.form[field] = sanitized;
+    this.clearFieldError(field);
+  }
+
+  onTelephoneInput(): void {
+    const digitsOnly = (this.form.telephone ?? '').replace(/\D/g, '').slice(0, 9);
+    this.form.telephone = digitsOnly;
+    this.clearFieldError('telephone');
+  }
+
+  private normalizeFrenchPhoneEditablePart(raw?: string | null): string {
+    const value = (raw ?? '').toString().trim();
+    if (!value) return '';
+    const digits = value.replace(/\D/g, '');
+
+    if (digits.startsWith('33') && digits.length >= 11) {
+      return digits.substring(2, 11);
+    }
+    if (digits.startsWith('0') && digits.length >= 10) {
+      return digits.substring(1, 10);
+    }
+    if (digits.length >= 9) {
+      return digits.substring(0, 9);
+    }
+    return digits;
+  }
+
+  private buildFrenchPhoneForApi(): string | undefined {
+    const local = (this.form.telephone ?? '').trim();
+    if (!local) return undefined;
+    return `+33${local}`;
+  }
+
   validatePrenomNom(): boolean {
     this.fieldErrors = {};
     let isValid = true;
@@ -204,6 +243,9 @@ export class ProfilComponent implements OnInit {
     } else if (this.form.prenom.trim().length < 2) {
       this.fieldErrors['prenom'] = '✋ Le prénom doit contenir au moins 2 caractères';
       isValid = false;
+    } else if (!this.namePattern.test(this.form.prenom.trim())) {
+      this.fieldErrors['prenom'] = '✋ Le prénom doit contenir uniquement des lettres';
+      isValid = false;
     }
 
     if (!this.form.nom.trim()) {
@@ -211,6 +253,14 @@ export class ProfilComponent implements OnInit {
       isValid = false;
     } else if (this.form.nom.trim().length < 2) {
       this.fieldErrors['nom'] = '✋ Le nom doit contenir au moins 2 caractères';
+      isValid = false;
+    } else if (!this.namePattern.test(this.form.nom.trim())) {
+      this.fieldErrors['nom'] = '✋ Le nom doit contenir uniquement des lettres';
+      isValid = false;
+    }
+
+    if (this.form.telephone.trim() && !this.frPhonePattern.test(this.form.telephone.trim())) {
+      this.fieldErrors['telephone'] = '📞 Entrez un numero francais valide (9 chiffres apres +33)';
       isValid = false;
     }
 
@@ -261,7 +311,7 @@ export class ProfilComponent implements OnInit {
     const payload: UpdateProfileRequest = {
       prenom: this.form.prenom.trim(),
       nom: this.form.nom.trim(),
-      telephone: this.form.telephone.trim() || undefined,
+      telephone: this.buildFrenchPhoneForApi(),
       newPassword: this.showPasswordChange && this.form.newPassword ? this.form.newPassword : undefined,
       currentPassword: this.showPasswordChange && this.form.currentPassword ? this.form.currentPassword : undefined,
     };
@@ -270,6 +320,7 @@ export class ProfilComponent implements OnInit {
       next: u => {
         this.saveLoading = false;
         this.user = u;
+        this.form.telephone = this.normalizeFrenchPhoneEditablePart(u.telephone);
         this.saveSuccess = '✨ Profil mis à jour avec succès !';
         this.form.currentPassword = '';
         this.form.newPassword = '';
@@ -466,7 +517,7 @@ export class ProfilComponent implements OnInit {
         this.user = { ...u, avatarUrl: resolveStaticUrl(u.avatarUrl) };
         this.form.prenom = u.prenom;
         this.form.nom = u.nom;
-        this.form.telephone = u.telephone ?? '';
+        this.form.telephone = this.normalizeFrenchPhoneEditablePart(u.telephone);
         this.loading = false;
         if (this.auth.isReparateur()) this.loadRepProfile();
         this.loadResiliation();

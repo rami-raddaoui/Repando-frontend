@@ -315,6 +315,17 @@
    display: block;
    line-height: 1.4;
  }
+
+  .profil-phone-group {
+    display: grid;
+    grid-template-columns: 86px 1fr;
+    gap: 8px;
+  }
+
+  .profil-phone-prefix {
+    text-align: center;
+    font-weight: 700;
+  }
 .profil-error-msg {
    font-size: 13px;
    color: #991b1b;

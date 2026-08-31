@@ -101,8 +101,9 @@
               type="text"
               [(ngModel)]="form.prenom"
               placeholder="Votre prénom"
+              autocomplete="given-name"
               (blur)="markFieldTouched('prenom')"
-              (input)="clearFieldError('prenom')" />
+              (input)="onNameInput('prenom')" />
             @if (hasFieldError('prenom')) {
               <span class="profil-error-msg">{{ getFieldError('prenom') }}</span>
             }
@@ -114,8 +115,9 @@
               type="text"
               [(ngModel)]="form.nom"
               placeholder="Votre nom"
+              autocomplete="family-name"
               (blur)="markFieldTouched('nom')"
-              (input)="clearFieldError('nom')" />
+              (input)="onNameInput('nom')" />
             @if (hasFieldError('nom')) {
               <span class="profil-error-msg">{{ getFieldError('nom') }}</span>
             }
@@ -125,9 +127,25 @@
             <input class="profil-input profil-input--readonly" type="email" [value]="user.email" readonly />
             <span class="profil-hint">🔒 Non modifiable</span>
           </div>
-          <div class="profil-field profil-field--full">
+          <div class="profil-field profil-field--full" [class.profil-field--error]="hasFieldError('telephone')">
             <label class="profil-label">Téléphone</label>
-            <input class="profil-input" type="tel" [(ngModel)]="form.telephone" placeholder="06 XX XX XX XX" />
+            <div class="profil-phone-group">
+              <input class="profil-input profil-input--readonly profil-phone-prefix" type="text" value="+33" readonly />
+              <input
+                class="profil-input"
+                type="tel"
+                [(ngModel)]="form.telephone"
+                inputmode="numeric"
+                maxlength="9"
+                autocomplete="tel-national"
+                placeholder="612345678"
+                (blur)="markFieldTouched('telephone')"
+                (input)="onTelephoneInput()" />
+            </div>
+            <span class="profil-hint">Saisissez 9 chiffres (ex: 612345678)</span>
+            @if (hasFieldError('telephone')) {
+              <span class="profil-error-msg">{{ getFieldError('telephone') }}</span>
+            }
           </div>
         </div>
 
