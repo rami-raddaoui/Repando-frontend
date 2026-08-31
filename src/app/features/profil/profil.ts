@@ -105,6 +105,7 @@ export class ProfilComponent implements OnInit {
   activeTab: 'infos' | 'metier' | 'securite' = 'infos';
   highlightedMetierField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
   private requestedFocusField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
+  private rcProCacheBuster = 0;
   idfError = '';
   postalMatches: { nom: string; code?: string }[] = [];
   private localPostalMap: Record<string, string[]> | null = null;
@@ -132,10 +133,12 @@ export class ProfilComponent implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  private loadRepProfile(): void {
-    this.http.get<any>(`${environment.apiUrl}/reparateurs/me`).subscribe({
+  private loadRepProfile(forceRefresh = false): void {
+    const suffix = forceRefresh ? `?t=${Date.now()}` : '';
+    this.http.get<any>(`${environment.apiUrl}/reparateurs/me${suffix}`).subscribe({
       next: r => {
         this.repProfile = r;
+        if (r?.rcProUploadedAt) this.rcProCacheBuster = Date.now();
         if (r) {
           this.repForm.siret = r.siret ?? '';
           this.repForm.numeroQualirepar = r.numeroQualirepar ?? '';
@@ -700,16 +703,24 @@ export class ProfilComponent implements OnInit {
       this.reparateurService.uploadRcPro(reader.result as string, reparateurId).subscribe({
         next: (res) => {
           this.rcProLoading = false;
+          const ext = file.type === 'application/pdf'
+            ? '.pdf'
+            : file.type === 'image/png'
+              ? '.png'
+              : '.jpg';
+          const nowIso = new Date().toISOString();
+          this.rcProCacheBuster = Date.now();
           if (this.repProfile) {
             this.repProfile = {
               ...this.repProfile,
               rcProStatut: 'EN_VERIFICATION',
-              rcProUploadedAt: new Date().toISOString()
+              rcProUploadedAt: nowIso,
+              rcProUrl: this.repProfile.rcProUrl ?? `/rc-pro/${reparateurId}${ext}`
             };
           }
           this.saveSuccess = res?.message ?? 'Attestation RC Pro envoyee. En cours de validation.';
           setTimeout(() => this.saveSuccess = '', 4000);
-          this.loadRepProfile();
+          this.loadRepProfile(true);
         },
         error: (e) => {
           this.rcProLoading = false;
@@ -735,7 +746,10 @@ export class ProfilComponent implements OnInit {
   }
 
   getResolvedRcProUrl(): string | null {
-    return resolveStaticUrl(this.repProfile?.rcProUrl) ?? this.repProfile?.rcProUrl ?? null;
+    const base = resolveStaticUrl(this.repProfile?.rcProUrl) ?? this.repProfile?.rcProUrl ?? null;
+    if (!base) return null;
+    const separator = base.includes('?') ? '&' : '?';
+    return `${base}${separator}v=${this.rcProCacheBuster || Date.now()}`;
   }
 
   get canEditSiret(): boolean {
