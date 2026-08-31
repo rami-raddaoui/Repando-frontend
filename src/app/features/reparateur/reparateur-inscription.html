@@ -50,6 +50,19 @@
           @if (isFieldInvalid(accountForm, 'password')) { <span class="field-error">{{ fieldError(accountForm, 'password') }}</span> }
         </div>
 
+        <div class="fg fg-consent" [class.is-invalid]="isFieldInvalid(accountForm, 'acceptCgu')">
+          <label class="consent-check">
+            <input type="checkbox" formControlName="acceptCgu" />
+            <span>
+              J'ai lu et j'accepte les
+              <a routerLink="/conditions-generales-utilisation" target="_blank" rel="noopener noreferrer">Conditions Générales d'Utilisation</a>
+              et la
+              <a routerLink="/politique-confidentialite" target="_blank" rel="noopener noreferrer">Politique de confidentialité</a>.
+            </span>
+          </label>
+          @if (isFieldInvalid(accountForm, 'acceptCgu')) { <span class="field-error">{{ fieldError(accountForm, 'acceptCgu') }}</span> }
+        </div>
+
         <button type="submit" class="btn-join" [disabled]="accountForm.invalid || loading">
           {{ loading ? 'Création...' : 'Créer mon compte →' }}
         </button>

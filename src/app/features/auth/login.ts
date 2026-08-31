@@ -18,6 +18,7 @@ export class LoginComponent {
   error = '';
   success = '';
   isCompteDesactive = false;
+  registerSubmitted = false;
 
   loginForm: FormGroup;
   registerForm: FormGroup;
@@ -36,6 +37,7 @@ export class LoginComponent {
       telephone: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
+      acceptCgu: [false, Validators.requiredTrue],
     }, { validators: this.passwordMatchValidator });
 
     this.forgotForm = this.fb.group({
@@ -64,6 +66,13 @@ export class LoginComponent {
     this.error = '';
     this.success = '';
     this.isCompteDesactive = false;
+    this.registerSubmitted = false;
+  }
+
+  hasRegisterCguError(): boolean {
+    const c = this.registerForm.get('acceptCgu');
+    if (!c) return false;
+    return c.invalid && (c.touched || c.dirty || this.registerSubmitted);
   }
 
   submitLogin(): void {
@@ -92,7 +101,11 @@ export class LoginComponent {
   }
 
   submitRegister(): void {
-    if (this.registerForm.invalid) return;
+    this.registerSubmitted = true;
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     this.error = '';
     const { confirmPassword, ...data } = this.registerForm.value;

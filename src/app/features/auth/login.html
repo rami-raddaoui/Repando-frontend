@@ -182,6 +182,20 @@
               <span class="field-error">Les mots de passe ne correspondent pas</span>
             }
           </div>
+          <div class="fg fg-consent" [class.is-invalid]="hasRegisterCguError()">
+            <label class="consent-check">
+              <input type="checkbox" formControlName="acceptCgu" />
+              <span>
+                J'ai lu et j'accepte les
+                <a routerLink="/conditions-generales-utilisation" target="_blank" rel="noopener noreferrer">Conditions Générales d'Utilisation</a>
+                et la
+                <a routerLink="/politique-confidentialite" target="_blank" rel="noopener noreferrer">Politique de confidentialité</a>.
+              </span>
+            </label>
+            @if (hasRegisterCguError()) {
+              <span class="field-error">Vous devez accepter les Conditions Générales d'Utilisation et la Politique de confidentialité pour continuer.</span>
+            }
+          </div>
           <button type="submit" class="btn-submit" [disabled]="loading || registerForm.invalid">
             @if (loading) { <span class="spin">⏳</span> Création... }
             @else { Créer mon compte → }

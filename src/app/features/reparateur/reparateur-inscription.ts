@@ -30,6 +30,7 @@ export class ReparateurInscriptionComponent {
       email: ['', [Validators.required, Validators.pattern(this.emailPattern)]],
       telephone: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(8)]],
+      acceptCgu: [false, Validators.requiredTrue],
     });
 
     this.accountForm.get('email')?.valueChanges.subscribe(() => {
@@ -56,8 +57,13 @@ export class ReparateurInscriptionComponent {
         email: 'L’email est requis.',
         telephone: 'Le téléphone est requis.',
         password: 'Le mot de passe est requis.',
+        acceptCgu: 'Vous devez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.',
       };
       return requiredMessages[field] ?? 'Ce champ est requis.';
+    }
+
+    if (errors['requiredTrue'] && field === 'acceptCgu') {
+      return 'Vous devez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.';
     }
 
     if (errors['email'] || errors['pattern'] && field === 'email') return 'Entrez une adresse email valide.';
