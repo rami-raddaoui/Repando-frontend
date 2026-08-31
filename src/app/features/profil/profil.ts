@@ -87,11 +87,17 @@ export class ProfilComponent implements OnInit {
   activeTab: 'infos' | 'metier' | 'securite' = 'infos';
   highlightedMetierField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
   private requestedFocusField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
+  idfError = '';
+  postalMatches: { nom: string; code?: string }[] = [];
+  private localPostalMap: Record<string, string[]> | null = null;
+  private localPostalMapLoaded = false;
+  private codePostalDebounce?: number;
 
   // ── Field-level validation errors ─────────────────────
   fieldErrors: Record<string, string> = {};
   touchedFields: Set<string> = new Set();
   showAllValidationErrors = false;
+  private readonly idfDepartments = ['75', '77', '78', '91', '92', '93', '94', '95'];
 
   readonly TypeAppareil = TypeAppareil;
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
@@ -300,13 +306,6 @@ export class ProfilComponent implements OnInit {
        }
      }
 
-     // Validation Ville
-     if (!this.repForm.ville.trim()) {
-       this.fieldErrors['ville'] = '🏙️ Veuillez saisir votre ville';
-       if (!firstErrorField) firstErrorField = 'ville';
-       isValid = false;
-     }
-
      // Validation Code postal
      if (!this.repForm.codePostal.trim()) {
        this.fieldErrors['code_postal'] = '📮 Veuillez saisir votre code postal';
@@ -315,6 +314,19 @@ export class ProfilComponent implements OnInit {
      } else if (!/^\d{5}$/.test(this.repForm.codePostal.trim())) {
        this.fieldErrors['code_postal'] = '⚠️ Le code postal doit contenir 5 chiffres';
        if (!firstErrorField) firstErrorField = 'code_postal';
+       isValid = false;
+     } else if (this.idfError) {
+       this.fieldErrors['code_postal'] = this.idfError;
+       if (!firstErrorField) firstErrorField = 'code_postal';
+       isValid = false;
+     }
+
+     // Validation Ville
+     if (!this.repForm.ville.trim()) {
+       this.fieldErrors['ville'] = this.needsCommuneSelection()
+         ? '🏙️ Choisissez votre commune'
+         : '🏙️ Veuillez saisir votre ville';
+       if (!firstErrorField) firstErrorField = 'ville';
        isValid = false;
      }
 
@@ -358,7 +370,7 @@ export class ProfilComponent implements OnInit {
     this.http.patch<ApiResponse<void>>(`${environment.apiUrl}/reparateurs/profile`, payload).subscribe({
       next: () => {
         this.saveLoading = false;
-        this.saveSuccess = '✨ Profil métier mis à jour avec succès !';
+        this.saveSuccess = 'Profil métier mis à jour avec succès !';
         this.fieldErrors = {};
         this.touchedFields.clear();
         this.showAllValidationErrors = false;
@@ -620,6 +632,107 @@ export class ProfilComponent implements OnInit {
     return this.repForm.specialites.length === 0;
   }
 
+  private async ensureLocalMapLoaded(): Promise<void> {
+    if (this.localPostalMapLoaded) return;
+    try {
+      const res = await fetch('/data/idf-postal-to-communes.json');
+      if (res.ok) this.localPostalMap = await res.json();
+      else this.localPostalMap = null;
+    } catch {
+      this.localPostalMap = null;
+    } finally {
+      this.localPostalMapLoaded = true;
+    }
+  }
+
+  private isPostalCodeInIdf(cp: string): boolean {
+    return this.idfDepartments.includes(cp.substring(0, 2));
+  }
+
+  private async onCodePostalChange(cpRaw?: string): Promise<void> {
+    const cp = (cpRaw || '').toString().trim();
+    this.idfError = '';
+    this.postalMatches = [];
+
+    if (!cp) {
+      this.repForm.ville = '';
+      return;
+    }
+
+    if (!/^\d{5}$/.test(cp)) {
+      this.repForm.ville = '';
+      return;
+    }
+
+    if (!this.isPostalCodeInIdf(cp)) {
+      this.repForm.ville = '';
+      this.idfError = 'Repando est disponible en Ile-de-France uniquement pour le moment.';
+      return;
+    }
+
+    await this.ensureLocalMapLoaded();
+    const localMatches = this.localPostalMap?.[cp];
+    if (localMatches?.length) {
+      if (localMatches.length === 1) {
+        this.repForm.ville = localMatches[0];
+      } else {
+        this.postalMatches = localMatches.map((nom) => ({ nom }));
+        this.repForm.ville = '';
+      }
+      return;
+    }
+
+    try {
+      const url = `https://geo.api.gouv.fr/communes?codePostal=${cp}&fields=nom,code,codesPostaux&boost=population`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        this.repForm.ville = '';
+        this.idfError = 'Repando est disponible en Ile-de-France uniquement pour le moment.';
+        return;
+      }
+
+      if (data.length === 1) {
+        this.repForm.ville = data[0]?.nom ?? '';
+        return;
+      }
+
+      this.postalMatches = data
+        .map((c: any) => ({ nom: (c?.nom ?? '').toString(), code: (c?.code ?? '').toString() }))
+        .filter((c: { nom: string }) => !!c.nom);
+      this.repForm.ville = '';
+    } catch {
+      this.repForm.ville = '';
+    }
+  }
+
+  onCodePostalInput(): void {
+    this.validateCodePostalFormat();
+    if (this.codePostalDebounce) window.clearTimeout(this.codePostalDebounce);
+    this.codePostalDebounce = window.setTimeout(() => {
+      this.onCodePostalChange(this.repForm.codePostal);
+    }, 300);
+  }
+
+  cityError(): string {
+    if (this.needsCommuneSelection()) return 'Choisissez votre commune.';
+    return this.getFieldError('ville');
+  }
+
+  needsCommuneSelection(): boolean {
+    return this.postalMatches.length > 1 && !this.repForm.ville.trim();
+  }
+
+  selectCommuneByEvent(event: Event): void {
+    const value = ((event.target as HTMLSelectElement)?.value || '').trim();
+    if (!value) return;
+    this.repForm.ville = value;
+    this.postalMatches = [];
+    this.clearFieldError('ville');
+  }
+
   private normalizeFocusField(value: string | null): 'siret' | 'ville' | 'code_postal' | 'specialites' | null {
     if (value === 'siret' || value === 'ville' || value === 'code_postal' || value === 'specialites') return value;
     return null;
@@ -669,6 +782,8 @@ export class ProfilComponent implements OnInit {
       this.fieldErrors['code_postal'] = '📮 Veuillez saisir votre code postal';
     } else if (!/^\d{5}$/.test(trimmed)) {
       this.fieldErrors['code_postal'] = '⚠️ Le code postal doit contenir 5 chiffres';
+    } else if (!this.isPostalCodeInIdf(trimmed)) {
+      this.fieldErrors['code_postal'] = 'Repando est disponible en Ile-de-France uniquement pour le moment.';
     } else {
       this.clearFieldError('code_postal');
     }
@@ -677,7 +792,9 @@ export class ProfilComponent implements OnInit {
   // ── Validate ville on input ────────────────────────
   validateVilleFormat(): void {
     const trimmed = this.repForm.ville.trim();
-    if (trimmed.length === 0) {
+    if (this.needsCommuneSelection()) {
+      this.fieldErrors['ville'] = '🏙️ Choisissez votre commune';
+    } else if (trimmed.length === 0) {
       this.fieldErrors['ville'] = '🏙️ Veuillez saisir votre ville';
     } else {
       this.clearFieldError('ville');

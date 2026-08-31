@@ -1,5 +1,4 @@
-@if (step === 1) {
-  <div class="inscription-layout">
+<div class="inscription-layout">
     <div class="inscription-left">
       <a routerLink="/" class="logo" style="color:white"><div class="logo-dot"></div>Repair<span style="color:#475569">ando</span></a>
       <div style="margin-top:48px">
@@ -18,7 +17,9 @@
 
     <div class="inscription-right">
       <h2 class="lr-title">Créer votre compte réparateur</h2>
-      <p class="lr-sub">Étape 1/2 — Informations personnelles</p>
+      <p class="lr-sub">Informations personnelles</p>
+
+      @if (error) { <div class="alert-error">{{ error }}</div> }
 
       <form [formGroup]="accountForm" (ngSubmit)="submitAccount()" novalidate>
         <div class="form-row">
@@ -48,98 +49,11 @@
           <input type="password" formControlName="password" placeholder="••••••••" [class.is-invalid]="isFieldInvalid(accountForm, 'password')"/>
           @if (isFieldInvalid(accountForm, 'password')) { <span class="field-error">{{ fieldError(accountForm, 'password') }}</span> }
         </div>
+
         <button type="submit" class="btn-join" [disabled]="accountForm.invalid || loading">
-          {{ loading ? 'Création...' : 'Continuer →' }}
+          {{ loading ? 'Création...' : 'Créer mon compte →' }}
         </button>
         <p class="offer-note">Déjà un compte ? <a routerLink="/connexion" style="color:var(--blue)">Se connecter</a></p>
       </form>
     </div>
   </div>
-}
-
-@if (step === 2) {
-  <div class="inscription-layout">
-    <div class="inscription-left">
-      <a routerLink="/" class="logo" style="color:white"><div class="logo-dot"></div>Repair<span style="color:#475569">ando</span></a>
-      <div style="margin-top:48px">
-        <div class="rep-cta-label">Étape 2/2</div>
-        <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:900;color:white;line-height:1.1">
-          Informations<br/>professionnelles
-        </h2>
-      </div>
-    </div>
-
-    <div class="inscription-right">
-      <h2 class="lr-title">Votre profil réparateur</h2>
-      <p class="lr-sub">Label QualiRépar requis · Validation admin sous 24h</p>
-
-      @if (error) { <div class="alert-error">{{ error }}</div> }
-
-      <form [formGroup]="profileForm" (ngSubmit)="submitProfile()" novalidate>
-        <div class="form-row">
-          <div class="fg">
-            <label>SIRET * (14 chiffres)</label>
-            <input formControlName="siret" placeholder="12345678901234" inputmode="numeric" [class.is-invalid]="isFieldInvalid(profileForm, 'siret')"/>
-            @if (isFieldInvalid(profileForm, 'siret')) { <span class="field-error">{{ fieldError(profileForm, 'siret') }}</span> }
-          </div>
-          <div class="fg">
-            <label>N° QualiRépar</label>
-            <input formControlName="numeroQualirepar" placeholder="QR-XXXXX"/>
-            <span class="field-hint">Optionnel</span>
-          </div>
-        </div>
-        <div class="fg">
-          <label>Présentation</label>
-          <textarea formControlName="bio" rows="3" placeholder="Décrivez votre expertise, vos marques de prédilection..."></textarea>
-          <span class="field-hint">Optionnel</span>
-        </div>
-        <div class="fg">
-          <label>Adresse *</label>
-          <input formControlName="adresseAtelier" placeholder="123 rue de la République" [class.is-invalid]="isFieldInvalid(profileForm, 'adresseAtelier')"/>
-          @if (isFieldInvalid(profileForm, 'adresseAtelier')) { <span class="field-error">{{ fieldError(profileForm, 'adresseAtelier') }}</span> }
-        </div>
-        <div class="form-row">
-          <div class="fg small">
-            <label>Code postal *</label>
-            <input formControlName="codePostal" placeholder="75015" inputmode="numeric" maxlength="5" [class.is-invalid]="isFieldInvalid(profileForm, 'codePostal') || !!idfError"/>
-            @if (isFieldInvalid(profileForm, 'codePostal')) { <span class="field-error">{{ fieldError(profileForm, 'codePostal') }}</span> }
-            @if (!isFieldInvalid(profileForm, 'codePostal') && idfError) { <span class="field-error">{{ idfError }}</span> }
-          </div>
-          <div class="fg">
-            <label>Ville *</label>
-            <input formControlName="ville" readonly [class.is-invalid]="isFieldInvalid(profileForm, 'ville') || needsCommuneSelection()"/>
-            @if (cityError()) { <span class="field-error">{{ cityError() }}</span> }
-          </div>
-        </div>
-
-        <div *ngIf="postalMatches.length > 1" class="fg">
-          <label>Commune</label>
-          <select (change)="selectCommuneByEvent($event)" [class.is-invalid]="needsCommuneSelection()">
-            <option value="" selected disabled>Choisissez votre commune</option>
-            <option *ngFor="let m of postalMatches" [value]="m.nom">{{ m.nom }}</option>
-          </select>
-          @if (needsCommuneSelection()) { <span class="field-error">Choisissez votre commune.</span> }
-        </div>
-
-        <div class="fg">
-          <label>Spécialités * (choisissez au moins une)</label>
-          <div class="specialites-grid" [class.is-invalid]="specialitesError() !== ''">
-            @for (a of appareilsList; track a) {
-              <button type="button"
-                class="specialite-chip"
-                [class.is-selected]="isSelected(a)"
-                (click)="toggleSpecialite(a)">
-                {{ a }}
-              </button>
-            }
-          </div>
-          @if (specialitesError()) { <span class="field-error">{{ specialitesError() }}</span> }
-        </div>
-
-        <button type="submit" class="btn-join" [disabled]="profileForm.invalid || selectedSpecialites.length === 0 || loading">
-          {{ loading ? 'Création...' : 'Créer mon profil réparateur →' }}
-        </button>
-      </form>
-    </div>
-  </div>
-}

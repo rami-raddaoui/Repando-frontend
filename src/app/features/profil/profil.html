@@ -255,17 +255,19 @@
              <label class="profil-label">Rayon d'intervention (km)</label>
              <input class="profil-input" type="number" [(ngModel)]="repForm.rayonInterventionKm" min="1" max="200" />
            </div>
-           <div id="metier-ville" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('ville') || highlightedMetierField === 'ville'" [class.profil-field--error]="hasFieldError('ville')">
+           <div id="metier-ville" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('ville') || highlightedMetierField === 'ville'" [class.profil-field--error]="hasFieldError('ville') || needsCommuneSelection()">
              <label class="profil-label">Ville <span class="profil-required">*</span></label>
              <input
                class="profil-input"
                type="text"
                [(ngModel)]="repForm.ville"
+               readonly
                placeholder="Paris"
                (blur)="markFieldTouched('ville'); validateVilleFormat()"
-               (input)="validateVilleFormat()" />
-             @if (hasFieldError('ville')) {
-               <span class="profil-error-msg">{{ getFieldError('ville') }}</span>
+               (input)="validateVilleFormat()"
+               [class.profil-input--readonly]="true" />
+             @if (cityError()) {
+               <span class="profil-error-msg">{{ cityError() }}</span>
              }
            </div>
            <div id="metier-code-postal" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('code_postal') || highlightedMetierField === 'code_postal'" [class.profil-field--error]="hasFieldError('code_postal')">
@@ -276,12 +278,28 @@
                [(ngModel)]="repForm.codePostal"
                placeholder="75000"
                maxlength="5"
+               inputmode="numeric"
                (blur)="markFieldTouched('code_postal'); validateCodePostalFormat()"
-               (input)="validateCodePostalFormat()" />
+               (input)="onCodePostalInput()" />
              @if (hasFieldError('code_postal')) {
                <span class="profil-error-msg">{{ getFieldError('code_postal') }}</span>
              }
            </div>
+
+           @if (postalMatches.length > 1) {
+             <div class="profil-field profil-field--full" [class.profil-field--error]="needsCommuneSelection()">
+               <label class="profil-label">Commune <span class="profil-required">*</span></label>
+               <select class="profil-input" (change)="selectCommuneByEvent($event)">
+                 <option value="" selected disabled>Choisissez votre commune</option>
+                 @for (m of postalMatches; track m.nom) {
+                   <option [value]="m.nom">{{ m.nom }}</option>
+                 }
+               </select>
+               @if (needsCommuneSelection()) {
+                 <span class="profil-error-msg">🏙️ Choisissez votre commune</span>
+               }
+             </div>
+           }
            <div class="profil-field profil-field--full">
              <label class="profil-label">Adresse de l'atelier</label>
              <input class="profil-input" type="text" [(ngModel)]="repForm.adresseAtelier" placeholder="12 rue de la Réparation, Paris" />
