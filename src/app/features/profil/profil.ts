@@ -467,6 +467,12 @@ export class ProfilComponent implements OnInit {
     this.saveError = '';
     const validation = this.validateRepProfile();
 
+    const reparateurId = this.repProfile?.id;
+    if (!reparateurId) {
+      this.saveError = '❌ Profil réparateur introuvable. Rechargez la page.';
+      return;
+    }
+
     if (!validation.isValid) {
       // Scroll to first error field with smooth animation
       if (validation.firstErrorField) {
@@ -488,7 +494,7 @@ export class ProfilComponent implements OnInit {
       specialites: this.repForm.specialites
     };
 
-    this.http.patch<ApiResponse<void>>(`${environment.apiUrl}/reparateurs/profile`, payload).subscribe({
+    this.reparateurService.updateProfile(payload, reparateurId).subscribe({
       next: () => {
         this.saveLoading = false;
         this.saveSuccess = 'Profil métier mis à jour avec succès !';
@@ -683,9 +689,15 @@ export class ProfilComponent implements OnInit {
 
     const reader = new FileReader();
     reader.onload = () => {
+      const reparateurId = this.repProfile?.id;
+      if (!reparateurId) {
+        this.saveError = '❌ Profil réparateur introuvable. Rechargez la page.';
+        return;
+      }
+
       this.rcProLoading = true;
       this.saveError = '';
-      this.reparateurService.uploadRcPro(reader.result as string).subscribe({
+      this.reparateurService.uploadRcPro(reader.result as string, reparateurId).subscribe({
         next: (res) => {
           this.rcProLoading = false;
           if (this.repProfile) {
