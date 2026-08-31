@@ -1,8 +1,14 @@
 /* ===== AUTH PAGE ===== */
 .auth-wrap {
   display: flex;
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
+  padding-top: 64px;
   background: #f8fafc;
+}
+
+body.has-impersonate-banner .auth-wrap {
+  min-height: calc(100vh - 101px);
+  padding-top: 101px;
 }
 
 /* ---- GAUCHE branding ---- */
