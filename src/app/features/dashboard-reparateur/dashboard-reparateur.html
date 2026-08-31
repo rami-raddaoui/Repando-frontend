@@ -8,7 +8,7 @@
   </div>
 
   <!-- BANNER: PROFIL NON VALIDÉ -->
-  @if (dashboard && !isVerified) {
+  @if (dashboard && !isVerified && profilComplet) {
     <div class="pending-banner">
       <div class="pending-banner__glow"></div>
       <div class="pending-banner__inner">
