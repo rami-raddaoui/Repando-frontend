@@ -23,7 +23,7 @@
 
     @if (!auth.isLoggedIn()) {
       <a routerLink="/" class="nav-link">Accueil</a>
-      <a routerLink="/connexion" [queryParams]="{ mode: 'register' }" class="btn-ghost">Je répare mon appareil</a>
+      <a routerLink="/connexion" [queryParams]="{ mode: 'register' }" class="btn-nav btn-nav--client">✨ Je répare mon appareil</a>
       <a routerLink="/connexion" class="btn-ghost">Connexion</a>
       <a routerLink="/inscription-reparateur" class="btn-nav">🔧 Je suis réparateur</a>
     }

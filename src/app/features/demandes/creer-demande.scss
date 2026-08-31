@@ -88,7 +88,7 @@ $white: #ffffff;
 /* ---- FORM ---- */
 .cd-form {
   max-width: 680px;
-  margin: -28px auto 0;
+  margin: 20px auto 0;
   padding: 0 16px;
   position: relative;
   z-index: 3;
@@ -96,7 +96,7 @@ $white: #ffffff;
   // Si la bannière info est le 1er élément, elle remonterait dans le hero :
   // on lui ajoute un padding-top pour compenser le margin négatif du form
   > .cd-alert-info:first-child {
-    margin-top: 36px;
+    margin-top: 0;
   }
 }
 
@@ -120,7 +120,7 @@ $white: #ffffff;
 /* ---- ALERT INFO ---- */
 .cd-alert-info-wrap {
   max-width: 680px;
-  margin: -28px auto 0;
+  margin: 20px auto 0;
   padding: 0 16px;
   position: relative;
   z-index: 3;
