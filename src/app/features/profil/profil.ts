@@ -4,6 +4,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { resolveStaticUrl } from '../../core/services/auth';
 import {
@@ -15,8 +16,10 @@ import { ReparateurService } from '../../core/services/reparateur';
 
 interface RepProfile {
   id: string;
-  siret: string;
+  siret?: string;
   numeroQualirepar?: string;
+  canEditSiret?: boolean;
+  canEditNumeroQualirepar?: boolean;
   bio?: string;
   anneesExperience: number;
   adresseAtelier?: string;
@@ -63,6 +66,8 @@ export class ProfilComponent implements OnInit {
   };
 
   repForm = {
+    siret: '',
+    numeroQualirepar: '',
     bio: '',
     anneesExperience: 0,
     adresseAtelier: '',
@@ -80,6 +85,8 @@ export class ProfilComponent implements OnInit {
   rcProLoading = false;
   showPasswordChange = false;
   activeTab: 'infos' | 'metier' | 'securite' = 'infos';
+  highlightedMetierField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
+  private requestedFocusField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
 
   readonly TypeAppareil = TypeAppareil;
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
@@ -89,7 +96,8 @@ export class ProfilComponent implements OnInit {
   constructor(
     public auth: AuthService,
     private http: HttpClient,
-    private reparateurService: ReparateurService
+    private reparateurService: ReparateurService,
+    private route: ActivatedRoute
   ) {}
 
   private loadRepProfile(): void {
@@ -97,6 +105,8 @@ export class ProfilComponent implements OnInit {
       next: r => {
         this.repProfile = r;
         if (r) {
+          this.repForm.siret = r.siret ?? '';
+          this.repForm.numeroQualirepar = r.numeroQualirepar ?? '';
           this.repForm.bio = r.bio ?? '';
           this.repForm.anneesExperience = r.anneesExperience ?? 0;
           this.repForm.adresseAtelier = r.adresseAtelier ?? '';
@@ -104,6 +114,7 @@ export class ProfilComponent implements OnInit {
           this.repForm.codePostal = r.codePostal ?? '';
           this.repForm.rayonInterventionKm = r.rayonInterventionKm ?? 10;
           this.repForm.specialites = (r.specialites ?? []) as TypeAppareil[];
+          this.applyRequestedMetierFocus();
         }
       },
       error: () => {}
@@ -206,6 +217,11 @@ export class ProfilComponent implements OnInit {
   // ── Save reparateur profile ───────────────────────────────
   saveRepProfile(): void {
     if (!this.repForm.ville.trim()) { this.saveError = 'Ville requise'; return; }
+    if (!this.repForm.codePostal.trim()) { this.saveError = 'Code postal requis'; return; }
+    if (this.canEditSiret && !this.repForm.siret.trim()) {
+      this.saveError = 'Le SIRET est requis';
+      return;
+    }
     if (this.repForm.specialites.length === 0) {
       this.saveError = 'Sélectionnez au moins une spécialité';
       return;
@@ -214,11 +230,13 @@ export class ProfilComponent implements OnInit {
     this.saveLoading = true;
     this.saveError = '';
     const payload: UpdateReparateurProfileRequest = {
+      siret: this.canEditSiret ? this.repForm.siret.trim() : undefined,
+      numeroQualirepar: this.canEditNumeroQualirepar ? (this.repForm.numeroQualirepar.trim() || undefined) : undefined,
       bio: this.repForm.bio || undefined,
       anneesExperience: this.repForm.anneesExperience,
       adresseAtelier: this.repForm.adresseAtelier || undefined,
       ville: this.repForm.ville.trim(),
-      codePostal: this.repForm.codePostal || undefined,
+      codePostal: this.repForm.codePostal.trim(),
       rayonInterventionKm: this.repForm.rayonInterventionKm,
       specialites: this.repForm.specialites
     };
@@ -286,6 +304,14 @@ export class ProfilComponent implements OnInit {
   retractError = '';
 
   ngOnInit(): void {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    const focus = this.route.snapshot.queryParamMap.get('focus');
+    this.requestedFocusField = this.normalizeFocusField(focus);
+
+    if ((tab === 'metier' || this.requestedFocusField) && this.auth.isReparateur()) {
+      this.activeTab = 'metier';
+    }
+
     this.auth.me().subscribe({
       next: u => {
         this.user = { ...u, avatarUrl: resolveStaticUrl(u.avatarUrl) };
@@ -427,5 +453,63 @@ export class ProfilComponent implements OnInit {
 
   getResolvedRcProUrl(): string | null {
     return resolveStaticUrl(this.repProfile?.rcProUrl) ?? this.repProfile?.rcProUrl ?? null;
+  }
+
+  get canEditSiret(): boolean {
+    if (!this.repProfile) return false;
+    if (typeof this.repProfile.canEditSiret === 'boolean') return this.repProfile.canEditSiret;
+    return !this.repProfile.siret;
+  }
+
+  get canEditNumeroQualirepar(): boolean {
+    if (!this.repProfile) return false;
+    if (typeof this.repProfile.canEditNumeroQualirepar === 'boolean') return this.repProfile.canEditNumeroQualirepar;
+    return !this.repProfile.numeroQualirepar;
+  }
+
+  switchTab(tab: 'infos' | 'metier' | 'securite'): void {
+    this.activeTab = tab;
+    this.saveError = '';
+    this.saveSuccess = '';
+    if (tab === 'metier') {
+      this.applyRequestedMetierFocus();
+    }
+  }
+
+  isMetierFieldMissing(field: 'siret' | 'ville' | 'code_postal' | 'specialites'): boolean {
+    if (field === 'siret') return this.canEditSiret && !this.repForm.siret.trim();
+    if (field === 'ville') return !this.repForm.ville.trim();
+    if (field === 'code_postal') return !this.repForm.codePostal.trim();
+    return this.repForm.specialites.length === 0;
+  }
+
+  private normalizeFocusField(value: string | null): 'siret' | 'ville' | 'code_postal' | 'specialites' | null {
+    if (value === 'siret' || value === 'ville' || value === 'code_postal' || value === 'specialites') return value;
+    return null;
+  }
+
+  private applyRequestedMetierFocus(): void {
+    if (this.activeTab !== 'metier') return;
+    const field = this.requestedFocusField;
+    if (!field) return;
+
+    this.highlightedMetierField = field;
+    const idMap: Record<'siret' | 'ville' | 'code_postal' | 'specialites', string> = {
+      siret: 'metier-siret',
+      ville: 'metier-ville',
+      code_postal: 'metier-code-postal',
+      specialites: 'metier-specialites'
+    };
+
+    setTimeout(() => {
+      const el = document.getElementById(idMap[field]);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+
+    setTimeout(() => {
+      if (this.highlightedMetierField === field) this.highlightedMetierField = null;
+    }, 2600);
+
+    this.requestedFocusField = null;
   }
 }

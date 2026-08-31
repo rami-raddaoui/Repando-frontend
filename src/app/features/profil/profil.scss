@@ -137,6 +137,43 @@
   font-size: 13px; color: #94a3b8; margin-bottom: 20px;
 }
 
+.profil-metier-guide {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 8px 0 18px;
+}
+
+.profil-metier-guide__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin-bottom: 8px;
+}
+
+.profil-metier-guide__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profil-metier-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 4px 10px;
+
+  &.is-missing {
+    color: #9f1239;
+    border-color: #fda4af;
+    background: #fff1f2;
+  }
+}
+
 /* ─── FORM ───────────────────────────────────────────────── */
 .profil-form-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
@@ -144,6 +181,13 @@
 .profil-field {
   display: flex; flex-direction: column; gap: 6px;
   &--full { grid-column: 1 / -1; }
+  &--missing {
+    border-radius: 10px;
+    padding: 8px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    animation: fieldPulse .9s ease;
+  }
 }
 .profil-label {
   font-size: 12px; font-weight: 700; color: #334155;
@@ -169,8 +213,23 @@
   background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px;
   padding: 14px 16px; margin-bottom: 20px;
 }
+.profil-readonly-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #475569;
+  margin-bottom: 2px;
+}
 .profil-readonly-item {
   display: flex; align-items: center; gap: 12px;
+  &--highlight {
+    border-radius: 10px;
+    padding: 8px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    animation: fieldPulse .9s ease;
+  }
 }
 .profil-readonly-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -287,6 +346,11 @@
   transition: opacity .15s, transform .15s;
   &:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
   &:disabled { opacity: .5; cursor: default; }
+}
+
+@keyframes fieldPulse {
+  from { box-shadow: 0 0 0 0 rgba(251, 146, 60, .45); }
+  to { box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
 }
 
 /* ─── RESPONSIVE ─────────────────────────────────────────── */

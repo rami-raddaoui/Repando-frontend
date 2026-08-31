@@ -86,6 +86,8 @@ export interface UpdateProfileRequest {
 }
 
 export interface UpdateReparateurProfileRequest {
+  siret?: string;
+  numeroQualirepar?: string;
   bio?: string;
   anneesExperience: number;
   adresseAtelier?: string;

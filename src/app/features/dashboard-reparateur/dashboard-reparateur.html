@@ -190,6 +190,26 @@
   }
   }
 
+  @if (dashboard && !profilComplet) {
+    <div class="profile-incomplete-banner">
+      <div class="profile-incomplete-banner__icon">⚠️</div>
+      <div class="profile-incomplete-banner__content">
+        <div class="profile-incomplete-banner__title">Votre profil est incomplet</div>
+        <div class="profile-incomplete-banner__text">
+          Complétez les informations obligatoires pour pouvoir recevoir des missions de réparation.
+        </div>
+        @if (champsManquants.length > 0) {
+          <div class="profile-incomplete-banner__chips">
+            @for (field of champsManquants; track field.code) {
+              <span class="profile-incomplete-chip">{{ field.icon }} {{ field.label }}</span>
+            }
+          </div>
+        }
+      </div>
+      <a [routerLink]="['/profil']" [queryParams]="{ tab: 'metier', focus: profilCompletionFocus }" class="profile-incomplete-banner__cta">Compléter mon profil</a>
+    </div>
+  }
+
   <!-- STATS -->
   @if (dashboard) {
     <div class="grid-3" style="margin-bottom:24px">
