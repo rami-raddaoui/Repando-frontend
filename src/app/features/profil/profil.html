@@ -60,10 +60,16 @@
 
     <!-- ═══ FEEDBACK BANNERS ═══ -->
     @if (saveSuccess) {
-      <div class="profil-banner profil-banner--success">{{ saveSuccess }}</div>
+      <div class="profil-banner profil-banner--success profil-banner--animated">
+        <span class="profil-banner-icon">✨</span>
+        {{ saveSuccess }}
+      </div>
     }
     @if (saveError) {
-      <div class="profil-banner profil-banner--error">{{ saveError }}</div>
+      <div class="profil-banner profil-banner--error profil-banner--animated">
+        <span class="profil-banner-icon">❌</span>
+        {{ saveError }}
+      </div>
     }
 
     <!-- ═══ TABS ═══ -->
@@ -88,13 +94,31 @@
         <p class="profil-card-note">L'adresse email ne peut pas être modifiée.</p>
 
         <div class="profil-form-grid">
-          <div class="profil-field">
+          <div class="profil-field" [class.profil-field--error]="hasFieldError('prenom')">
             <label class="profil-label">Prénom <span class="profil-required">*</span></label>
-            <input class="profil-input" type="text" [(ngModel)]="form.prenom" placeholder="Votre prénom" />
+            <input
+              class="profil-input"
+              type="text"
+              [(ngModel)]="form.prenom"
+              placeholder="Votre prénom"
+              (blur)="markFieldTouched('prenom')"
+              (input)="clearFieldError('prenom')" />
+            @if (hasFieldError('prenom')) {
+              <span class="profil-error-msg">{{ getFieldError('prenom') }}</span>
+            }
           </div>
-          <div class="profil-field">
+          <div class="profil-field" [class.profil-field--error]="hasFieldError('nom')">
             <label class="profil-label">Nom <span class="profil-required">*</span></label>
-            <input class="profil-input" type="text" [(ngModel)]="form.nom" placeholder="Votre nom" />
+            <input
+              class="profil-input"
+              type="text"
+              [(ngModel)]="form.nom"
+              placeholder="Votre nom"
+              (blur)="markFieldTouched('nom')"
+              (input)="clearFieldError('nom')" />
+            @if (hasFieldError('nom')) {
+              <span class="profil-error-msg">{{ getFieldError('nom') }}</span>
+            }
           </div>
           <div class="profil-field profil-field--full">
             <label class="profil-label">Email</label>
@@ -116,129 +140,177 @@
     }
 
     <!-- ═══ TAB: PROFIL MÉTIER (réparateur) ═══ -->
-    @if (activeTab === 'metier' && auth.isReparateur()) {
-      <div class="profil-card">
-        <h3 class="profil-card-title">Profil métier</h3>
-        <div class="profil-metier-guide">
-          <div class="profil-metier-guide__title">Pour recevoir des missions, complétez ces champs obligatoires :</div>
-          <div class="profil-metier-guide__chips">
-            <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('siret')">🧾 SIRET</span>
-            <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('ville')">🏙️ Ville</span>
-            <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('code_postal')">📮 Code postal</span>
-            <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('specialites')">🛠️ Spécialités</span>
-          </div>
-        </div>
+     @if (activeTab === 'metier' && auth.isReparateur()) {
+       <div class="profil-card">
+         <h3 class="profil-card-title">Profil métier</h3>
+         <div class="profil-metier-guide">
+           <div class="profil-metier-guide__title">Pour recevoir des missions, complétez ces champs obligatoires :</div>
+           <div class="profil-metier-guide__chips">
+             <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('siret')">🧾 SIRET</span>
+             <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('ville')">🏙️ Ville</span>
+             <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('code_postal')">📮 Code postal</span>
+             <span class="profil-metier-chip" [class.is-missing]="isMetierFieldMissing('specialites')">🛠️ Spécialités</span>
+           </div>
+         </div>
 
-        <!-- Infos readonly -->
-        @if (repProfile) {
-          <div class="profil-readonly-group">
-            <div class="profil-readonly-title">Identité entreprise</div>
+         <!-- Error Summary Banner -->
+         @if (showAllValidationErrors && Object.keys(fieldErrors).length > 0) {
+           <div class="profil-validation-errors">
+             <div class="profil-validation-errors__header">
+               <span class="profil-validation-errors__icon">⚠️</span>
+               <span class="profil-validation-errors__title">{{ Object.keys(fieldErrors).length }} champ{{ Object.keys(fieldErrors).length > 1 ? 's' : '' }} à compléter</span>
+             </div>
+             <ul class="profil-validation-errors__list">
+               @for (error of Object.values(fieldErrors); track error) {
+                 <li class="profil-validation-errors__item">{{ error }}</li>
+               }
+             </ul>
+           </div>
+         }
 
-            @if (canEditSiret) {
-              <div id="metier-siret" class="profil-field profil-field--full" [class.profil-field--missing]="isMetierFieldMissing('siret') || highlightedMetierField === 'siret'">
-                <label class="profil-label">SIRET <span class="profil-required">*</span></label>
-                <input class="profil-input" type="text" [(ngModel)]="repForm.siret" maxlength="14" placeholder="14 chiffres" />
-                <span class="profil-hint">✅ Vérification automatique INSEE (existence + établissement actif). Une fois validé, il ne sera plus modifiable.</span>
-              </div>
-            } @else {
-              <div id="metier-siret" class="profil-readonly-item" [class.profil-readonly-item--highlight]="highlightedMetierField === 'siret'">
-                <span class="profil-readonly-label">SIRET</span>
-                <span class="profil-readonly-value">{{ repProfile.siret }}</span>
-                <span class="profil-readonly-lock">🔒</span>
-              </div>
-            }
+         <!-- Infos readonly -->
+         @if (repProfile) {
+           <div class="profil-readonly-group">
+             <div class="profil-readonly-title">Identité entreprise</div>
 
-            @if (canEditNumeroQualirepar) {
-              <div class="profil-field profil-field--full">
-                <label class="profil-label">N° QualiRépar <span class="profil-hint">(optionnel)</span></label>
-                <input class="profil-input" type="text" [(ngModel)]="repForm.numeroQualirepar" placeholder="Ex: QRP-XXXXX" />
-                <span class="profil-hint">Ce numéro est optionnel. Si vous le renseignez, il sera figé ensuite.</span>
-              </div>
-            } @else {
-              <div class="profil-readonly-item">
-                <span class="profil-readonly-label">N° QualiRépar</span>
-                <span class="profil-readonly-value">{{ repProfile.numeroQualirepar }}</span>
-                <span class="profil-readonly-lock">🔒</span>
-              </div>
-            }
-          </div>
+             @if (canEditSiret) {
+               <div id="metier-siret" class="profil-field profil-field--full" [class.profil-field--missing]="isMetierFieldMissing('siret') || highlightedMetierField === 'siret'" [class.profil-field--error]="hasFieldError('siret')">
+                 <label class="profil-label">SIRET <span class="profil-required">*</span></label>
+                 <input
+                   class="profil-input"
+                   type="text"
+                   [(ngModel)]="repForm.siret"
+                   maxlength="14"
+                   placeholder="14 chiffres"
+                   (blur)="markFieldTouched('siret')"
+                   (input)="clearFieldError('siret')" />
+                 @if (hasFieldError('siret')) {
+                   <span class="profil-error-msg">{{ getFieldError('siret') }}</span>
+                 } @else {
+                   <span class="profil-hint">✅ Vérification automatique INSEE (existence + établissement actif). Une fois validé, il ne sera plus modifiable.</span>
+                 }
+               </div>
+             } @else {
+               <div id="metier-siret" class="profil-readonly-item" [class.profil-readonly-item--highlight]="highlightedMetierField === 'siret'">
+                 <span class="profil-readonly-label">SIRET</span>
+                 <span class="profil-readonly-value">{{ repProfile.siret }}</span>
+                 <span class="profil-readonly-lock">🔒</span>
+               </div>
+             }
 
-          <div class="profil-rcpro-card">
-            <div class="profil-rcpro-head">
-              <span class="profil-rcpro-title">Attestation RC Pro</span>
-              <span class="profil-rcpro-status" [class.is-valid]="repProfile.rcProStatut === 'VALIDE'" [class.is-pending]="repProfile.rcProStatut === 'EN_VERIFICATION'" [class.is-rejected]="repProfile.rcProStatut === 'REFUSE'">
-                {{ getRcProStatutLabel(repProfile.rcProStatut) }}
-              </span>
-            </div>
+             @if (canEditNumeroQualirepar) {
+               <div class="profil-field profil-field--full">
+                 <label class="profil-label">N° QualiRépar <span class="profil-hint">(optionnel)</span></label>
+                 <input class="profil-input" type="text" [(ngModel)]="repForm.numeroQualirepar" placeholder="Ex: QRP-XXXXX" />
+                 <span class="profil-hint">Ce numéro est optionnel. Si vous le renseignez, il sera figé ensuite.</span>
+               </div>
+             } @else {
+               <div class="profil-readonly-item">
+                 <span class="profil-readonly-label">N° QualiRépar</span>
+                 <span class="profil-readonly-value">{{ repProfile.numeroQualirepar }}</span>
+                 <span class="profil-readonly-lock">🔒</span>
+               </div>
+             }
+           </div>
 
-            <div class="profil-rcpro-meta">
-              @if (repProfile.rcProUploadedAt) {
-                <span>Dernier envoi : {{ repProfile.rcProUploadedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
-              } @else {
-                <span>Aucune attestation transmise pour le moment.</span>
-              }
-              @if (repProfile.rcProUrl) {
-                <a class="profil-rcpro-link" [href]="getResolvedRcProUrl()" target="_blank" rel="noopener noreferrer">Voir le document actuel</a>
-              }
-            </div>
+           <div class="profil-rcpro-card">
+             <div class="profil-rcpro-head">
+               <span class="profil-rcpro-title">Attestation RC Pro</span>
+               <span class="profil-rcpro-status" [class.is-valid]="repProfile.rcProStatut === 'VALIDE'" [class.is-pending]="repProfile.rcProStatut === 'EN_VERIFICATION'" [class.is-rejected]="repProfile.rcProStatut === 'REFUSE'">
+                 {{ getRcProStatutLabel(repProfile.rcProStatut) }}
+               </span>
+             </div>
 
-            <div class="profil-rcpro-actions">
-              <button class="profil-btn-save profil-btn-save--secondary" (click)="openRcProDialog()" [disabled]="rcProLoading">
-                @if (rcProLoading) { ⏳ Envoi… } @else { 📎 {{ repProfile.rcProUrl ? 'Mettre à jour l\'attestation' : 'Ajouter une attestation' }} }
-              </button>
-              <input #rcProInput type="file" accept="application/pdf,image/png,image/jpeg" style="display:none" (change)="onRcProSelected($event)" />
-            </div>
-          </div>
-        }
+             <div class="profil-rcpro-meta">
+               @if (repProfile.rcProUploadedAt) {
+                 <span>Dernier envoi : {{ repProfile.rcProUploadedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+               } @else {
+                 <span>Aucune attestation transmise pour le moment.</span>
+               }
+               @if (repProfile.rcProUrl) {
+                 <a class="profil-rcpro-link" [href]="getResolvedRcProUrl()" target="_blank" rel="noopener noreferrer">Voir le document actuel</a>
+               }
+             </div>
 
-        <div class="profil-form-grid">
-          <div class="profil-field profil-field--full">
-            <label class="profil-label">Bio / Présentation</label>
-            <textarea class="profil-input profil-textarea" [(ngModel)]="repForm.bio"
-                      rows="3" placeholder="Décrivez votre activité, vos spécialités…"></textarea>
-          </div>
-          <div class="profil-field">
-            <label class="profil-label">Années d'expérience</label>
-            <input class="profil-input" type="number" [(ngModel)]="repForm.anneesExperience" min="0" max="60" />
-          </div>
-          <div class="profil-field">
-            <label class="profil-label">Rayon d'intervention (km)</label>
-            <input class="profil-input" type="number" [(ngModel)]="repForm.rayonInterventionKm" min="1" max="200" />
-          </div>
-          <div id="metier-ville" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('ville') || highlightedMetierField === 'ville'">
-            <label class="profil-label">Ville <span class="profil-required">*</span></label>
-            <input class="profil-input" type="text" [(ngModel)]="repForm.ville" placeholder="Paris" />
-          </div>
-          <div id="metier-code-postal" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('code_postal') || highlightedMetierField === 'code_postal'">
-            <label class="profil-label">Code postal <span class="profil-required">*</span></label>
-            <input class="profil-input" type="text" [(ngModel)]="repForm.codePostal" placeholder="75000" />
-          </div>
-          <div class="profil-field profil-field--full">
-            <label class="profil-label">Adresse de l'atelier</label>
-            <input class="profil-input" type="text" [(ngModel)]="repForm.adresseAtelier" placeholder="12 rue de la Réparation, Paris" />
-          </div>
+             <div class="profil-rcpro-actions">
+               <button class="profil-btn-save profil-btn-save--secondary" (click)="openRcProDialog()" [disabled]="rcProLoading">
+                 @if (rcProLoading) { ⏳ Envoi… } @else { 📎 {{ repProfile.rcProUrl ? 'Mettre à jour l\'attestation' : 'Ajouter une attestation' }} }
+               </button>
+               <input #rcProInput type="file" accept="application/pdf,image/png,image/jpeg" style="display:none" (change)="onRcProSelected($event)" />
+             </div>
+           </div>
+         }
 
-          <!-- Spécialités -->
-          <div id="metier-specialites" class="profil-field profil-field--full" [class.profil-field--missing]="isMetierFieldMissing('specialites') || highlightedMetierField === 'specialites'">
-            <label class="profil-label">Spécialités <span class="profil-required">*</span></label>
-            <div class="profil-specialites">
-              @for (type of allAppareilTypes; track type) {
-                <button class="profil-spec-btn" [class.selected]="hasSpecialite(type)"
-                        (click)="toggleSpecialite(type)">
-                  {{ APPAREIL_LABELS[type]?.icon }} {{ APPAREIL_LABELS[type]?.label }}
-                </button>
-              }
-            </div>
-          </div>
-        </div>
+         <div class="profil-form-grid">
+           <div class="profil-field profil-field--full">
+             <label class="profil-label">Bio / Présentation</label>
+             <textarea class="profil-input profil-textarea" [(ngModel)]="repForm.bio"
+                       rows="3" placeholder="Décrivez votre activité, vos spécialités…"></textarea>
+           </div>
+           <div class="profil-field">
+             <label class="profil-label">Années d'expérience</label>
+             <input class="profil-input" type="number" [(ngModel)]="repForm.anneesExperience" min="0" max="60" />
+           </div>
+           <div class="profil-field">
+             <label class="profil-label">Rayon d'intervention (km)</label>
+             <input class="profil-input" type="number" [(ngModel)]="repForm.rayonInterventionKm" min="1" max="200" />
+           </div>
+           <div id="metier-ville" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('ville') || highlightedMetierField === 'ville'" [class.profil-field--error]="hasFieldError('ville')">
+             <label class="profil-label">Ville <span class="profil-required">*</span></label>
+             <input
+               class="profil-input"
+               type="text"
+               [(ngModel)]="repForm.ville"
+               placeholder="Paris"
+               (blur)="markFieldTouched('ville')"
+               (input)="clearFieldError('ville')" />
+             @if (hasFieldError('ville')) {
+               <span class="profil-error-msg">{{ getFieldError('ville') }}</span>
+             }
+           </div>
+           <div id="metier-code-postal" class="profil-field" [class.profil-field--missing]="isMetierFieldMissing('code_postal') || highlightedMetierField === 'code_postal'" [class.profil-field--error]="hasFieldError('code_postal')">
+             <label class="profil-label">Code postal <span class="profil-required">*</span></label>
+             <input
+               class="profil-input"
+               type="text"
+               [(ngModel)]="repForm.codePostal"
+               placeholder="75000"
+               maxlength="5"
+               (blur)="markFieldTouched('code_postal')"
+               (input)="clearFieldError('code_postal')" />
+             @if (hasFieldError('code_postal')) {
+               <span class="profil-error-msg">{{ getFieldError('code_postal') }}</span>
+             }
+           </div>
+           <div class="profil-field profil-field--full">
+             <label class="profil-label">Adresse de l'atelier</label>
+             <input class="profil-input" type="text" [(ngModel)]="repForm.adresseAtelier" placeholder="12 rue de la Réparation, Paris" />
+           </div>
 
-        <div class="profil-form-actions">
-          <button class="profil-btn-save" (click)="saveRepProfile()" [disabled]="saveLoading">
-            @if (saveLoading) { ⏳ Enregistrement… } @else { 💾 Enregistrer le profil métier }
-          </button>
-        </div>
-      </div>
-    }
+           <!-- Spécialités -->
+           <div id="metier-specialites" class="profil-field profil-field--full" [class.profil-field--missing]="isMetierFieldMissing('specialites') || highlightedMetierField === 'specialites'" [class.profil-field--error]="hasFieldError('specialites')">
+             <label class="profil-label">Spécialités <span class="profil-required">*</span></label>
+             <div class="profil-specialites">
+               @for (type of allAppareilTypes; track type) {
+                 <button class="profil-spec-btn" [class.selected]="hasSpecialite(type)"
+                         (click)="toggleSpecialite(type); clearFieldError('specialites')">
+                   {{ APPAREIL_LABELS[type]?.icon }} {{ APPAREIL_LABELS[type]?.label }}
+                 </button>
+               }
+             </div>
+             @if (hasFieldError('specialites')) {
+               <span class="profil-error-msg">{{ getFieldError('specialites') }}</span>
+             }
+           </div>
+         </div>
+
+         <div class="profil-form-actions">
+           <button class="profil-btn-save" (click)="saveRepProfile()" [disabled]="saveLoading">
+             @if (saveLoading) { ⏳ Enregistrement… } @else { 💾 Enregistrer le profil métier }
+           </button>
+         </div>
+       </div>
+     }
 
     <!-- ═══ TAB: SÉCURITÉ ═══ -->
     @if (activeTab === 'securite') {
@@ -247,20 +319,47 @@
         <p class="profil-card-note">Choisissez un mot de passe fort d'au moins 8 caractères.</p>
 
         <div class="profil-form-grid">
-          <div class="profil-field" style="grid-column: 1 / -1">
+          <div class="profil-field" style="grid-column: 1 / -1" [class.profil-field--error]="hasFieldError('currentPassword')">
             <label class="profil-label">Mot de passe actuel <span style="color:var(--red)">*</span></label>
-            <input class="profil-input" type="password" [(ngModel)]="form.currentPassword"
-                   placeholder="Votre mot de passe actuel" autocomplete="current-password" />
+            <input
+              class="profil-input"
+              type="password"
+              [(ngModel)]="form.currentPassword"
+              placeholder="Votre mot de passe actuel"
+              autocomplete="current-password"
+              (blur)="markFieldTouched('currentPassword')"
+              (input)="clearFieldError('currentPassword')" />
+            @if (hasFieldError('currentPassword')) {
+              <span class="profil-error-msg">{{ getFieldError('currentPassword') }}</span>
+            }
           </div>
-          <div class="profil-field">
+          <div class="profil-field" [class.profil-field--error]="hasFieldError('newPassword')">
             <label class="profil-label">Nouveau mot de passe</label>
-            <input class="profil-input" type="password" [(ngModel)]="form.newPassword"
-                   placeholder="8 caractères minimum" autocomplete="new-password" />
+            <input
+              class="profil-input"
+              type="password"
+              [(ngModel)]="form.newPassword"
+              placeholder="8 caractères minimum"
+              autocomplete="new-password"
+              (blur)="markFieldTouched('newPassword')"
+              (input)="clearFieldError('newPassword')" />
+            @if (hasFieldError('newPassword')) {
+              <span class="profil-error-msg">{{ getFieldError('newPassword') }}</span>
+            }
           </div>
-          <div class="profil-field">
+          <div class="profil-field" [class.profil-field--error]="hasFieldError('confirmPassword')">
             <label class="profil-label">Confirmer le mot de passe</label>
-            <input class="profil-input" type="password" [(ngModel)]="form.confirmPassword"
-                   placeholder="Confirmer" autocomplete="new-password" />
+            <input
+              class="profil-input"
+              type="password"
+              [(ngModel)]="form.confirmPassword"
+              placeholder="Confirmer"
+              autocomplete="new-password"
+              (blur)="markFieldTouched('confirmPassword')"
+              (input)="clearFieldError('confirmPassword')" />
+            @if (hasFieldError('confirmPassword')) {
+              <span class="profil-error-msg">{{ getFieldError('confirmPassword') }}</span>
+            }
           </div>
         </div>
 

@@ -88,10 +88,16 @@ export class ProfilComponent implements OnInit {
   highlightedMetierField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
   private requestedFocusField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
 
+  // ── Field-level validation errors ─────────────────────
+  fieldErrors: Record<string, string> = {};
+  touchedFields: Set<string> = new Set();
+  showAllValidationErrors = false;
+
   readonly TypeAppareil = TypeAppareil;
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly allAppareilTypes = Object.keys(TypeAppareil) as TypeAppareil[];
   readonly UserRole = UserRole;
+  readonly Object = Object;
 
   constructor(
     public auth: AuthService,
@@ -163,31 +169,89 @@ export class ProfilComponent implements OnInit {
     });
   }
 
-  // ── Save profile ─────────────────────────────────────────
-  saveProfile(): void {
-    if (!this.form.prenom.trim() || !this.form.nom.trim()) {
-      this.saveError = 'Prénom et nom sont requis';
-      return;
+  // ── Field validation helpers ───────────────────────────
+  markFieldTouched(field: string): void {
+    this.touchedFields.add(field);
+  }
+
+  clearFieldError(field: string): void {
+    if (this.fieldErrors[field]) {
+      delete this.fieldErrors[field];
     }
-    if (this.showPasswordChange) {
-      if (this.form.newPassword) {
-        if (!this.form.currentPassword) {
-          this.saveError = 'Veuillez saisir votre mot de passe actuel';
-          return;
-        }
-        if (this.form.newPassword.length < 8) {
-          this.saveError = 'Le nouveau mot de passe doit contenir au moins 8 caractères';
-          return;
-        }
-        if (this.form.newPassword !== this.form.confirmPassword) {
-          this.saveError = 'Les mots de passe ne correspondent pas';
-          return;
-        }
+  }
+
+  getFieldError(field: string): string {
+    return this.fieldErrors[field] ?? '';
+  }
+
+  hasFieldError(field: string): boolean {
+    return (this.showAllValidationErrors || this.touchedFields.has(field)) && !!this.fieldErrors[field];
+  }
+
+  validatePrenomNom(): boolean {
+    this.fieldErrors = {};
+    let isValid = true;
+
+    if (!this.form.prenom.trim()) {
+      this.fieldErrors['prenom'] = '✋ Le prénom est requis';
+      isValid = false;
+    } else if (this.form.prenom.trim().length < 2) {
+      this.fieldErrors['prenom'] = '✋ Le prénom doit contenir au moins 2 caractères';
+      isValid = false;
+    }
+
+    if (!this.form.nom.trim()) {
+      this.fieldErrors['nom'] = '✋ Le nom est requis';
+      isValid = false;
+    } else if (this.form.nom.trim().length < 2) {
+      this.fieldErrors['nom'] = '✋ Le nom doit contenir au moins 2 caractères';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  validatePassword(): boolean {
+    this.fieldErrors = {};
+    let isValid = true;
+
+    if (this.showPasswordChange && this.form.newPassword) {
+      if (!this.form.currentPassword) {
+        this.fieldErrors['currentPassword'] = '🔐 Veuillez saisir votre mot de passe actuel';
+        isValid = false;
+      }
+
+      if (this.form.newPassword.length < 8) {
+        this.fieldErrors['newPassword'] = '🔐 Le mot de passe doit contenir au moins 8 caractères';
+        isValid = false;
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(this.form.newPassword)) {
+        this.fieldErrors['newPassword'] = '🔐 Le mot de passe doit contenir majuscules, minuscules et chiffres';
+        isValid = false;
+      }
+
+      if (this.form.newPassword !== this.form.confirmPassword) {
+        this.fieldErrors['confirmPassword'] = '🔄 Les mots de passe ne correspondent pas';
+        isValid = false;
       }
     }
 
-    this.saveLoading = true;
+    return isValid;
+  }
+
+  // ── Save profile ─────────────────────────────────────────
+  saveProfile(): void {
+    this.fieldErrors = {};
     this.saveError = '';
+
+    if (!this.validatePrenomNom()) {
+      return;
+    }
+
+    if (!this.validatePassword()) {
+      return;
+    }
+
+    this.saveLoading = true;
     const payload: UpdateProfileRequest = {
       prenom: this.form.prenom.trim(),
       nom: this.form.nom.trim(),
@@ -200,35 +264,79 @@ export class ProfilComponent implements OnInit {
       next: u => {
         this.saveLoading = false;
         this.user = u;
-        this.saveSuccess = '✅ Profil mis à jour !';
+        this.saveSuccess = '✨ Profil mis à jour avec succès !';
         this.form.currentPassword = '';
         this.form.newPassword = '';
         this.form.confirmPassword = '';
         this.showPasswordChange = false;
+        this.fieldErrors = {};
+        this.touchedFields.clear();
         setTimeout(() => this.saveSuccess = '', 4000);
       },
       error: (e) => {
         this.saveLoading = false;
-        this.saveError = e?.error?.error ?? 'Erreur lors de la sauvegarde';
+        const errorMsg = e?.error?.error ?? 'Erreur lors de la sauvegarde';
+        this.saveError = '❌ ' + errorMsg;
       }
     });
   }
 
-  // ── Save reparateur profile ───────────────────────────────
+  // ── Comprehensive validation for reparateur profile ───
+   private validateRepProfile(): { isValid: boolean; firstErrorField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null } {
+     this.fieldErrors = {};
+     let isValid = true;
+     let firstErrorField: 'siret' | 'ville' | 'code_postal' | 'specialites' | null = null;
+
+     // Validation SIRET
+     if (this.canEditSiret && !this.repForm.siret.trim()) {
+       this.fieldErrors['siret'] = '📋 Le SIRET est obligatoire pour recevoir des missions';
+       if (!firstErrorField) firstErrorField = 'siret';
+       isValid = false;
+     }
+
+     // Validation Ville
+     if (!this.repForm.ville.trim()) {
+       this.fieldErrors['ville'] = '🏙️ Veuillez saisir votre ville';
+       if (!firstErrorField) firstErrorField = 'ville';
+       isValid = false;
+     }
+
+     // Validation Code postal
+     if (!this.repForm.codePostal.trim()) {
+       this.fieldErrors['code_postal'] = '📮 Veuillez saisir votre code postal';
+       if (!firstErrorField) firstErrorField = 'code_postal';
+       isValid = false;
+     } else if (!/^\d{5}$/.test(this.repForm.codePostal.trim())) {
+       this.fieldErrors['code_postal'] = '⚠️ Le code postal doit contenir 5 chiffres';
+       if (!firstErrorField) firstErrorField = 'code_postal';
+       isValid = false;
+     }
+
+     // Validation Spécialités
+     if (this.repForm.specialites.length === 0) {
+       this.fieldErrors['specialites'] = '🛠️ Sélectionnez au moins une spécialité';
+       if (!firstErrorField) firstErrorField = 'specialites';
+       isValid = false;
+     }
+
+     this.showAllValidationErrors = !isValid;
+     return { isValid, firstErrorField };
+   }
+
+  // ── Save reparateur profile ───────────────────────────
   saveRepProfile(): void {
-    if (!this.repForm.ville.trim()) { this.saveError = 'Ville requise'; return; }
-    if (!this.repForm.codePostal.trim()) { this.saveError = 'Code postal requis'; return; }
-    if (this.canEditSiret && !this.repForm.siret.trim()) {
-      this.saveError = 'Le SIRET est requis';
-      return;
-    }
-    if (this.repForm.specialites.length === 0) {
-      this.saveError = 'Sélectionnez au moins une spécialité';
+    this.saveError = '';
+    const validation = this.validateRepProfile();
+
+    if (!validation.isValid) {
+      // Scroll to first error field with smooth animation
+      if (validation.firstErrorField) {
+        this.highlightField(validation.firstErrorField);
+      }
       return;
     }
 
     this.saveLoading = true;
-    this.saveError = '';
     const payload: UpdateReparateurProfileRequest = {
       siret: this.canEditSiret ? this.repForm.siret.trim() : undefined,
       numeroQualirepar: this.canEditNumeroQualirepar ? (this.repForm.numeroQualirepar.trim() || undefined) : undefined,
@@ -244,14 +352,35 @@ export class ProfilComponent implements OnInit {
     this.http.patch<ApiResponse<void>>(`${environment.apiUrl}/reparateurs/profile`, payload).subscribe({
       next: () => {
         this.saveLoading = false;
-        this.saveSuccess = '✅ Profil métier mis à jour !';
+        this.saveSuccess = '✨ Profil métier mis à jour avec succès !';
+        this.fieldErrors = {};
+        this.touchedFields.clear();
+        this.showAllValidationErrors = false;
         setTimeout(() => this.saveSuccess = '', 4000);
       },
       error: (e) => {
         this.saveLoading = false;
-        this.saveError = e?.error?.error ?? 'Erreur';
+        const errorMsg = e?.error?.error ?? 'Erreur lors de la sauvegarde';
+        this.saveError = '❌ ' + errorMsg;
       }
     });
+  }
+
+  private highlightField(field: 'siret' | 'ville' | 'code_postal' | 'specialites'): void {
+    this.highlightedMetierField = field;
+    setTimeout(() => {
+      const idMap: Record<'siret' | 'ville' | 'code_postal' | 'specialites', string> = {
+        siret: 'metier-siret',
+        ville: 'metier-ville',
+        code_postal: 'metier-code-postal',
+        specialites: 'metier-specialites'
+      };
+      const el = document.getElementById(idMap[field]);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+    setTimeout(() => {
+      this.highlightedMetierField = null;
+    }, 2600);
   }
 
   toggleSpecialite(type: TypeAppareil): void {
