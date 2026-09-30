@@ -86,6 +86,42 @@ export class DashboardReparateurComponent implements OnInit, OnDestroy {
       m.statut === 'CLOTURE' || m.statut === 'REFUSE' || m.statut === 'ANNULE' || m.statut === 'EXPIRE'
     );
   }
+  get noteMoyenne(): number {
+    return Number(this.dashboard?.reparateur?.noteMoyenne ?? 0);
+  }
+  get nbAvis(): number {
+    return Number(this.dashboard?.reparateur?.nbAvis ?? 0);
+  }
+  get profilComplet(): boolean {
+    return this.dashboard?.reparateur?.profilComplet !== false;
+  }
+  get champsManquantsCodes(): string[] {
+    return this.dashboard?.reparateur?.champsManquants ?? [];
+  }
+  get champsManquants(): Array<{ code: string; label: string; icon: string; focus: string }> {
+    const map: Record<string, { label: string; icon: string; focus: string }> = {
+      SIRET: { label: 'SIRET', icon: '🧾', focus: 'siret' },
+      VILLE: { label: 'Ville', icon: '🏙️', focus: 'ville' },
+      CODE_POSTAL: { label: 'Code postal', icon: '📮', focus: 'code_postal' },
+      SPECIALITES: { label: 'Spécialités', icon: '🛠️', focus: 'specialites' }
+    };
+
+    return this.champsManquantsCodes.map(code => {
+      const entry = map[code] ?? { label: code, icon: '⚠️', focus: 'siret' };
+      return { code, ...entry };
+    });
+  }
+  get profilCompletionFocus(): string {
+    return this.champsManquants[0]?.focus ?? 'siret';
+  }
+  get avisRecents(): Array<{ id: string; note: number; commentaire?: string; createdAt: string; clientNom: string; appareil: string }> {
+    return this.dashboard?.avisRecents ?? [];
+  }
+
+  getStars(note: number): string {
+    const safe = Math.max(0, Math.min(5, Math.round(note || 0)));
+    return `${'★'.repeat(safe)}${'☆'.repeat(5 - safe)}`;
+  }
 
   constructor(
     public auth: AuthService,

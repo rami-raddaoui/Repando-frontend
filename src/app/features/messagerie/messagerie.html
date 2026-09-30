@@ -372,6 +372,61 @@
         </div>
       }
 
+      @if (canShowAvisPrompt() && activeMatching) {
+        <div class="msgr-avis-card">
+          <div class="msgr-avis-card__title">Réparation terminée. Notez ce réparateur</div>
+          <div class="msgr-avis-card__subtitle">Votre retour aide les prochains clients à choisir le bon professionnel.</div>
+
+          @if (!activeMatching.hasAvis) {
+            <div class="msgr-avis-stars" role="radiogroup" aria-label="Notation du réparateur">
+              @for (star of stars; track star) {
+                <button class="msgr-avis-star"
+                        [class.active]="star <= avisNote"
+                        [attr.aria-checked]="star === avisNote"
+                        (click)="selectAvisNote(star)">★</button>
+              }
+            </div>
+
+            <textarea class="msgr-avis-textarea"
+                      [(ngModel)]="avisCommentaire"
+                      rows="3"
+                      placeholder="Commentaire optionnel (ponctualité, qualité, communication, etc.)"></textarea>
+
+            @if (avisError) {
+              <div class="msgr-avis-error">{{ avisError }}</div>
+            }
+            @if (avisSuccess) {
+              <div class="msgr-avis-success">{{ avisSuccess }}</div>
+            }
+
+            <button class="msgr-avis-submit"
+                    [disabled]="avisLoading || avisNote < 1"
+                    (click)="submitAvis()">
+              @if (avisLoading) { ⏳ Enregistrement... }
+              @else { ✅ Publier mon avis }
+            </button>
+          } @else {
+            <div class="msgr-avis-done">
+              <div class="msgr-avis-done__stars">{{ '★'.repeat(activeMatching.avisNote ?? 0) }}{{ '☆'.repeat(5 - (activeMatching.avisNote ?? 0)) }}</div>
+              @if (activeMatching.avisCommentaire) {
+                <div class="msgr-avis-done__comment">"{{ activeMatching.avisCommentaire }}"</div>
+              }
+              <div class="msgr-avis-success">Merci, votre avis est déjà publié.</div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (auth.isReparateur() && activeMatching?.hasAvis) {
+        <div class="msgr-avis-repairer-card">
+          <div class="msgr-avis-repairer-card__title">⭐ Nouvelle note client : {{ activeMatching?.avisNote }}/5</div>
+          @if (activeMatching?.avisCommentaire) {
+            <div class="msgr-avis-repairer-card__comment">"{{ activeMatching?.avisCommentaire }}"</div>
+          }
+          <div class="msgr-avis-repairer-card__hint">Les réparateurs les mieux notés reçoivent plus de missions.</div>
+        </div>
+      }
+
       <!-- Input bar -->
       @if (!isClosed && !auth.isImpersonating()) {
         <!-- Quick share chips -->

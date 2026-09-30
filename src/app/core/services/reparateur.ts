@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   ApiResponse, ReparateurPublicDto, ReparateurDetailDto,
-  PagedResult, TypeAppareil, TypeIntervention, CreateReparateurRequest
+  PagedResult, TypeAppareil, TypeIntervention, CreateReparateurRequest, UpdateReparateurProfileRequest
 } from '../models/models';
 import { environment } from '../../../environments/environment';
 
@@ -25,6 +25,11 @@ export class ReparateurService {
   private readonly base = `${environment.apiUrl}/reparateurs`;
 
   constructor(private http: HttpClient) {}
+
+  private routeWithOptionalId(path: string, reparateurId?: string): string {
+    const idPart = reparateurId?.trim() ? `/${reparateurId.trim()}` : '';
+    return `${this.base}${idPart}/${path}`;
+  }
 
   /** GET /api/reparateurs/search */
   search(params: SearchParams): Observable<PagedResult<ReparateurPublicDto>> {
@@ -54,15 +59,24 @@ export class ReparateurService {
       .pipe(map(r => r.data!));
   }
 
+  /** PATCH /api/reparateurs/profile ou /api/reparateurs/{id}/profile */
+  updateProfile(req: UpdateReparateurProfileRequest, reparateurId?: string): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(
+      this.routeWithOptionalId('profile', reparateurId),
+      req
+    );
+  }
+
   /** PATCH /api/reparateurs/disponibilite */
   updateDispo(estDisponible: boolean): Observable<void> {
     return this.http.patch<void>(`${this.base}/disponibilite`, estDisponible);
   }
 
-  /** POST /api/reparateurs/rc-pro — upload attestation RC Pro (base64 DataUrl) */
-  uploadRcPro(dataUrl: string): Observable<{ success: boolean; message?: string }> {
+  /** POST /api/reparateurs/rc-pro ou /api/reparateurs/{id}/rc-pro */
+  uploadRcPro(dataUrl: string, reparateurId?: string): Observable<{ success: boolean; message?: string }> {
     return this.http.post<{ success: boolean; message?: string }>(
-      `${this.base}/rc-pro`, { dataUrl }
+      this.routeWithOptionalId('rc-pro', reparateurId),
+      { dataUrl }
     );
   }
 }

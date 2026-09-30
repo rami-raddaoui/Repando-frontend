@@ -8,8 +8,10 @@
 
 <nav class="nav" [class.nav--with-banner]="isImpersonating" [class.nav--open]="mobileMenuOpen">
   <a routerLink="/" class="logo">
-    <div class="logo-dot"></div>
-    Repair<span>ando</span>
+    <span class="logo-img-frame" aria-hidden="true">
+      <img class="logo-img" src="/branding/repando-logo.jpg" alt="Repando" />
+    </span>
+    <span class="logo-fallback" aria-hidden="true">Repando</span>
   </a>
 
   <!-- Hamburger mobile -->
@@ -18,13 +20,10 @@
   </button>
 
   <div class="nav-links" [class.nav-links--open]="mobileMenuOpen" (click)="closeMobileMenu()">
-    <a routerLink="/contact" class="nav-link">Nous contacter</a>
-
-    @if (!auth.isReparateur()) {
-      <a routerLink="/recherche" class="nav-link">Trouver un réparateur</a>
-    }
 
     @if (!auth.isLoggedIn()) {
+      <a routerLink="/" class="nav-link">Accueil</a>
+      <a routerLink="/connexion" [queryParams]="{ mode: 'register' }" class="btn-nav btn-nav--client">✨ Je répare mon appareil</a>
       <a routerLink="/connexion" class="btn-ghost">Connexion</a>
       <a routerLink="/inscription-reparateur" class="btn-nav">🔧 Je suis réparateur</a>
     }
@@ -123,7 +122,7 @@
     }
 
     @if (auth.isLoggedIn() && auth.isReparateur()) {
-      <a routerLink="/dashboard-reparateur" class="btn-ghost">Dashboard</a>
+      <a routerLink="/dashboard-reparateur" class="btn-ghost">Mon tableau de bord</a>
     }
 
     @if (auth.isLoggedIn() && auth.isAdmin()) {

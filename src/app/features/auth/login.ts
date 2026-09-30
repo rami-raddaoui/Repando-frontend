@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { UserRole } from '../../core/models/models';
 import { CommonModule } from '@angular/common';
@@ -18,12 +18,13 @@ export class LoginComponent {
   error = '';
   success = '';
   isCompteDesactive = false;
+  registerSubmitted = false;
 
   loginForm: FormGroup;
   registerForm: FormGroup;
   forgotForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private route: ActivatedRoute) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
@@ -36,11 +37,18 @@ export class LoginComponent {
       telephone: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
+      acceptCgu: [false, Validators.requiredTrue],
     }, { validators: this.passwordMatchValidator });
 
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
+
+    // Allow links like /connexion?mode=register to open client signup directly.
+    const forcedMode = this.route.snapshot.queryParamMap.get('mode');
+    if (forcedMode === 'register') this.mode.set('register');
+    else if (forcedMode === 'choose-role') this.mode.set('choose-role');
+    else if (forcedMode === 'forgot-password') this.mode.set('forgot-password');
   }
 
   passwordMatchValidator(g: FormGroup) {
@@ -58,6 +66,13 @@ export class LoginComponent {
     this.error = '';
     this.success = '';
     this.isCompteDesactive = false;
+    this.registerSubmitted = false;
+  }
+
+  hasRegisterCguError(): boolean {
+    const c = this.registerForm.get('acceptCgu');
+    if (!c) return false;
+    return c.invalid && (c.touched || c.dirty || this.registerSubmitted);
   }
 
   submitLogin(): void {
@@ -86,7 +101,11 @@ export class LoginComponent {
   }
 
   submitRegister(): void {
-    if (this.registerForm.invalid) return;
+    this.registerSubmitted = true;
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     this.error = '';
     const { confirmPassword, ...data } = this.registerForm.value;

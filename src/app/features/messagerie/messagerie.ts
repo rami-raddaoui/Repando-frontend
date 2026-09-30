@@ -73,6 +73,12 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
   repairStatusLoading = false;
   repairStatusSuccess = '';
   repairStatusError = '';
+  avisNote = 0;
+  avisCommentaire = '';
+  avisLoading = false;
+  avisSuccess = '';
+  avisError = '';
+  readonly stars = [1, 2, 3, 4, 5];
   // Welcome popup (1ère ouverture messagerie pour le client)
   showWelcomePopup = false;
   private readonly WELCOME_KEY_CLIENT = 'repando_welcome_chat_client_seen';
@@ -313,6 +319,10 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.repairStatusComment = '';
     this.repairStatusSuccess = '';
     this.repairStatusError = '';
+    this.avisNote = found?.avisNote ?? 0;
+    this.avisCommentaire = found?.avisCommentaire ?? '';
+    this.avisSuccess = '';
+    this.avisError = '';
     // Popup bienvenue client (1ère fois uniquement)
     const role = this.auth.currentUser()?.role;
     if (role === 'CLIENT' && !localStorage.getItem(this.WELCOME_KEY_CLIENT)) {
@@ -624,6 +634,59 @@ export class MessagerieComponent implements OnInit, OnDestroy, AfterViewChecked 
       error: (e) => {
         this.repairStatusLoading = false;
         this.repairStatusError = e?.error?.error ?? 'Erreur lors de la mise à jour.';
+      }
+    });
+  }
+
+  selectAvisNote(note: number): void {
+    if (this.avisLoading) return;
+    this.avisNote = note;
+    this.avisError = '';
+  }
+
+  canShowAvisPrompt(): boolean {
+    return this.auth.isClient()
+      && !this.auth.isImpersonating()
+      && (this.activeMatching?.repairOutcome ?? '').toUpperCase() === 'TERMINEE';
+  }
+
+  submitAvis(): void {
+    if (!this.activeMatchingId || this.avisLoading) return;
+    if (this.avisNote < 1 || this.avisNote > 5) {
+      this.avisError = 'Choisissez une note entre 1 et 5 étoiles.';
+      return;
+    }
+
+    this.avisLoading = true;
+    this.avisError = '';
+
+    this.messagerieService.createAvis({
+      matchingId: this.activeMatchingId,
+      note: this.avisNote,
+      commentaire: this.avisCommentaire.trim() || undefined
+    }).subscribe({
+      next: () => {
+        this.avisLoading = false;
+        this.avisSuccess = 'Merci ! Votre avis a été enregistré.';
+        if (this.activeMatchingId) {
+          this.matchings = this.matchings.map(m =>
+            m.id === this.activeMatchingId
+              ? { ...m, hasAvis: true, avisNote: this.avisNote, avisCommentaire: this.avisCommentaire.trim() || undefined }
+              : m
+          );
+          this.activeMatching = this.matchings.find(m => m.id === this.activeMatchingId) ?? this.activeMatching;
+        }
+        this.loadMatchings();
+      },
+      error: (e) => {
+        this.avisLoading = false;
+        const err = e?.error?.error ?? 'Erreur lors de l\'enregistrement de votre avis.';
+        if ((err as string).toLowerCase().includes('deja')) {
+          this.avisSuccess = 'Votre avis a déjà été enregistré pour cette réparation.';
+          this.loadMatchings();
+          return;
+        }
+        this.avisError = err;
       }
     });
   }

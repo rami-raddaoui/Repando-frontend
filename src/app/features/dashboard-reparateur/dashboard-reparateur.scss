@@ -71,6 +71,85 @@
   }
 }
 
+.profile-incomplete-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1.5px solid #fdba74;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.profile-incomplete-banner__icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.profile-incomplete-banner__content {
+  flex: 1;
+}
+
+.profile-incomplete-banner__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #9a3412;
+}
+
+.profile-incomplete-banner__text {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #b45309;
+}
+
+.profile-incomplete-banner__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.profile-incomplete-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(251, 146, 60, .15);
+  border: 1px solid rgba(251, 146, 60, .35);
+  color: #9a3412;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-incomplete-banner__cta {
+  align-self: center;
+  background: #ea580c;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &:hover {
+    background: #c2410c;
+  }
+
+  @media (max-width: 700px) {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+}
+
 .md-chip {
   display: inline-flex;
   align-items: center;
@@ -1467,3 +1546,112 @@
     }
   }
 }
+
+.rep-avis-panel {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, .06);
+}
+
+.rep-avis-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rep-avis-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rep-avis-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.rep-avis-metrics {
+  display: flex;
+  gap: 10px;
+}
+
+.rep-avis-metric {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.rep-avis-metric__label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.rep-avis-metric__value {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rep-avis-empty {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 8px 2px;
+}
+
+.rep-avis-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.rep-avis-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.rep-avis-item__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.rep-avis-item__stars {
+  margin-top: 6px;
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+.rep-avis-item__stars small {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.rep-avis-item__appareil {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.rep-avis-item__comment {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  font-style: italic;
+}
+

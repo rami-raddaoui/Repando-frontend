@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from './auth';
 
 export interface ReclamationRequest { objet: string; message: string; }
+export interface CreateAvisRequest { matchingId: string; note: number; commentaire?: string; }
 export interface ReclamationDto {
   id: string; matchingId: string; signalantNom: string; sujetNom: string;
   objet: string; message: string; statut: string; reponseAdmin?: string;
@@ -452,6 +453,11 @@ export class MessagerieService {
     return this.http.get<ApiResponse<ReclamationDto[]>>(
       `${environment.apiUrl}/reclamations/mes-reclamations`
     ).pipe(map(r => r.data ?? []));
+  }
+
+  createAvis(req: CreateAvisRequest): Observable<void> {
+    return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/avis`, req)
+      .pipe(map(() => void 0));
   }
 
   setMessages(msgs: MessageDto[]): void {
