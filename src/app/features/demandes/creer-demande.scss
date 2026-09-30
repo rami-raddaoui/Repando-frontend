@@ -16,7 +16,6 @@ $white: #ffffff;
 .cd-page {
   min-height: 100vh;
   background: #f1f5f9;
-  padding-top: 64px;
   padding-bottom: 80px;
 }
 
@@ -28,6 +27,7 @@ $white: #ffffff;
   padding: 48px 24px 56px;
   overflow: hidden;
   text-align: center;
+  margin-bottom: 40px;  // ✅ Space before next content
 }
 
 .cd-hero-inner {
@@ -88,16 +88,43 @@ $white: #ffffff;
 /* ---- FORM ---- */
 .cd-form {
   max-width: 680px;
-  margin: -28px auto 0;
+  margin: 0 auto;
   padding: 0 16px;
   position: relative;
   z-index: 3;
+}
 
-  // Si la bannière info est le 1er élément, elle remonterait dans le hero :
-  // on lui ajoute un padding-top pour compenser le margin négatif du form
-  > .cd-alert-info:first-child {
-    margin-top: 36px;
+/* Error message - User friendly */
+.cd-error-message {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mandatory {
+  color: #dc2626;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.optional {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 /* Error */
@@ -236,15 +263,6 @@ $white: #ffffff;
   line-height: 1.2;
 }
 
-.app-card-bonus {
-  font-size: 10px;
-  font-weight: 700;
-  background: #f0fdf4;
-  color: $green-dark;
-  padding: 2px 7px;
-  border-radius: 50px;
-  transition: all 0.18s;
-}
 
 /* ---- PANNE GRID ---- */
 .panne-grid {
@@ -650,7 +668,291 @@ $white: #ffffff;
   flex-shrink: 0;
 }
 
-/* ---- BONUS RECAP ---- */
+/* ---- AUTHENTIFICATION CARD ---- */
+.cd-auth-card {
+  border: 2px solid rgba(16,185,129,0.2);
+  background: rgba(16,185,129,0.02);
+}
+
+.auth-intro {
+  font-size: 14px;
+  color: #4a5568;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.auth-hint {
+  font-size: 12px;
+  color: #718096;
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+/* Existing user */
+.auth-existing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  margin-bottom: 16px;
+
+  .auth-existing-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .auth-existing-info {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #22543d;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: #276749;
+    }
+  }
+}
+
+/* New user */
+.auth-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  .auth-new-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .auth-new-info {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #1e40af;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: #1d4ed8;
+    }
+  }
+}
+
+.password-hint {
+  font-size: 12px;
+  color: #718096;
+  margin-top: 6px;
+  padding: 8px;
+  background: #f7fafc;
+  border-left: 2px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.cd-btn-tertiary {
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: transparent;
+  color: #667eea;
+  border: 1px solid #667eea;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+
+  &:hover {
+    background: rgba(102, 126, 234, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ---- Vérification auto (spinner discret, pas de bouton à cliquer) ---- */
+.auth-checking {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: $gray-light;
+  border-radius: 10px;
+  font-size: 13px;
+  color: $gray;
+  font-weight: 600;
+}
+
+.spinner-mini {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(100,116,139,0.25);
+  border-top-color: $gray;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* Message info (succès neutre — ex: mail de reset envoyé) */
+.cd-info-message {
+  padding: 10px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+/* Liens secondaires sous les formulaires inline (mdp oublié, etc.) */
+.auth-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.auth-links-sep {
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.cd-link-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 2px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover { color: #4c51bf; }
+}
+
+.cd-btn-submit.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ---- BANNER: demande en attente (design épuré, non intrusif) ---- */
+.cd-draft-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%);
+  border-bottom: 1px solid #fde68a;
+  padding: 14px 20px;
+}
+
+.cd-draft-banner-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+  }
+}
+
+.cd-draft-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: white;
+  border: 1.5px solid #fcd34d;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.cd-draft-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  strong {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #78350f;
+  }
+
+  span {
+    font-size: 12px;
+    color: #92400e;
+    line-height: 1.4;
+  }
+}
+
+.cd-draft-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cd-draft-btn {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.18s ease;
+  font-family: inherit;
+
+  &.primary {
+    padding: 9px 16px;
+    background: #f59e0b;
+    color: white;
+    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+
+    &:hover {
+      background: #d97706;
+      transform: translateY(-1px);
+    }
+  }
+
+  &.ghost {
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    color: #92400e;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover { background: rgba(146,64,14,0.1); }
+  }
+}
+
 .cd-bonus-recap {
   display: flex;
   align-items: center;

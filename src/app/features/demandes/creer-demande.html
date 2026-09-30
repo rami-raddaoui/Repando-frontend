@@ -1,234 +1,470 @@
 <div class="cd-page">
 
-  <!-- HERO HEADER -->
-  <div class="cd-hero">
-    <div class="cd-hero-inner">
-      <a routerLink="/dashboard" class="cd-back">← Retour</a>
-      <div class="cd-hero-badge">🔧 Nouvelle demande</div>
-      <h1>Décrivez votre panne</h1>
-      <p>Recevez des devis gratuits de réparateurs certifiés QualiRépar.<br/><strong>Bonus État jusqu'à 65€ déduit automatiquement.</strong></p>
+  <!-- BANNER BROUILLON EXISTANT -->
+  @if (hasPendingDraft) {
+    <div class="cd-draft-banner">
+      <div class="cd-draft-banner-inner">
+        <div class="cd-draft-icon">
+          <span>🔧</span>
+        </div>
+        <div class="cd-draft-text">
+          <strong>Une demande est en cours</strong>
+          <span>Reprenez là où vous vous étiez arrêté, vos informations sont conservées.</span>
+        </div>
+        <div class="cd-draft-actions">
+          <button class="cd-draft-btn primary" (click)="restorePendingDraft()">
+            Reprendre ma demande
+          </button>
+          <button class="cd-draft-btn ghost" (click)="clearPendingDraft()" aria-label="Ignorer">
+            ✕
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="cd-hero-circle c1"></div>
-    <div class="cd-hero-circle c2"></div>
-  </div>
-
-  @if (error) {
-    <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
   }
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
-
-    <!-- SECTION 1 : Appareil -->
-    <div class="cd-card">
-      <div class="cd-card-header">
-        <div class="cd-card-num">1</div>
-        <div>
-          <h2>Quel appareil est en panne ?</h2>
-          <p>Sélectionnez votre appareil pour voir le bonus disponible</p>
-        </div>
+  <!-- ÉTAPE 1: Formulaire initial (appareil & panne) -->
+  @if (step === 1) {
+    <div class="cd-hero">
+      <div class="cd-hero-inner">
+        <a routerLink="/dashboard" class="cd-back">← Retour</a>
+        <div class="cd-hero-badge">🔧 Nouvelle demande</div>
+        <h1>Décrivez votre panne</h1>
+        <p>Aucun engagement requis — pas d'authentification sur cette étape.</p>
       </div>
-
-      <div class="appareil-grid">
-        @for (a of appareils; track a.key) {
-          <button type="button" class="app-card" [class.selected]="form.value.typeAppareil === a.key"
-                  (click)="form.patchValue({typeAppareil: a.key})">
-            <div class="app-card-icon">{{ a.icon }}</div>
-            <div class="app-card-label">{{ a.label }}</div>
-            <div class="app-card-bonus">−{{ a.bonus }}€</div>
-          </button>
-        }
-      </div>
-
-      <div class="cd-row mt-20">
-        <div class="cd-field">
-          <label>Marque</label>
-          <input type="text" formControlName="marque" placeholder="Ex: Samsung, Bosch, LG..."/>
-        </div>
-        <div class="cd-field">
-          <label>Modèle</label>
-          <input type="text" formControlName="modele" placeholder="Ex: WW90T534DAW..."/>
-        </div>
-      </div>
+      <div class="cd-hero-circle c1"></div>
+      <div class="cd-hero-circle c2"></div>
     </div>
 
-    <!-- SECTION 2 : Panne -->
-    <div class="cd-card">
-      <div class="cd-card-header">
-        <div class="cd-card-num">2</div>
-        <div>
-          <h2>Quel est le problème ?</h2>
-          <p>Choisissez le symptôme le plus proche</p>
-        </div>
-      </div>
+    @if (error) {
+      <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
+    }
 
-      <div class="panne-grid">
-        @for (p of pannes; track p.key) {
-          <button type="button" class="panne-card" [class.selected]="form.value.typePanne === p.key"
-                  (click)="form.patchValue({typePanne: p.key})">
-            <span class="panne-icon">{{ p.icon }}</span>
-            <span class="panne-label">{{ p.label }}</span>
-          </button>
-        }
-      </div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
 
-      <div class="cd-field mt-20">
-        <label>Description détaillée <span class="optional">(optionnel)</span></label>
-        <textarea formControlName="description" rows="4"
-          placeholder="Décrivez la panne : code erreur, depuis quand, à quelle fréquence…"></textarea>
-      </div>
-    </div>
-
-    <!-- SECTION 3 : Photos -->
-    <div class="cd-card">
-      <div class="cd-card-header">
-        <div class="cd-card-num">3</div>
-        <div>
-          <h2>Photos de la panne <span class="optional">(optionnel)</span></h2>
-          <p>Jusqu'à 8 photos — aidez les réparateurs à mieux évaluer</p>
-        </div>
-      </div>
-
-      @if (photoPreviews.length < 8) {
-        <label class="upload-zone">
-          <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
-          <div class="upload-zone-inner">
-            <div class="upload-zone-icon">📸</div>
-            <div class="upload-zone-title">Glissez vos photos ici</div>
-            <div class="upload-zone-sub">ou cliquez pour parcourir</div>
-            <div class="upload-zone-chip">+ Ajouter des photos</div>
-            <div class="upload-zone-hint">JPG, PNG, HEIC · Max 10 Mo/photo</div>
-          </div>
-        </label>
-      }
-
-      @if (photoPreviews.length > 0) {
-        <div class="photo-gallery">
-          @for (photo of photoPreviews; track $index) {
-            <div class="photo-thumb">
-              <img [src]="photo.url" [alt]="photo.name"/>
-              <div class="photo-overlay">
-                <div class="photo-meta">
-                  <span class="photo-name">{{ photo.name }}</span>
-                  <span class="photo-size">{{ photo.size }}</span>
-                </div>
-                <button type="button" class="photo-remove" (click)="removePhoto($index)">✕</button>
-              </div>
-              <div class="photo-badge">{{ $index + 1 }}</div>
-            </div>
-          }
-          @if (photoPreviews.length < 8) {
-            <label class="photo-add-more">
-              <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
-              <span class="add-more-icon">+</span>
-              <span class="add-more-label">Ajouter</span>
-            </label>
-          }
-        </div>
-        <div class="photo-count-bar">
-          <span class="photo-count-text">{{ photoPreviews.length }} / 8 photo{{ photoPreviews.length > 1 ? 's' : '' }}</span>
-          <div class="photo-count-dots">
-            @for (i of [0,1,2,3,4,5,6,7]; track i) {
-              <div class="count-dot" [class.filled]="i < photoPreviews.length"></div>
-            }
+      <!-- SECTION 1: Appareil -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">1</div>
+          <div>
+            <h2>Quel appareil est en panne ?</h2>
+            <p>Sélectionnez votre appareil pour voir le bonus disponible</p>
           </div>
         </div>
-      }
-    </div>
 
-    <!-- SECTION 4 : Localisation -->
-    <div class="cd-card">
-      <div class="cd-card-header">
-        <div class="cd-card-num">4</div>
-        <div>
-          <h2>Adresse d'intervention</h2>
-          <p>Nous trouvons les réparateurs proches de chez vous</p>
-        </div>
-      </div>
-
-      <div class="cd-field">
-        <label>Adresse complète (utile si vous souhaitez une réparation à domicile)</label>
-        <div class="input-icon-wrap">
-          <span class="input-icon">📍</span>
-          <input type="text" formControlName="adresse" placeholder="123 rue de la Paix, Paris 15e"/>
-        </div>
-      </div>
-
-      <div class="cd-row mt-16">
-        <div class="cd-field small cp-field">
-          <label>Code postal</label>
-          <input type="text" formControlName="codePostal" placeholder="75015" />
-          @if (idfError) {
-            <div class="cp-tooltip">
-              <div class="cp-tooltip-arrow"></div>
-              <span class="cp-tooltip-icon">🚫</span>
-              <span class="cp-tooltip-msg">{{ idfError }}</span>
-              <button type="button" class="cp-tooltip-close" (click)="idfError = ''">✕</button>
-            </div>
-          }
-          @if (postalMatches.length > 1) {
-            <div class="cp-dropdown">
-              <div class="cp-choose">
-                <div class="cp-choose-icon">📍</div>
-                <div class="cp-choose-text">
-                  <div class="cp-choose-title">Choisissez votre commune</div>
-                  <div class="cp-choose-sub">Plusieurs communes correspondent à ce code postal — sélectionnez celle qui correspond à votre adresse.</div>
-                </div>
-              </div>
-              <label class="cp-list-label">Commune</label>
-              <ul class="cp-list">
-                @for (m of postalMatches; track m.code) {
-                  <li (click)="selectCommune(m)">{{ m.nom }} <span class="cp-list-code">{{ m.code ? '(' + m.code + ')' : '' }}</span></li>
-                }
-              </ul>
-            </div>
-          }
-        </div>
-        <div class="cd-field">
-          <label>Ville</label>
-          <input type="text" formControlName="ville" placeholder="Ville" readonly />
-        </div>
-      </div>
-
-      <div class="ti-group mt-20">
-        <div class="ti-label">Type d'intervention préféré</div>
-        <div class="ti-options">
-          @for (t of [['DOMICILE','🏠','À domicile','Le réparateur se déplace chez vous'],['ATELIER','🔧','En atelier','Vous apportez l\'appareil'],['INDIFFERENT','🔄','Indifférent','Les deux me conviennent']]; track t[0]) {
-            <button type="button" class="ti-btn" [class.selected]="form.value.typeIntervention === t[0]"
-                    (click)="form.patchValue({typeIntervention: t[0]})">
-              <span class="ti-icon">{{ t[1] }}</span>
-              <div class="ti-info">
-                <strong>{{ t[2] }}</strong>
-                <span>{{ t[3] }}</span>
-              </div>
-              @if (form.value.typeIntervention === t[0]) {
-                <span class="ti-check">✓</span>
-              }
+        <div class="appareil-grid">
+          @for (a of appareils; track a.key) {
+            <button type="button" class="app-card" [class.selected]="form.value.typeAppareil === a.key"
+                    (click)="form.patchValue({typeAppareil: a.key})">
+              <div class="app-card-icon">{{ a.icon }}</div>
+              <div class="app-card-label">{{ a.label }}</div>
             </button>
           }
         </div>
-      </div>
-    </div>
 
-    <!-- BONUS RECAP -->
-    <div class="cd-bonus-recap">
-      <div class="bonus-icon">🎁</div>
-      <div class="bonus-text">
-        <strong>Bonus État inclus automatiquement</strong>
-        <span>Jusqu'à <em>65€ déduits</em> de votre facture finale — aucune démarche de votre part.</span>
-      </div>
-    </div>
-
-    <!-- ACTIONS -->
-    <div class="cd-actions">
-      <a routerLink="/dashboard" class="cd-btn-cancel">Annuler</a>
-      <button type="submit" class="cd-btn-submit" [disabled]="form.invalid || loading">
-        @if (loading) {
-          <span class="spin"></span> Envoi…
-        } @else {
-          🔍 Trouver des réparateurs →
+        @if (form.get('typeAppareil')?.touched && form.get('typeAppareil')?.hasError('required')) {
+          <div class="cd-error-message">⚠️ Veuillez sélectionner un type d'appareil</div>
         }
-      </button>
+
+        <div class="cd-row mt-20">
+          <div class="cd-field">
+            <label>Marque <span class="mandatory">*</span></label>
+            <input type="text" formControlName="marque" placeholder="Samsung, Bosch, LG..." />
+            @if (form.get('marque')?.touched && form.get('marque')?.hasError('required')) {
+              <div class="cd-error-message">⚠️ La marque est obligatoire</div>
+            }
+          </div>
+          <div class="cd-field">
+            <label>Modèle <span class="optional">(optionnel)</span></label>
+            <input type="text" formControlName="modele" placeholder="Ex: WW90T534DAW..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Panne -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">2</div>
+          <div>
+            <h2>Quel est le problème ?</h2>
+            <p>Choisissez le symptôme le plus proche</p>
+          </div>
+        </div>
+
+        <div class="panne-grid">
+          @for (p of pannes; track p.key) {
+            <button type="button" class="panne-card" [class.selected]="form.value.typePanne === p.key"
+                    (click)="form.patchValue({typePanne: p.key})">
+              <span class="panne-icon">{{ p.icon }}</span>
+              <span class="panne-label">{{ p.label }}</span>
+            </button>
+          }
+        </div>
+
+        @if (form.get('typePanne')?.touched && form.get('typePanne')?.hasError('required')) {
+          <div class="cd-error-message">⚠️ Veuillez sélectionner un type de panne</div>
+        }
+
+        <div class="cd-field mt-20">
+          <label>Description détaillée <span class="optional">(optionnel)</span></label>
+          <textarea formControlName="description" rows="4"
+            placeholder="Décrivez la panne : code erreur, depuis quand, à quelle fréquence…"></textarea>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Contact -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">3</div>
+          <div>
+            <h2>Vos informations de contact</h2>
+            <p>Pour que les réparateurs puissent vous joindre</p>
+          </div>
+        </div>
+
+        <div class="cd-row">
+          <div class="cd-field">
+            <label>Email <span class="mandatory">*</span></label>
+            <input type="email" formControlName="email" placeholder="votre@email.com" />
+            @if (form.get('email')?.touched && form.get('email')?.hasError('required')) {
+              <div class="cd-error-message">⚠️ L'email est obligatoire</div>
+            }
+            @if (form.get('email')?.touched && form.get('email')?.hasError('email')) {
+              <div class="cd-error-message">⚠️ Veuillez entrer un email valide</div>
+            }
+          </div>
+          <div class="cd-field">
+            <label>Téléphone <span class="mandatory">*</span></label>
+            <input type="tel" formControlName="telephone" placeholder="06 12 34 56 78" inputmode="tel" />
+            @if (form.get('telephone')?.touched && form.get('telephone')?.hasError('required')) {
+              <div class="cd-error-message">⚠️ Le téléphone est obligatoire</div>
+            }
+            @if (form.get('telephone')?.touched && form.get('telephone')?.hasError('pattern')) {
+              <div class="cd-error-message">⚠️ Veuillez entrer un numéro valide</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Photos -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">4</div>
+          <div>
+            <h2>Photos de la panne <span class="optional">(optionnel)</span></h2>
+            <p>Jusqu'à 8 photos — aidez les réparateurs à mieux évaluer</p>
+          </div>
+        </div>
+
+        @if (photoPreviews.length < 8) {
+          <label class="upload-zone">
+            <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
+            <div class="upload-zone-inner">
+              <div class="upload-zone-icon">📸</div>
+              <div class="upload-zone-title">Glissez vos photos ici</div>
+              <div class="upload-zone-sub">ou cliquez pour parcourir</div>
+              <div class="upload-zone-chip">+ Ajouter des photos</div>
+              <div class="upload-zone-hint">JPG, PNG, HEIC · Max 10 Mo/photo</div>
+            </div>
+          </label>
+        }
+
+        @if (photoPreviews.length > 0) {
+          <div class="photo-gallery">
+            @for (photo of photoPreviews; track $index) {
+              <div class="photo-thumb">
+                <img [src]="photo.url" [alt]="photo.name"/>
+                <div class="photo-overlay">
+                  <div class="photo-meta">
+                    <span class="photo-name">{{ photo.name }}</span>
+                    <span class="photo-size">{{ photo.size }}</span>
+                  </div>
+                  <button type="button" class="photo-remove" (click)="removePhoto($index)">✕</button>
+                </div>
+                <div class="photo-badge">{{ $index + 1 }}</div>
+              </div>
+            }
+            @if (photoPreviews.length < 8) {
+              <label class="photo-add-more">
+                <input type="file" accept="image/*" multiple style="display:none" (change)="onFileChange($event)"/>
+                <span class="add-more-icon">+</span>
+                <span class="add-more-label">Ajouter</span>
+              </label>
+            }
+          </div>
+          <div class="photo-count-bar">
+            <span class="photo-count-text">{{ photoPreviews.length }} / 8 photo{{ photoPreviews.length > 1 ? 's' : '' }}</span>
+            <div class="photo-count-dots">
+              @for (i of [0,1,2,3,4,5,6,7]; track i) {
+                <div class="count-dot" [class.filled]="i < photoPreviews.length"></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- AUTO-SAVE INDICATOR -->
+      @if (autoSaveInProgress) {
+        <div class="cd-autosave-indicator">
+          <span class="spinner-mini"></span> Sauvegarde en cours...
+        </div>
+      }
+
+      <!-- BONUS RECAP -->
+      <div class="cd-bonus-recap">
+        <div class="bonus-icon">🎁</div>
+        <div class="bonus-text">
+          <strong>Bonus État inclus automatiquement</strong>
+          <span>Jusqu'à 65€ déduits de votre facture finale — aucune démarche de votre part.</span>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="cd-actions">
+        <a routerLink="/dashboard" class="cd-btn-cancel">Annuler</a>
+        <button type="submit" class="cd-btn-submit"
+                [disabled]="!form.get('typeAppareil')?.valid ||
+                           !form.get('marque')?.valid ||
+                           !form.get('typePanne')?.valid ||
+                           !form.get('email')?.valid ||
+                           !form.get('telephone')?.valid">
+          @if (!form.get('typeAppareil')?.valid ||
+               !form.get('marque')?.valid ||
+               !form.get('typePanne')?.valid ||
+               !form.get('email')?.valid ||
+               !form.get('telephone')?.valid) {
+            ⚠️ Complétez les champs obligatoires
+          } @else {
+            Continuer vers localisation →
+          }
+        </button>
+      </div>
+
+    </form>
+  }
+
+  <!-- ÉTAPE 2: Localisation & Authentification -->
+  @if (step === 2) {
+    <div class="cd-hero">
+      <div class="cd-hero-inner">
+        <button type="button" class="cd-back" (click)="goBackToStep1()">← Retour</button>
+        <div class="cd-hero-badge">📍 Localisation</div>
+        <h1>Où voulez-vous la réparation ?</h1>
+        <p>Nous trouvons les meilleurs réparateurs proches de chez vous.</p>
+      </div>
+      <div class="cd-hero-circle c1"></div>
+      <div class="cd-hero-circle c2"></div>
     </div>
 
-  </form>
+    @if (error) {
+      <div class="cd-alert-error"><span>⚠️</span> {{ error }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
+
+      <!-- LOCALISATION SECTION -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <h2>Adresse d'intervention</h2>
+          <p>Nous trouvons les réparateurs proches de chez vous</p>
+        </div>
+
+        <div class="cd-field">
+          <label>Adresse complète <span class="optional">(optionnel pour atelier)</span></label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">📍</span>
+            <input type="text" formControlName="adresse" placeholder="123 rue de la Paix, Paris 15e"/>
+          </div>
+        </div>
+
+        <div class="cd-row mt-16">
+          <div class="cd-field small cp-field">
+            <label>Code postal</label>
+            <input type="text" formControlName="codePostal" placeholder="75015" inputmode="numeric" maxlength="5" />
+            @if (idfError) {
+              <div class="cp-tooltip">
+                <div class="cp-tooltip-arrow"></div>
+                <span class="cp-tooltip-icon">🚫</span>
+                <span class="cp-tooltip-msg">{{ idfError }}</span>
+                <button type="button" class="cp-tooltip-close" (click)="idfError = ''">✕</button>
+              </div>
+            }
+            @if (postalMatches.length > 1) {
+              <div class="cp-dropdown">
+                <div class="cp-choose">
+                  <div class="cp-choose-icon">📍</div>
+                  <div class="cp-choose-text">
+                    <div class="cp-choose-title">Choisissez votre commune</div>
+                    <div class="cp-choose-sub">Plusieurs communes correspondent à ce code postal</div>
+                  </div>
+                </div>
+                <label class="cp-list-label">Commune</label>
+                <ul class="cp-list">
+                  @for (m of postalMatches; track m.code) {
+                    <li (click)="selectCommune(m)">{{ m.nom }} <span class="cp-list-code">{{ m.code ? '(' + m.code + ')' : '' }}</span></li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+          <div class="cd-field">
+            <label>Ville</label>
+            <input type="text" formControlName="ville" placeholder="Ville" readonly />
+          </div>
+        </div>
+      </div>
+
+      <!-- TYPE INTERVENTION SECTION -->
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <h2>Type d'intervention préféré</h2>
+          <p>Choisissez comment vous préférez être réparé</p>
+        </div>
+        <div class="ti-group">
+          <div class="ti-options">
+            @for (t of [['DOMICILE','🏠','À domicile','Le réparateur se déplace chez vous'],['ATELIER','🔧','En atelier','Vous apportez l\'appareil'],['INDIFFERENT','🔄','Les deux','Vous êtes flexible']]; track t[0]) {
+              <button type="button" class="ti-btn" [class.selected]="form.value.typeIntervention === t[0]"
+                      (click)="form.patchValue({typeIntervention: t[0]})">
+                <span class="ti-icon">{{ t[1] }}</span>
+                <div class="ti-info">
+                  <strong>{{ t[2] }}</strong>
+                  <span>{{ t[3] }}</span>
+                </div>
+                @if (form.value.typeIntervention === t[0]) {
+                  <span class="ti-check">✓</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTHENTIFICATION SECTION -->
+      <div class="cd-card cd-auth-card">
+        <div class="cd-card-header">
+          <h2>Finaliser votre demande</h2>
+          <p>Pour que les réparateurs puissent vous contacter</p>
+        </div>
+
+        <!-- Déjà connecté : rien à faire -->
+        @if (auth.isLoggedIn()) {
+          <div class="auth-success">
+            ✅ Vous êtes connecté — votre demande peut être finalisée.
+          </div>
+        }
+
+        <!-- Vérification automatique en cours (silencieuse, pas de bouton à cliquer) -->
+        @if (!auth.isLoggedIn() && checkingUser) {
+          <div class="auth-checking">
+            <span class="spinner-mini"></span> Vérification de votre profil...
+          </div>
+        }
+
+        <!-- Compte existant trouvé → mini-formulaire de connexion inline -->
+        @if (!auth.isLoggedIn() && checkedUser && userExists) {
+          <div class="auth-existing">
+            <div class="auth-existing-icon">👤</div>
+            <div class="auth-existing-info">
+              <strong>Vous êtes déjà client Repando !</strong>
+              <p>Connectez-vous avec {{ userEmail }} pour finaliser.</p>
+            </div>
+          </div>
+
+          <div class="cd-field">
+            <label>Mot de passe <span class="mandatory">*</span></label>
+            <input type="password" formControlName="loginPassword"
+                   placeholder="Votre mot de passe"
+                   (keydown.enter)="loginInline()" />
+          </div>
+
+          @if (authInfo) {
+            <div class="cd-info-message">{{ authInfo }}</div>
+          }
+
+          <button type="button" class="cd-btn-submit full-width" (click)="loginInline()" [disabled]="loading">
+            @if (loading) {
+              <span class="spin"></span> Connexion…
+            } @else {
+              Se connecter et finaliser →
+            }
+          </button>
+
+          <div class="auth-links">
+            <button type="button" class="cd-link-btn" (click)="forgotPasswordInline()">
+              Mot de passe oublié ?
+            </button>
+            <span class="auth-links-sep">·</span>
+            <button type="button" class="cd-link-btn" (click)="resetUserCheck()">
+              Ce n'est pas mon compte
+            </button>
+          </div>
+        }
+
+        <!-- Nouvel utilisateur → création de compte inline -->
+        @if (!auth.isLoggedIn() && checkedUser && !userExists) {
+          <div class="auth-new">
+            <div class="auth-new-icon">✨</div>
+            <div class="auth-new-info">
+              <strong>Bienvenue !</strong>
+              <p>Créez votre compte en 30 secondes pour recevoir vos devis.</p>
+            </div>
+          </div>
+
+          <div class="cd-row">
+            <div class="cd-field">
+              <label>Prénom <span class="mandatory">*</span></label>
+              <input type="text" formControlName="prenom" placeholder="Jean" />
+            </div>
+            <div class="cd-field">
+              <label>Nom <span class="mandatory">*</span></label>
+              <input type="text" formControlName="nom" placeholder="Dupont" />
+            </div>
+          </div>
+
+          <div class="cd-field">
+            <label>Mot de passe <span class="mandatory">*</span></label>
+            <input type="password" formControlName="password"
+                   placeholder="Au moins 8 caractères" />
+            @if (form.get('password')?.touched && form.get('password')?.hasError('minlength')) {
+              <div class="cd-error-message">⚠️ Minimum 8 caractères</div>
+            }
+          </div>
+
+          <button type="button" class="cd-btn-submit full-width" (click)="createAccountAndContinue()" [disabled]="loading">
+            @if (loading) {
+              <span class="spin"></span> Création du compte…
+            } @else {
+              Créer mon compte et finaliser →
+            }
+          </button>
+
+          <div class="auth-links">
+            <button type="button" class="cd-link-btn" (click)="resetUserCheck()">
+              Ce n'est pas mon email ?
+            </button>
+          </div>
+        }
+
+        @if (authError) {
+          <div class="cd-alert-error"><span>⚠️</span> {{ authError }}</div>
+        }
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="cd-actions">
+        <button type="button" class="cd-btn-cancel" (click)="goBackToStep1()">← Retour à l'étape 1</button>
+        @if (auth.isLoggedIn()) {
+          <button type="button" class="cd-btn-submit" (click)="finalizeAndRedirect()" [disabled]="loading">
+            @if (loading) {
+              <span class="spin"></span> Finalisation…
+            } @else {
+              🎯 Créer la demande et obtenir des devis →
+            }
+          </button>
+        }
+      </div>
+
+    </form>
+  }
+
 </div>
