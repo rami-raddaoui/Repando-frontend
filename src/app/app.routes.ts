@@ -45,12 +45,7 @@ export const routes: Routes = [
   },
   {
     path: 'creer-demande',
-    // ✅ NO AUTH GUARD - Accessible sans authentification (auth repoussée à étape 2)
-    loadComponent: () => import('./features/demandes/creer-demande').then(m => m.CreerDemandeComponent)
-  },
-  {
-    path: 'demandes/create',
-    // ✅ ALIAS POUR /creer-demande - Nouveau formulaire optimisé 2-étapes
+    canActivate: [authGuard],
     loadComponent: () => import('./features/demandes/creer-demande').then(m => m.CreerDemandeComponent)
   },
   {

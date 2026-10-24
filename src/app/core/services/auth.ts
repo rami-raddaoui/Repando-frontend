@@ -51,18 +51,6 @@ export class AuthService {
     return this.http.post<void>(`${environment.apiUrl}/auth/forgot-password`, { email });
   }
 
-  /** Vérifie si un compte existe déjà pour cet email/téléphone (sans révéler le mot de passe) */
-  checkUser(email: string, telephone: string): Observable<{ userExists: boolean; email: string; userName: string | null }> {
-    return this.http.post<ApiResponse<{ userExists: boolean; email: string; userName: string | null }>>(
-      `${environment.apiUrl}/auth/check-user`, { email, telephone }
-    ).pipe(
-      map(res => {
-        if (!res.success || !res.data) throw new Error(res.error ?? 'Erreur de vérification');
-        return res.data;
-      })
-    );
-  }
-
   resetPassword(token: string, newPassword: string): Observable<void> {
     return this.http.post<void>(`${environment.apiUrl}/auth/reset-password`, { token, newPassword });
   }
