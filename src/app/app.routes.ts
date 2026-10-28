@@ -45,7 +45,6 @@ export const routes: Routes = [
   },
   {
     path: 'creer-demande',
-    canActivate: [authGuard],
     loadComponent: () => import('./features/demandes/creer-demande').then(m => m.CreerDemandeComponent)
   },
   {

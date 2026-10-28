@@ -5,9 +5,11 @@ import { tap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import {
   ApiResponse, AuthResponse, LoginRequest,
-  RegisterRequest, UserDto, UserRole, UpdateProfileRequest
+  RegisterRequest, UserDto, UserRole, UpdateProfileRequest,
+  TypeAppareil, TypeIntervention, TypePanne
 } from '../models/models';
 import { environment } from '../../../environments/environment';
+import { DemandeService } from './demande';
 
 /** Resolve a relative static path to an absolute URL */
 export function resolveStaticUrl(path: string | null | undefined): string | undefined {
@@ -20,6 +22,7 @@ export function resolveStaticUrl(path: string | null | undefined): string | unde
 export class AuthService {
   private readonly TOKEN_KEY = 'repando_token';
   private readonly USER_KEY  = 'repando_user';
+  private readonly DRAFT_KEY = 'repando_demande_draft';
 
   private _currentUser = signal<AuthResponse | null>(this.loadUser());
   readonly currentUser  = this._currentUser.asReadonly();
@@ -33,7 +36,7 @@ export class AuthService {
     typeof window !== 'undefined' && !!sessionStorage.getItem('repando_admin_token')
   );
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private demandeService: DemandeService) {}
 
   login(payload: LoginRequest): Observable<AuthResponse> {
     return this.http.post<ApiResponse<AuthResponse>>(
@@ -43,7 +46,10 @@ export class AuthService {
         if (!res.success || !res.data) throw new Error(res.error ?? 'Erreur de connexion');
         return { ...res.data, avatarUrl: resolveStaticUrl(res.data.avatarUrl) };
       }),
-      tap(data => this.storeSession(data))
+      tap(data => {
+        this.storeSession(data);
+        this.flushPendingDraftForLoggedClient(data.role);
+      })
     );
   }
 
@@ -62,7 +68,10 @@ export class AuthService {
         if (!res.success || !res.data) throw new Error(res.error ?? 'Erreur d\'inscription');
         return { ...res.data, avatarUrl: resolveStaticUrl(res.data.avatarUrl) };
       }),
-      tap(data => this.storeSession(data))
+      tap(data => {
+        this.storeSession(data);
+        this.flushPendingDraftForLoggedClient(data.role);
+      })
     );
   }
 
@@ -138,5 +147,63 @@ export class AuthService {
     if (typeof window === 'undefined') return null;
     const raw = localStorage.getItem(this.USER_KEY);
     return raw ? JSON.parse(raw) : null;
+  }
+
+  checkContact(payload: { email?: string; telephone?: string }): Observable<{ emailExists: boolean; telephoneExists: boolean }> {
+    return this.http.post<ApiResponse<{ emailExists: boolean; telephoneExists: boolean }>>(
+      `${environment.apiUrl}/auth/check-contact`, payload
+    ).pipe(
+      map(res => res.data ?? { emailExists: false, telephoneExists: false })
+    );
+  }
+
+  sendDraftReminder(payload: { email: string; deviceName?: string; brand?: string; url?: string }): Observable<void> {
+    return this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/auth/draft-reminder`, payload
+    ).pipe(map(() => void 0));
+  }
+
+  private flushPendingDraftForLoggedClient(role: UserRole): void {
+    if (role !== UserRole.CLIENT || typeof window === 'undefined') return;
+
+    const raw = window.localStorage.getItem(this.DRAFT_KEY);
+    if (!raw) return;
+
+    try {
+      const draft = JSON.parse(raw);
+      if (!draft) return;
+
+      const photoUrls = Array.isArray(draft.photoPreviews)
+        ? draft.photoPreviews.map((p: any) => p?.url).filter(Boolean)
+        : Array.isArray(draft.photoUrls)
+          ? draft.photoUrls.filter(Boolean)
+          : [];
+
+      const payload = {
+        typeAppareil: draft.typeAppareil ?? TypeAppareil.AUTRE,
+        marque: draft.marque ?? '',
+        modele: draft.modele ?? '',
+        typePanne: draft.typePanne ?? TypePanne.AUTRE,
+        description: draft.description ?? '',
+        photoUrls,
+        adresse: draft.adresse ?? '',
+        ville: draft.ville ?? 'Paris',
+        codePostal: draft.codePostal ?? '',
+        latitude: draft.latitude ?? undefined,
+        longitude: draft.longitude ?? undefined,
+        typeIntervention: draft.typeIntervention ?? TypeIntervention.INDIFFERENT,
+      };
+
+      this.demandeService.create(payload).subscribe({
+        next: () => {
+          window.localStorage.removeItem(this.DRAFT_KEY);
+        },
+        error: () => {
+          // Keep draft as a fallback so the user can retry later without losing context.
+        }
+      });
+    } catch {
+      window.localStorage.removeItem(this.DRAFT_KEY);
+    }
   }
 }

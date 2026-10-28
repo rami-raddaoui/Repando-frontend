@@ -1,5 +1,77 @@
 <div class="cd-page">
 
+  @if (hasDraft) {
+    <div class="cd-draft-banner" role="status" aria-live="polite">
+      <span>📝 Demande en attente</span>
+      <button type="button" class="cd-draft-banner-btn" (click)="scrollToForm()">Finaliser →</button>
+    </div>
+  }
+
+  @if (showLoginPrompt) {
+    <div class="cd-alert-popin">
+      <div class="cd-alert-popin-box">
+        <div class="cd-alert-popin-head">
+          <span class="cd-alert-popin-icon">🔐</span>
+          <div>
+            <strong>Un compte est déjà associé à ces coordonnées</strong>
+            <small>Connectez-vous pour récupérer votre demande sans perdre vos informations.</small>
+          </div>
+        </div>
+        <div class="cd-alert-popin-actions">
+          <button type="button" class="cd-btn-cancel" (click)="closeLoginPrompt()">Continuer sans me connecter</button>
+          <button type="button" class="cd-btn-submit" (click)="goToLogin()">Se connecter</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showGuestPrompt) {
+    <div class="cd-alert-popin">
+      <div class="cd-alert-popin-box guest-box">
+        <div class="cd-alert-popin-head">
+          <span class="cd-alert-popin-icon">⚡</span>
+          <div>
+            <strong>Vous êtes presque prêt</strong>
+            <small>Créer un compte en quelques secondes ou enregistrer votre brouillon pour finir plus tard.</small>
+          </div>
+        </div>
+
+        <form [formGroup]="quickRegisterForm" class="quick-register-form" (ngSubmit)="registerQuick()">
+          <div class="cd-row mt-16">
+            <div class="cd-field">
+              <label>Prénom</label>
+              <input type="text" formControlName="prenom" placeholder="Votre prénom" />
+            </div>
+            <div class="cd-field">
+              <label>Nom</label>
+              <input type="text" formControlName="nom" placeholder="Votre nom" />
+            </div>
+          </div>
+          <div class="cd-row mt-16">
+            <div class="cd-field">
+              <label>Mot de passe</label>
+              <input type="password" formControlName="password" placeholder="Au moins 8 caractères" />
+            </div>
+            <div class="cd-field">
+              <label>Confirmer</label>
+              <input type="password" formControlName="confirmPassword" placeholder="Confirmez" />
+            </div>
+          </div>
+          <div class="cd-alert-popin-actions">
+            <button type="button" class="cd-btn-cancel" (click)="closeGuestPrompt()">Annuler</button>
+            <button type="submit" class="cd-btn-submit">Créer mon compte</button>
+          </div>
+        </form>
+
+        <div class="guest-continue">
+          <button type="button" class="guest-continue-btn" (click)="continueAsGuest()">
+            Continuer en tant qu'invité · sauvegarder le brouillon
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- HERO HEADER -->
   <div class="cd-hero">
     <div class="cd-hero-inner">
@@ -18,10 +90,33 @@
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="cd-form">
 
+    @if (!auth.isLoggedIn() && !contactHidden) {
+      <div class="cd-card">
+        <div class="cd-card-header">
+          <div class="cd-card-num">1</div>
+          <div>
+            <h2>Étape 1 · Vos coordonnées</h2>
+            <p>Nous avons besoin de ces infos pour vous proposer les bons devis rapidement.</p>
+          </div>
+        </div>
+
+        <div class="cd-row mt-16">
+          <div class="cd-field">
+            <label>Téléphone</label>
+            <input type="tel" formControlName="telephone" placeholder="06 12 34 56 78" />
+          </div>
+          <div class="cd-field">
+            <label>Email</label>
+            <input type="email" formControlName="email" placeholder="votre@email.fr" />
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- SECTION 1 : Appareil -->
     <div class="cd-card">
       <div class="cd-card-header">
-        <div class="cd-card-num">1</div>
+        <div class="cd-card-num">2</div>
         <div>
           <h2>Quel appareil est en panne ?</h2>
           <p>Sélectionnez votre appareil pour voir le bonus disponible</p>
@@ -54,7 +149,7 @@
     <!-- SECTION 2 : Panne -->
     <div class="cd-card">
       <div class="cd-card-header">
-        <div class="cd-card-num">2</div>
+        <div class="cd-card-num">3</div>
         <div>
           <h2>Quel est le problème ?</h2>
           <p>Choisissez le symptôme le plus proche</p>
@@ -81,7 +176,7 @@
     <!-- SECTION 3 : Photos -->
     <div class="cd-card">
       <div class="cd-card-header">
-        <div class="cd-card-num">3</div>
+        <div class="cd-card-num">4</div>
         <div>
           <h2>Photos de la panne <span class="optional">(optionnel)</span></h2>
           <p>Jusqu'à 8 photos — aidez les réparateurs à mieux évaluer</p>
@@ -138,7 +233,7 @@
     <!-- SECTION 4 : Localisation -->
     <div class="cd-card">
       <div class="cd-card-header">
-        <div class="cd-card-num">4</div>
+        <div class="cd-card-num">5</div>
         <div>
           <h2>Adresse d'intervention</h2>
           <p>Nous trouvons les réparateurs proches de chez vous</p>

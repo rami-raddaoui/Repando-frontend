@@ -5,7 +5,8 @@ import { map } from 'rxjs/operators';
 import {
   ApiResponse, DemandeDto, CreateDemandeRequest, UpdateDemandeRequest,
   MatchingDto, CreateMatchingRequest, SendDevisRequest,
-  AdminDemandeDto, AdminReparateurDispoDto, AffecterMatchingsRequest
+  AdminDemandeDto, AdminReparateurDispoDto, AffecterMatchingsRequest,
+  SaveGuestDraftRequest, SaveGuestDraftResponse
 } from '../models/models';
 import { environment } from '../../../environments/environment';
 
@@ -138,5 +139,16 @@ export class DemandeService {
   adminAffecter(demandeId: string, req: AffecterMatchingsRequest): Observable<void> {
     return this.http.post<ApiResponse<void>>(`${this.adminBase}/demandes/${demandeId}/affecter`, req)
       .pipe(map(() => void 0));
+  }
+
+  /** POST /api/demandes/draft/save — sauvegarde un brouillon invité sans compte */
+  saveGuestDraft(req: SaveGuestDraftRequest): Observable<SaveGuestDraftResponse> {
+    return this.http.post<ApiResponse<SaveGuestDraftResponse>>(`${this.base}/draft/save`, req)
+      .pipe(map(r => {
+        if (!r.success || !r.data) {
+          throw new Error(r.error ?? 'Impossible de sauvegarder le brouillon.');
+        }
+        return r.data;
+      }));
   }
 }

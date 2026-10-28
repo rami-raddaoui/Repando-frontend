@@ -314,3 +314,29 @@ export const APPAREIL_LABELS: Record<TypeAppareil, { label: string; icon: string
   [TypeAppareil.MICRO_ONDE]:    { label: 'Micro-onde',    icon: '📡', bonus: 25 },
   [TypeAppareil.AUTRE]:         { label: 'Autre',         icon: '🌡', bonus: 25 },
 };
+
+export interface SaveGuestDraftRequest {
+  email?: string;
+  telephone?: string;
+  prenom?: string;
+  nom?: string;
+  typeAppareil?: TypeAppareil;
+  marque?: string;
+  modele?: string;
+  typePanne?: TypePanne;
+  description?: string;
+  photoUrls?: string[];
+  adresse?: string;
+  ville?: string;
+  codePostal?: string;
+  latitude?: number;
+  longitude?: number;
+  typeIntervention?: TypeIntervention;
+}
+
+export interface SaveGuestDraftResponse {
+  draftId: string;
+  clientId: string;
+  created: boolean;
+  message: string;
+}
