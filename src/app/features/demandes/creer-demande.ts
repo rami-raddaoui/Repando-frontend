@@ -27,9 +27,11 @@ export class CreerDemandeComponent {
   showDraftSavedSuccess = false;
   guestDraftSaved = false;
   contactHidden = false;
+  quickRegisterSubmitted = false;
   private draftSaveTimer?: number;
   private lastPersistedLocalDraftSignature = '';
   private guestDraftSaveInFlight = false;
+  private readonly quickEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
   readonly TypeAppareil = TypeAppareil;
   readonly TypePanne = TypePanne;
@@ -71,8 +73,11 @@ export class CreerDemandeComponent {
     this.quickRegisterForm = this.fb.group({
       prenom: ['', Validators.required],
       nom: ['', Validators.required],
+      email: ['', [Validators.required, Validators.pattern(this.quickEmailPattern)]],
+      telephone: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
+      acceptCgu: [false, Validators.requiredTrue],
     }, { validators: this.passwordMatchValidator });
 
     this.form.get('codePostal')!.valueChanges.subscribe((cp: string) => this.onCodePostalChange(cp));
@@ -85,6 +90,56 @@ export class CreerDemandeComponent {
 
   private passwordMatchValidator(g: FormGroup) {
     return g.get('password')?.value === g.get('confirmPassword')?.value ? null : { mismatch: true };
+  }
+
+  isQuickFieldInvalid(field: string): boolean {
+    const control = this.quickRegisterForm.get(field);
+    if (!control) return false;
+    return control.invalid && (control.touched || control.dirty || this.quickRegisterSubmitted);
+  }
+
+  quickFieldError(field: string): string {
+    const control = this.quickRegisterForm.get(field);
+    if (!control || !this.isQuickFieldInvalid(field)) return '';
+
+    const errors = control.errors || {};
+
+    if (errors['required']) {
+      const requiredMessages: Record<string, string> = {
+        prenom: 'Le prénom est requis.',
+        nom: 'Le nom est requis.',
+        email: 'L’email est requis.',
+        telephone: 'Le téléphone est requis.',
+        password: 'Le mot de passe est requis.',
+        confirmPassword: 'La confirmation du mot de passe est requise.',
+        acceptCgu: 'Vous devez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.'
+      };
+      return requiredMessages[field] ?? 'Ce champ est requis.';
+    }
+
+    if (errors['requiredTrue'] && field === 'acceptCgu') {
+      return 'Vous devez accepter les Conditions Générales d\'Utilisation et la Politique de confidentialité pour continuer.';
+    }
+
+    if ((errors['email'] || errors['pattern']) && field === 'email') {
+      return 'Entrez une adresse email valide.';
+    }
+
+    if (errors['minlength'] && field === 'password') {
+      return 'Le mot de passe doit contenir au moins 8 caractères.';
+    }
+
+    if (this.quickRegisterForm.hasError('mismatch') && (field === 'password' || field === 'confirmPassword')) {
+      return 'Les mots de passe ne correspondent pas.';
+    }
+
+    return 'Champ invalide.';
+  }
+
+  hasQuickRegisterCguError(): boolean {
+    const c = this.quickRegisterForm.get('acceptCgu');
+    if (!c) return false;
+    return c.invalid && (c.touched || c.dirty || this.quickRegisterSubmitted);
   }
 
   private syncDraftBanner(): void {
@@ -150,7 +205,7 @@ export class CreerDemandeComponent {
         description: this.form.get('description')?.value,
         photoUrls: this.photoPreviews.map(p => p.url),
         adresse: this.form.get('adresse')?.value,
-        ville: this.form.get('ville')?.value,
+        ville: this.form.get('ville')?.value ?? 'Paris',
         codePostal: this.form.get('codePostal')?.value,
         latitude: undefined,
         longitude: undefined,
@@ -248,13 +303,28 @@ export class CreerDemandeComponent {
       return;
     }
 
+    this.quickRegisterForm.patchValue({
+      email: email || this.quickRegisterForm.get('email')?.value || '',
+      telephone: telephone || this.quickRegisterForm.get('telephone')?.value || ''
+    }, { emitEvent: false });
+
     this.auth.checkContact({ email: email || undefined, telephone: telephone || undefined }).subscribe({
-      next: ({ emailExists, telephoneExists }) => {
-        if (emailExists || telephoneExists) {
+      next: ({ emailExists, telephoneExists, emailIsGuest, telephoneIsGuest }) => {
+        const hasRealExistingAccount = (emailExists && !!email) || (telephoneExists && !!telephone);
+        const hasGuestMatch = (emailIsGuest && !!email) || (telephoneIsGuest && !!telephone);
+
+        if (hasRealExistingAccount) {
           this.showLoginPrompt = true;
           this.showGuestPrompt = false;
           return;
         }
+
+        if (hasGuestMatch) {
+          this.showGuestPrompt = true;
+          this.showLoginPrompt = false;
+          return;
+        }
+
         this.showGuestPrompt = true;
         this.showLoginPrompt = false;
       },
@@ -349,6 +419,8 @@ export class CreerDemandeComponent {
         };
         window.localStorage.setItem(this.draftKey, JSON.stringify(draftRecord));
         window.localStorage.setItem('repando_last_success_message', 'Demande créée avec succès !');
+        window.sessionStorage.setItem('repando_app_draft_banner', '1');
+        window.dispatchEvent(new CustomEvent('repando-draft-banner-changed', { detail: { visible: true } }));
         this.guestDraftSaved = true;
         this.showGuestPrompt = false;
         this.loading = false;
@@ -364,29 +436,62 @@ export class CreerDemandeComponent {
   }
 
   registerQuick(): void {
+    this.quickRegisterSubmitted = true;
     this.quickRegisterForm.markAllAsTouched();
-    if (this.quickRegisterForm.invalid) return;
+    if (this.quickRegisterForm.invalid) {
+      this.error = 'Le formulaire est incomplet ou invalide. Vérifiez les champs de votre inscription.';
+      this.toast.error(this.error);
+      return;
+    }
 
-    const { confirmPassword, ...data } = this.quickRegisterForm.value;
+    const email = (this.quickRegisterForm.get('email')?.value ?? '').toString().trim();
+    const telephone = (this.quickRegisterForm.get('telephone')?.value ?? '').toString().trim();
+
+    if (!email || !telephone) {
+      this.error = 'Ajoutez un email et un téléphone valides pour finaliser votre inscription.';
+      this.toast.error(this.error);
+      return;
+    }
+
+    const { confirmPassword, acceptCgu, ...data } = this.quickRegisterForm.value;
     this.loading = true;
     this.error = '';
 
+    const draftId = this.getStoredDraft()?.draftId;
     this.auth.register({
       ...data,
-      email: (this.form.get('email')?.value ?? '').toString().trim(),
-      telephone: (this.form.get('telephone')?.value ?? '').toString().trim(),
+      email,
+      telephone,
       role: UserRole.CLIENT,
+      draftId: draftId ?? undefined,
     }).subscribe({
       next: () => {
         this.contactHidden = true;
         this.showGuestPrompt = false;
         this.showLoginPrompt = false;
         this.quickRegisterForm.reset();
-        this.submitDemand();
+
+        this.form.patchValue({ email, telephone }, { emitEvent: false });
+
+        const stored = this.getStoredDraft();
+        if (stored?.draftId) {
+          window.localStorage.setItem(this.draftKey, JSON.stringify({ ...stored, draftId: stored.draftId, clientId: stored.clientId }));
+        }
+
+        if (this.form.valid) {
+          this.submitDemand();
+          return;
+        }
+
+        this.loading = false;
+        this.toast.success('Compte créé avec succès. Vous pouvez maintenant finaliser votre demande.');
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.message ?? 'Erreur lors de l\'inscription.';
+        const msg = err?.error?.error ?? err?.message ?? 'Erreur lors de l\'inscription.';
+        this.error = msg;
+        this.toast.error(msg);
       }
     });
   }
@@ -397,12 +502,14 @@ export class CreerDemandeComponent {
     this.hasDraft = false;
 
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(this.draftKey);
-      this.lastPersistedLocalDraftSignature = '';
       sessionStorage.setItem('repando_app_draft_banner', '1');
     }
 
     this.toast.success('Votre demande a bien été enregistrée en brouillon.');
+
+    window.setTimeout(() => {
+      this.router.navigate(['/']);
+    }, 650);
   }
 
   closeGuestPrompt(): void {
@@ -410,8 +517,11 @@ export class CreerDemandeComponent {
   }
 
   goToLogin(): void {
-    this.persistDraft();
-    this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/creer-demande' } });
+    this.router.navigate(['/connexion']);
+  }
+
+  redirectToRegister(): void {
+    this.router.navigate(['/connexion'], { queryParams: { mode: 'register' } });
   }
 
   private readonly IDF_DEPS: Record<string, string> = {
@@ -501,7 +611,7 @@ export class CreerDemandeComponent {
           this.form.get('ville')!.setValue('');
           this.idfError = "Repando opère actuellement uniquement en Île-de-France. Expansion prévue bientôt dans toute la France ! 🚀";
         }).catch(() => {
-          this.postalMatches = [];
+
           const dep = cp.substring(0,2);
           if (this.IDF_DEPS[dep]) {
             this.form.get('ville')!.setValue(this.IDF_DEPS[dep]);
@@ -586,9 +696,5 @@ export class CreerDemandeComponent {
     } catch {
       return null;
     }
-  }
-
-  private hasSavedServerDraft(): boolean {
-    return !!this.getStoredDraft()?.draftId;
   }
 }

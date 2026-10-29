@@ -18,6 +18,8 @@ export class MesDemandesComponent implements OnInit {
   readonly APPAREIL_LABELS = APPAREIL_LABELS;
   readonly StatutDemande = StatutDemande;
   readonly staticUrl = environment.staticUrl;
+   draftDemandes: DemandeDto[] = [];
+
   showCancelModal = false;
   cancelTargetId: string | null = null;
   showDetailModal = false;
@@ -36,7 +38,11 @@ export class MesDemandesComponent implements OnInit {
   loadData(): void {
     this.loading = true;
     this.demandeService.getMesDemandes().subscribe({
-      next: d => { this.demandes = d; this.loading = false; },
+      next: d => {
+        this.demandes = d.filter(item => !item.isDraft);
+        this.draftDemandes = d.filter(item => item.isDraft);
+        this.loading = false;
+      },
       error: () => { this.loading = false; }
     });
     this.demandeService.getMyMatchings().subscribe({

@@ -1,3 +1,80 @@
+/* Hauteur de la bannière : utilisée pour décaler la navbar */
+$banner-height: 37px;
+
+/* ─── NAVBAR BASE ───────────────────────────────────────────── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 72px;
+  padding: 0.8rem clamp(1rem, 2vw, 2rem);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.nav--with-banner {
+  top: $banner-height;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-link,
+.btn-ghost,
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.nav-link {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.btn-ghost,
+.btn-nav {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  font-size: 0.87rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.btn-nav:hover,
+.btn-ghost:hover,
+.nav-link:hover {
+  transform: translateY(-1px);
+}
+
+.btn-nav {
+  border-color: transparent;
+}
+
+.nav-links > * {
+  flex-shrink: 0;
+}
+
 /* ─── BANDEAU IMPERSONATION ADMIN ───────────────────────────── */
 
 /* Hauteur de la bannière : utilisée pour décaler la navbar */

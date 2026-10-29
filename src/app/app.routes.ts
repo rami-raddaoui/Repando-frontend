@@ -40,7 +40,6 @@ export const routes: Routes = [
   },
   {
     path: 'mes-demandes',
-    canActivate: [authGuard],
     loadComponent: () => import('./features/demandes/mes-demandes').then(m => m.MesDemandesComponent)
   },
   {

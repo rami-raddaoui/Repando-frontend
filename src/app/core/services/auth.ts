@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import {
   ApiResponse, AuthResponse, LoginRequest,
   RegisterRequest, UserDto, UserRole, UpdateProfileRequest,
@@ -37,6 +37,31 @@ export class AuthService {
   );
 
   constructor(private http: HttpClient, private router: Router, private demandeService: DemandeService) {}
+
+  private clearSession(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    this._currentUser.set(null);
+  }
+
+  hasValidSession(): boolean {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) return false;
+
+    try {
+      const payloadBase64 = token.split('.')[1];
+      if (!payloadBase64) return false;
+      const payload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
+      const exp = Number(payload?.exp ?? 0);
+      if (!exp) return true;
+      return Date.now() < exp * 1000;
+    } catch {
+      this.clearSession();
+      return false;
+    }
+  }
 
   login(payload: LoginRequest): Observable<AuthResponse> {
     return this.http.post<ApiResponse<AuthResponse>>(
@@ -76,6 +101,11 @@ export class AuthService {
   }
 
   me(): Observable<UserDto> {
+    if (!this.hasValidSession()) {
+      this.clearSession();
+      return throwError(() => new Error('Session expirée'));
+    }
+
     return this.http.get<ApiResponse<UserDto>>(`${environment.apiUrl}/auth/me`).pipe(
       map(res => res.data!)
     );
@@ -127,9 +157,7 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this._currentUser.set(null);
+    this.clearSession();
     this.router.navigate(['/connexion']);
   }
 
@@ -149,11 +177,11 @@ export class AuthService {
     return raw ? JSON.parse(raw) : null;
   }
 
-  checkContact(payload: { email?: string; telephone?: string }): Observable<{ emailExists: boolean; telephoneExists: boolean }> {
-    return this.http.post<ApiResponse<{ emailExists: boolean; telephoneExists: boolean }>>(
+  checkContact(payload: { email?: string; telephone?: string }): Observable<{ emailExists: boolean; telephoneExists: boolean; emailIsGuest?: boolean; telephoneIsGuest?: boolean }> {
+    return this.http.post<ApiResponse<{ emailExists: boolean; telephoneExists: boolean; emailIsGuest?: boolean; telephoneIsGuest?: boolean }>>(
       `${environment.apiUrl}/auth/check-contact`, payload
     ).pipe(
-      map(res => res.data ?? { emailExists: false, telephoneExists: false })
+      map(res => res.data ?? { emailExists: false, telephoneExists: false, emailIsGuest: false, telephoneIsGuest: false })
     );
   }
 
@@ -180,6 +208,10 @@ export class AuthService {
           : [];
 
       const payload = {
+        email: draft.email ?? undefined,
+        telephone: draft.telephone ?? undefined,
+        prenom: draft.prenom ?? '',
+        nom: draft.nom ?? '',
         typeAppareil: draft.typeAppareil ?? TypeAppareil.AUTRE,
         marque: draft.marque ?? '',
         modele: draft.modele ?? '',
@@ -194,14 +226,39 @@ export class AuthService {
         typeIntervention: draft.typeIntervention ?? TypeIntervention.INDIFFERENT,
       };
 
-      this.demandeService.create(payload).subscribe({
-        next: () => {
-          window.localStorage.removeItem(this.DRAFT_KEY);
-        },
-        error: () => {
-          // Keep draft as a fallback so the user can retry later without losing context.
+      const doSave = () => {
+        if (draft.draftId) {
+          this.demandeService.updateGuestDraft(String(draft.draftId), payload).subscribe({
+            next: () => {
+              window.localStorage.removeItem(this.DRAFT_KEY);
+            },
+            error: () => {
+              // keep the draft stored so the user can retry without losing the data
+            }
+          });
+          return;
         }
-      });
+
+        this.demandeService.saveGuestDraft(payload).subscribe({
+          next: (resp) => {
+            if (resp?.draftId) {
+              window.localStorage.setItem(this.DRAFT_KEY, JSON.stringify({
+                ...draft,
+                draftId: resp.draftId,
+                clientId: resp.clientId,
+                draftSavedAt: Date.now()
+              }));
+            } else {
+              window.localStorage.removeItem(this.DRAFT_KEY);
+            }
+          },
+          error: () => {
+            // keep the draft as fallback; do not create a duplicate final demande
+          }
+        });
+      };
+
+      doSave();
     } catch {
       window.localStorage.removeItem(this.DRAFT_KEY);
     }

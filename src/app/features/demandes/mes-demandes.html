@@ -3,6 +3,7 @@
     <div><div class="page-title">Mes demandes</div></div>
     <a routerLink="/creer-demande" class="btn-primary">+ Nouvelle demande</a>
   </div>
+
   @if (loading) { <div class="loading-state">Chargement...</div> }
   @if (!loading && demandes.length === 0) {
     <div class="empty-state">
@@ -171,8 +172,7 @@
                     @if (m.hasUnreadMessages) { <span class="detail-matching-unread">Non lu</span> }
                   </div>
                   <div class="detail-matching-chip"
-                       [style.color]="getStatutMatchingLabel(m.statut).color"
-                       [style.borderColor]="getStatutMatchingLabel(m.statut).color">
+                       [style.color]="getStatutMatchingLabel(m.statut).color">
                     {{ getStatutMatchingLabel(m.statut).label }}
                   </div>
                   <div class="detail-matching-arrow">›</div>
@@ -190,6 +190,7 @@
         }
         <button class="btn-secondary" (click)="closeDetail()">Fermer</button>
       </div>
+
     </div>
   </div>
 }
@@ -197,7 +198,7 @@
 <!-- Lightbox photo -->
 @if (detailLightboxUrl) {
   <div class="lightbox-overlay" (click)="closeLightbox()">
-    <img class="lightbox-img" [src]="detailLightboxUrl" (click)="$event.stopPropagation()" />
+    <img class="lightbox-img" [src]="detailLightboxUrl" alt="Vue agrandie de la photo" (click)="$event.stopPropagation()" />
     <button class="lightbox-close" (click)="closeLightbox()">✕</button>
   </div>
 }
@@ -216,13 +217,12 @@
 
       <!-- ── Suggestion pause ────────────────────────────────── -->
       <div class="modal-pause-suggestion">
-        <div class="modal-pause-suggestion__header">
-          <span class="modal-pause-suggestion__icon">⏸️</span>
-          <div>
-            <div class="modal-pause-suggestion__title">Pas encore décidé·e ?</div>
-            <div class="modal-pause-suggestion__sub">Mettez votre demande en pause temporairement</div>
-          </div>
+        <img src="/assets/icons/pause.svg" alt="Pause" class="modal-pause-suggestion__icon" />
+        <div>
+          <div class="modal-pause-suggestion__title">Pas encore décidé·e ?</div>
+          <div class="modal-pause-suggestion__sub">Mettez votre demande en pause temporairement</div>
         </div>
+
         <p class="modal-pause-suggestion__desc">
           En pause, votre demande reste sauvegardée et les conversations sont conservées — aucun nouveau réparateur ne sera notifié. Vous pouvez la réactiver à tout moment.
         </p>

@@ -48,41 +48,91 @@
         <div class="cd-alert-popin-head">
           <span class="cd-alert-popin-icon">⚡</span>
           <div>
-            <strong>Vous êtes presque prêt</strong>
-            <small>Créer un compte en quelques secondes ou enregistrer votre brouillon pour finir plus tard.</small>
+            <strong>Inscrivez-vous en 2 minutes</strong>
+            <small>Pour commencer à recevoir des devis des réparateurs les plus proches, créez votre compte puis on rattache automatiquement votre demande en brouillon.</small>
           </div>
         </div>
 
-        <form [formGroup]="quickRegisterForm" class="quick-register-form" (ngSubmit)="registerQuick()">
+        <div [formGroup]="quickRegisterForm" class="quick-register-form">
           <div class="cd-row mt-16">
             <div class="cd-field">
               <label>Prénom</label>
-              <input type="text" formControlName="prenom" placeholder="Votre prénom" />
+              <input type="text" formControlName="prenom" placeholder="Votre prénom" [class.invalid]="isQuickFieldInvalid('prenom')" />
+              @if (isQuickFieldInvalid('prenom')) {
+                <span class="field-error">{{ quickFieldError('prenom') }}</span>
+              }
             </div>
             <div class="cd-field">
               <label>Nom</label>
-              <input type="text" formControlName="nom" placeholder="Votre nom" />
+              <input type="text" formControlName="nom" placeholder="Votre nom" [class.invalid]="isQuickFieldInvalid('nom')" />
+              @if (isQuickFieldInvalid('nom')) {
+                <span class="field-error">{{ quickFieldError('nom') }}</span>
+              }
             </div>
           </div>
+
+          <div class="cd-row mt-16">
+            <div class="cd-field">
+              <label>Email</label>
+              <input type="email" formControlName="email" placeholder="votre@email.com" [class.invalid]="isQuickFieldInvalid('email')" />
+              @if (isQuickFieldInvalid('email')) {
+                <span class="field-error">{{ quickFieldError('email') }}</span>
+              }
+            </div>
+            <div class="cd-field">
+              <label>Téléphone</label>
+              <input type="tel" formControlName="telephone" placeholder="06 12 34 56 78" [class.invalid]="isQuickFieldInvalid('telephone')" />
+              @if (isQuickFieldInvalid('telephone')) {
+                <span class="field-error">{{ quickFieldError('telephone') }}</span>
+              }
+            </div>
+          </div>
+
           <div class="cd-row mt-16">
             <div class="cd-field">
               <label>Mot de passe</label>
-              <input type="password" formControlName="password" placeholder="Au moins 8 caractères" />
+              <input type="password" formControlName="password" placeholder="Au moins 8 caractères" [class.invalid]="isQuickFieldInvalid('password') || quickRegisterForm.hasError('mismatch')" />
+              @if (isQuickFieldInvalid('password')) {
+                <span class="field-error">{{ quickFieldError('password') }}</span>
+              } @else if (quickRegisterForm.hasError('mismatch') && (quickRegisterForm.get('password')?.dirty || quickRegisterForm.get('confirmPassword')?.dirty)) {
+                <span class="field-error">Les mots de passe ne correspondent pas.</span>
+              }
             </div>
             <div class="cd-field">
               <label>Confirmer</label>
-              <input type="password" formControlName="confirmPassword" placeholder="Confirmez" />
+              <input type="password" formControlName="confirmPassword" placeholder="Confirmez" [class.invalid]="isQuickFieldInvalid('confirmPassword') || quickRegisterForm.hasError('mismatch')" />
+              @if (isQuickFieldInvalid('confirmPassword')) {
+                <span class="field-error">{{ quickFieldError('confirmPassword') }}</span>
+              } @else if (quickRegisterForm.hasError('mismatch') && (quickRegisterForm.get('password')?.dirty || quickRegisterForm.get('confirmPassword')?.dirty)) {
+                <span class="field-error">Les mots de passe ne correspondent pas.</span>
+              }
             </div>
           </div>
+
+          <div class="cd-field mt-16" [class.is-invalid]="hasQuickRegisterCguError()">
+            <label class="consent-check">
+              <input type="checkbox" formControlName="acceptCgu" />
+              <span>
+                J'ai lu et j'accepte les
+                <a routerLink="/conditions-generales-utilisation" target="_blank" rel="noopener noreferrer">Conditions Générales d'Utilisation</a>
+                et la
+                <a routerLink="/politique-confidentialite" target="_blank" rel="noopener noreferrer">Politique de confidentialité</a>.
+              </span>
+            </label>
+            @if (hasQuickRegisterCguError()) {
+              <span class="field-error">Vous devez accepter les Conditions Générales d'Utilisation et la Politique de confidentialité pour continuer.</span>
+            }
+          </div>
+
           <div class="cd-alert-popin-actions">
             <button type="button" class="cd-btn-cancel" (click)="closeGuestPrompt()">Annuler</button>
-            <button type="submit" class="cd-btn-submit">Créer mon compte</button>
+            <button type="button" class="cd-btn-submit" (click)="registerQuick()">Créer mon compte</button>
           </div>
-        </form>
+        </div>
 
         <div class="guest-continue">
-          <button type="button" class="guest-continue-btn" (click)="continueAsGuest()">
-            Continuer en tant qu'invité · sauvegarder le brouillon
+          <button type="button" class="guest-continue-btn" (click)="redirectToRegister()">
+            Je veux m'inscrire avec le formulaire complet
           </button>
         </div>
       </div>

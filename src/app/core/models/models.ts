@@ -46,6 +46,7 @@ export interface RegisterRequest {
   nom: string;
   telephone?: string;
   role: UserRole;
+  draftId?: string;
 }
 
 /** POST /api/auth/login */
@@ -190,6 +191,7 @@ export interface DemandeDto {
   codePostal?: string;
   typeIntervention: TypeIntervention;
   statut: StatutDemande;
+  isDraft: boolean;
   nbMatchings: number;
   nbDevisRecus: number;
   createdAt: string;
@@ -339,4 +341,16 @@ export interface SaveGuestDraftResponse {
   clientId: string;
   created: boolean;
   message: string;
+}
+
+export interface CheckContactRequest {
+  email?: string;
+  telephone?: string;
+}
+
+export interface CheckContactResponse {
+  emailExists: boolean;
+  telephoneExists: boolean;
+  emailIsGuest?: boolean;
+  telephoneIsGuest?: boolean;
 }

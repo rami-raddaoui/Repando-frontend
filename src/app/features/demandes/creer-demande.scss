@@ -855,17 +855,19 @@ $white: #ffffff;
 /* Persistent draft banner */
 .cd-draft-banner {
   position: fixed;
-  top: 18px;
+  top: 72px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 120;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  width: min(720px, calc(100vw - 24px));
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
   color: #fff;
-  border-radius: 999px;
-  padding: 10px 16px 10px 18px;
+  border-radius: 16px;
+  padding: 12px 16px 12px 18px;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
   font-size: 14px;
   font-weight: 700;
@@ -874,11 +876,12 @@ $white: #ffffff;
 .cd-draft-banner-btn {
   border: none;
   border-radius: 999px;
-  background: #10b981;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   font-weight: 800;
   padding: 8px 14px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .cd-alert-popin {
@@ -965,10 +968,11 @@ $white: #ffffff;
 
 @media (max-width: 640px) {
   .cd-draft-banner {
-    top: 10px;
+    top: 74px;
     width: calc(100% - 20px);
     justify-content: space-between;
     padding-inline: 14px;
+    border-radius: 14px;
   }
 
   .cd-alert-popin-box {
