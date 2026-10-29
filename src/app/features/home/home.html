@@ -1,4 +1,97 @@
-<!-- HERO -->
+@if (hasDraft) {
+  <div class="draft-banner" role="status" aria-live="polite">
+    <span>📝 Demande en attente</span>
+    <button type="button" class="draft-banner-btn" (click)="openDraftManager()">Gérer ma demande</button>
+  </div>
+}
+
+@if (showDraftModal && draftDetails) {
+  <div class="draft-modal-backdrop" (click)="closeDraftManager()">
+    <div class="draft-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="draft-manager-title">
+      <div class="draft-modal-header">
+        <div>
+          <p class="draft-kicker">Demande en attente</p>
+          <h3 id="draft-manager-title">Gérer ma demande</h3>
+        </div>
+        <button class="draft-modal-close" type="button" (click)="closeDraftManager()" aria-label="Fermer">✕</button>
+      </div>
+
+      @if (draftError) {
+        <div class="draft-alert">{{ draftError }}</div>
+      }
+
+      <div class="draft-summary">
+        <div>
+          <span class="draft-label">Appareil</span>
+          <strong>{{ draftDetails.typeAppareil }}</strong>
+        </div>
+        <div>
+          <span class="draft-label">Panne</span>
+          <strong>{{ draftDetails.typePanne ?? 'Non renseignée' }}</strong>
+        </div>
+        <div>
+          <span class="draft-label">Créée le</span>
+          <strong>{{ draftDetails.createdAt | date:'dd/MM/yyyy' }}</strong>
+        </div>
+      </div>
+
+      <div class="draft-form-grid">
+        <label>
+          <span>Appareil</span>
+          <select [(ngModel)]="draftDetails.typeAppareil">
+            @for (app of appareils; track app.key) {
+              <option [ngValue]="app.key">{{ app.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Marque</span>
+          <input type="text" [(ngModel)]="draftDetails.marque" placeholder="Ex. Samsung" />
+        </label>
+
+        <label>
+          <span>Modèle</span>
+          <input type="text" [(ngModel)]="draftDetails.modele" placeholder="Ex. WW90T534DAW" />
+        </label>
+
+        <label>
+          <span>Panne</span>
+          <select [(ngModel)]="draftDetails.typePanne">
+            <option [ngValue]="null">Non renseignée</option>
+            @for (p of [
+              { key: TypePanne.NE_DEMARRE_PLUS, label: 'Ne démarre plus' },
+              { key: TypePanne.FUITE_EAU, label: 'Fuite d\'eau' },
+              { key: TypePanne.BRUIT_ANORMAL, label: 'Bruit anormal' },
+              { key: TypePanne.CODE_ERREUR, label: 'Code erreur' },
+              { key: TypePanne.NE_CHAUFFE_PLUS, label: 'Ne chauffe plus' },
+              { key: TypePanne.AUTRE, label: 'Autre' }
+            ]; track p.key) {
+              <option [ngValue]="p.key">{{ p.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="draft-full">
+          <span>Description</span>
+          <textarea rows="3" [(ngModel)]="draftDetails.description" placeholder="Précisez le symptôme, le code ou la date…"></textarea>
+        </label>
+      </div>
+
+      <div class="draft-actions">
+        <button type="button" class="draft-secondary" (click)="closeDraftManager()">Fermer</button>
+        <button type="button" class="draft-primary" (click)="saveDraftChanges()" [disabled]="draftSaving">
+          {{ draftSaving ? 'Sauvegarde…' : 'Enregistrer' }}
+        </button>
+        <button type="button" class="draft-danger" (click)="deleteDraft()" [disabled]="deletingDraft">
+          {{ deletingDraft ? 'Suppression…' : 'Supprimer' }}
+        </button>
+        <button type="button" class="draft-submit" (click)="finalizeDraft()">Finaliser</button>
+      </div>
+    </div>
+  </div>
+}
+
 <section class="hero-wrap">
   <div class="hero-grid"></div>
   <div class="hero-orb-1"></div><div class="hero-orb-2"></div><div class="hero-orb-3"></div>

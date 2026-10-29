@@ -1,5 +1,22 @@
 <div class="cd-page">
 
+  @if (showDraftSavedSuccess) {
+    <div class="cd-alert-popin">
+      <div class="cd-alert-popin-box">
+        <div class="cd-alert-popin-head">
+          <span class="cd-alert-popin-icon">✅</span>
+          <div>
+            <strong>Votre demande a bien été enregistrée</strong>
+            <small>Votre brouillon est sauvegardé. Vous pouvez reprendre plus tard pour finaliser votre demande.</small>
+          </div>
+        </div>
+        <div class="cd-alert-popin-actions">
+          <button type="button" class="cd-btn-submit" (click)="showDraftSavedSuccess = false">Continuer</button>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (hasDraft) {
     <div class="cd-draft-banner" role="status" aria-live="polite">
       <span>📝 Demande en attente</span>

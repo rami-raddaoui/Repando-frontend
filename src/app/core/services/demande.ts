@@ -42,6 +42,34 @@ export class DemandeService {
       .pipe(map(r => r.data!));
   }
 
+  /** GET /api/demandes/draft/{id} */
+  getGuestDraft(id: string, email?: string, telephone?: string): Observable<DemandeDto> {
+    const params: Record<string, string> = {};
+    if (email) params['email'] = email;
+    if (telephone) params['telephone'] = telephone;
+    return this.http.get<ApiResponse<DemandeDto>>(`${this.base}/draft/${id}`, { params })
+      .pipe(map(r => {
+        if (!r.success || !r.data) throw new Error(r.error ?? 'Brouillon introuvable.');
+        return r.data;
+      }));
+  }
+
+  /** PUT /api/demandes/draft/{id} */
+  updateGuestDraft(id: string, req: SaveGuestDraftRequest): Observable<DemandeDto> {
+    return this.http.put<ApiResponse<DemandeDto>>(`${this.base}/draft/${id}`, req)
+      .pipe(map(r => {
+        if (!r.success || !r.data) throw new Error(r.error ?? 'Impossible de modifier le brouillon.');
+        return r.data;
+      }));
+  }
+
+  /** DELETE /api/demandes/draft/{id} */
+  deleteGuestDraft(id: string, email?: string, telephone?: string): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.base}/draft/${id}`, {
+      body: { email, telephone }
+    }).pipe(map(() => void 0));
+  }
+
   /** DELETE /api/demandes/{id} — annuler */
   cancel(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);

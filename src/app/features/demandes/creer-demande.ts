@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { DemandeService } from '../../core/services/demande';
 import { TypeAppareil, TypePanne, TypeIntervention, APPAREIL_LABELS, UserRole } from '../../core/models/models';
 import { AuthService } from '../../core/services/auth';
+import { ToastService } from '../../core/services/toast';
 
 @Component({
   selector: 'app-creer-demande',
@@ -23,6 +24,7 @@ export class CreerDemandeComponent {
   hasDraft = false;
   showLoginPrompt = false;
   showGuestPrompt = false;
+  showDraftSavedSuccess = false;
   guestDraftSaved = false;
   contactHidden = false;
   private draftSaveTimer?: number;
@@ -49,7 +51,8 @@ export class CreerDemandeComponent {
     private fb: FormBuilder,
     private demandeService: DemandeService,
     public auth: AuthService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) {
     this.form = this.fb.group({
       typeAppareil:    [TypeAppareil.LAVE_LINGE, Validators.required],
@@ -176,10 +179,12 @@ export class CreerDemandeComponent {
             window.localStorage.setItem(this.draftKey, JSON.stringify({ ...draftRecord, draftId: resp.draftId, clientId: resp.clientId }));
             this.hasDraft = true;
           }
+          this.guestDraftSaveInFlight = false;
         },
         error: () => {
           window.localStorage.setItem(this.draftKey, JSON.stringify(draftRecord));
           this.hasDraft = true;
+          this.guestDraftSaveInFlight = false;
         }
       });
     }, 700);
@@ -303,27 +308,59 @@ export class CreerDemandeComponent {
   }
 
   continueAsGuest(): void {
-    const existingDraft = this.getStoredDraft();
-    if (this.hasSavedServerDraft() && existingDraft?.draftId) {
-      this.guestDraftSaved = true;
-      this.showGuestPrompt = false;
-      this.clearDraft();
-      this.submitDemand();
+    const email = (this.form.get('email')?.value ?? '').toString().trim();
+    const telephone = (this.form.get('telephone')?.value ?? '').toString().trim();
+
+    if (!email && !telephone) {
+      this.error = 'Ajoutez un email ou un téléphone pour enregistrer votre demande.';
+      this.toast.warning(this.error);
       return;
     }
 
-    this.guestDraftSaved = true;
-    this.showGuestPrompt = false;
-    this.persistDraft();
-    const email = (this.form.get('email')?.value ?? '').toString().trim();
-    if (email) {
-      this.auth.sendDraftReminder({
-        email,
-        deviceName: this.form.get('typeAppareil')?.value,
-        brand: this.form.get('marque')?.value,
-        url: window.location.origin + '/creer-demande'
-      }).subscribe({ error: () => {} });
-    }
+    const payload = {
+      email: email || undefined,
+      telephone: telephone || undefined,
+      prenom: '',
+      nom: '',
+      typeAppareil: this.form.get('typeAppareil')?.value,
+      marque: this.form.get('marque')?.value,
+      modele: this.form.get('modele')?.value,
+      typePanne: this.form.get('typePanne')?.value,
+      description: this.form.get('description')?.value,
+      photoUrls: this.photoPreviews.map(p => p.url),
+      adresse: this.form.get('adresse')?.value,
+      ville: this.form.get('ville')?.value ?? 'Paris',
+      codePostal: this.form.get('codePostal')?.value,
+      latitude: undefined,
+      longitude: undefined,
+      typeIntervention: this.form.get('typeIntervention')?.value,
+    };
+
+    this.loading = true;
+    this.error = '';
+
+    this.demandeService.saveGuestDraft(payload).subscribe({
+      next: (resp) => {
+        const draftRecord = {
+          ...payload,
+          draftId: resp.draftId,
+          clientId: resp.clientId,
+          draftSavedAt: Date.now(),
+        };
+        window.localStorage.setItem(this.draftKey, JSON.stringify(draftRecord));
+        window.localStorage.setItem('repando_last_success_message', 'Demande créée avec succès !');
+        this.guestDraftSaved = true;
+        this.showGuestPrompt = false;
+        this.loading = false;
+        this.toast.success('Demande créée avec succès !');
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.error ?? 'Impossible d\'enregistrer votre demande sans connexion.';
+        this.toast.error(this.error);
+      }
+    });
   }
 
   registerQuick(): void {
@@ -356,6 +393,16 @@ export class CreerDemandeComponent {
 
   closeLoginPrompt(): void {
     this.showLoginPrompt = false;
+    this.showDraftSavedSuccess = true;
+    this.hasDraft = false;
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(this.draftKey);
+      this.lastPersistedLocalDraftSignature = '';
+      sessionStorage.setItem('repando_app_draft_banner', '1');
+    }
+
+    this.toast.success('Votre demande a bien été enregistrée en brouillon.');
   }
 
   closeGuestPrompt(): void {
@@ -405,7 +452,9 @@ export class CreerDemandeComponent {
     }
 
     if (/^\d{5}$/.test(cp)) {
-      if (this.codePostalDebounce) window.clearTimeout(this.codePostalDebounce);
+      if (this.codePostalDebounce) {
+        window.clearTimeout(this.codePostalDebounce);
+      }
       this.codePostalDebounce = window.setTimeout(async () => {
         await this.ensureLocalMapLoaded();
         if (this.localPostalMap && this.localPostalMap[cp]) {
@@ -418,6 +467,8 @@ export class CreerDemandeComponent {
             this.postalMatches = matches.map((n) => ({ nom: n, code: '' }));
             this.form.get('ville')!.setValue('');
             this.idfError = '';
+
+            return;
           }
           return;
         }
